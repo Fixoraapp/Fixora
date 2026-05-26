@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import FixoraMap from '@/components/FixoraMap';
 import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { ScreenBackground } from '../components/ScreenBackground';
@@ -8,30 +9,12 @@ import { locationService } from '../services/locationService';
 import { LocationSelection } from '../types/navigation';
 import { getMockLocation } from '../utils/location';
 
-declare const require: (moduleName: string) => any;
-
 type SmartLocationScreenProps = {
   onContinue: (location: LocationSelection) => void;
   onManual: () => void;
 };
 
 type DetectionStatus = 'idle' | 'detecting' | 'detected' | 'denied' | 'failed';
-
-const MapPackage = Platform.OS === 'web' ? null : require('react-native-maps');
-const MapView = MapPackage?.default;
-const Marker = MapPackage?.Marker;
-const PROVIDER_GOOGLE = MapPackage?.PROVIDER_GOOGLE;
-
-const darkMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#080B18' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#8EA7FF' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#050816' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#151B35' }] },
-  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#AAB0C0' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#061D3E' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-];
 
 const stars = Array.from({ length: 54 }, (_, index) => ({
   left: `${(index * 37) % 100}%` as `${number}%`,
@@ -124,7 +107,7 @@ export default function SmartLocationScreen({ onContinue, onManual }: SmartLocat
       </View>
       <ScrollView contentContainerStyle={[styles.content, compact && styles.contentCompact]} showsVerticalScrollIndicator={false}>
         {detected && hasCoordinates ? (
-          <PremiumMap location={displayLocation} pulseOpacity={pulseOpacity} pulseScale={pulseScale} mapRef={mapRef} />
+          <FixoraMap ref={mapRef} location={displayLocation} pulseOpacity={pulseOpacity} pulseScale={pulseScale} />
         ) : (
           <View style={[styles.globeWrap, { height: globeSize + 36 }]}>
             <Animated.View style={[styles.scanRing, { width: globeSize + 36, height: globeSize + 36, borderRadius: (globeSize + 36) / 2, transform: [{ rotate: scanRotate }] }]} />
@@ -223,55 +206,6 @@ function statusLabel(status: DetectionStatus) {
   if (status === 'denied') return 'Permission denied';
   if (status === 'failed') return 'GPS failed';
   return 'GPS ready';
-}
-
-function PremiumMap({
-  location,
-  pulseOpacity,
-  pulseScale,
-  mapRef,
-}: {
-  location: LocationSelection;
-  pulseOpacity: Animated.AnimatedInterpolation<string | number>;
-  pulseScale: Animated.AnimatedInterpolation<string | number>;
-  mapRef: React.MutableRefObject<any>;
-}) {
-  if (!MapView || !Marker || Platform.OS === 'web') {
-    return (
-      <LinearGradient colors={['rgba(5,8,22,0.98)', 'rgba(21,123,255,0.2)', 'rgba(124,58,237,0.16)']} style={styles.webMap}>
-        <View style={styles.webGrid} />
-        <Animated.View style={[styles.mapPulse, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
-        <Pin />
-        <Text style={styles.webMapText}>{location.city}</Text>
-      </LinearGradient>
-    );
-  }
-
-  const latitude = location.latitude ?? 40.1792;
-  const longitude = location.longitude ?? 44.4991;
-
-  return (
-    <View style={styles.mapFrame}>
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        style={StyleSheet.absoluteFill}
-        customMapStyle={darkMapStyle}
-        showsUserLocation
-        showsMyLocationButton={false}
-        initialRegion={{ latitude, longitude, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
-      >
-        <Marker coordinate={{ latitude, longitude }} anchor={{ x: 0.5, y: 0.78 }}>
-          <Pin />
-        </Marker>
-      </MapView>
-      <Animated.View pointerEvents="none" style={[styles.mapPulse, { opacity: pulseOpacity, transform: [{ scale: pulseScale }] }]} />
-      <View style={styles.mapOverlay}>
-        <Text style={styles.mapOverlayText}>{location.city}</Text>
-        <Text style={styles.mapOverlaySubtext}>{latitude.toFixed(5)}, {longitude.toFixed(5)}</Text>
-      </View>
-    </View>
-  );
 }
 
 function Pin() {
@@ -410,80 +344,6 @@ const styles = StyleSheet.create({
     borderRadius: 66,
     borderWidth: 2,
     borderColor: '#A855F7',
-  },
-  mapFrame: {
-    width: '100%',
-    maxWidth: 460,
-    height: 330,
-    borderRadius: 30,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(142,167,255,0.4)',
-    backgroundColor: '#050816',
-    shadowColor: '#157BFF',
-    shadowOpacity: 0.38,
-    shadowRadius: 26,
-    shadowOffset: { width: 0, height: 16 },
-  },
-  webMap: {
-    width: '100%',
-    maxWidth: 460,
-    height: 330,
-    borderRadius: 30,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(142,167,255,0.4)',
-  },
-  webGrid: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderColor: 'rgba(142,167,255,0.12)',
-  },
-  webMapText: {
-    position: 'absolute',
-    bottom: 22,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  mapPulse: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    width: 130,
-    height: 130,
-    marginLeft: -65,
-    marginTop: -65,
-    borderRadius: 65,
-    borderWidth: 2,
-    borderColor: '#A855F7',
-    backgroundColor: 'rgba(21,123,255,0.14)',
-  },
-  mapOverlay: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 14,
-    minHeight: 54,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(5,8,22,0.76)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
-  },
-  mapOverlayText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  mapOverlaySubtext: {
-    marginTop: 3,
-    color: '#8EA7FF',
-    fontSize: 12,
-    fontWeight: '800',
   },
   pin: {
     alignItems: 'center',
