@@ -1,19 +1,32 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppearanceSettings } from '../components/AppearanceSettings';
 import { FixoraLogo } from '../components/FixoraLogo';
 import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { SectionHeader } from '../components/SectionHeader';
 import { TextField } from '../components/TextField';
 import { colors } from '../constants/theme';
-import { ChatMessage, MarketplaceNotification, MarketplaceOrder, OrderStatus, useMarketplace } from '../context/MarketplaceContext';
+import {
+  ChatMessage,
+  ClientWallet,
+  MarketplaceNotification,
+  MarketplaceOrder,
+  MasterWallet,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+  WalletTransaction,
+  useMarketplace,
+} from '../context/MarketplaceContext';
 import { popularServices, professionals } from '../data/marketplace';
+import { useTheme } from '../theme/useTheme';
 import { Professional } from '../types/marketplace';
 import { LocationSelection, UserRole } from '../types/navigation';
 
-type ClientTab = 'home' | 'map' | 'orders' | 'chat' | 'favorites' | 'profile';
+type ClientTab = 'home' | 'map' | 'orders' | 'chat' | 'wallet' | 'profile';
 type MasterTab = 'dashboard' | 'map' | 'orders' | 'messages' | 'earnings' | 'profile';
 type MasterOrderFilter = 'pending' | 'accepted' | 'in_progress' | 'completed';
 type SortOption = 'recommended' | 'nearest' | 'topRated' | 'cheapest' | 'premium';
@@ -30,7 +43,7 @@ const tabItems: Array<{ id: ClientTab; label: string; icon: string }> = [
   { id: 'map', label: 'Map', icon: 'M' },
   { id: 'orders', label: 'Orders', icon: 'O' },
   { id: 'chat', label: 'Chat', icon: 'C' },
-  { id: 'favorites', label: 'Saved', icon: 'S' },
+  { id: 'wallet', label: 'Wallet', icon: 'W' },
   { id: 'profile', label: 'Profile', icon: 'P' },
 ];
 
@@ -91,6 +104,7 @@ function searchMatches(value: string, query: string) {
 }
 
 export default function HomeScreen({ location, role, onOpenCategories }: HomeScreenProps) {
+  const { theme } = useTheme();
   const marketplace = useMarketplace();
   const [activeTab, setActiveTab] = useState<ClientTab>('home');
   const [masterTab, setMasterTab] = useState<MasterTab>('dashboard');
@@ -111,12 +125,14 @@ export default function HomeScreen({ location, role, onOpenCategories }: HomeScr
         orders={marketplace.orders}
         messages={marketplace.messages}
         notifications={marketplace.notifications}
+        masterWallet={marketplace.masterWallet}
         activeChatOrderId={masterChatOrderId}
         onChangeTab={setMasterTab}
         onAccept={marketplace.acceptOrder}
         onDecline={marketplace.declineOrder}
         onStart={marketplace.startOrder}
         onComplete={marketplace.completeOrder}
+        onRequestPayout={marketplace.requestPayout}
         onOpenChat={(orderId) => {
           setMasterChatOrderId(orderId);
           setMasterTab('messages');
@@ -188,6 +204,8 @@ export default function HomeScreen({ location, role, onOpenCategories }: HomeScr
         <ClientOrdersScreen
           orders={marketplace.orders}
           onCancel={marketplace.cancelOrder}
+          onReleasePayment={marketplace.releasePayment}
+          onRefundPayment={marketplace.refundPayment}
           onMessage={(orderId) => {
             setClientChatOrderId(orderId);
             setActiveTab('chat');
@@ -216,13 +234,16 @@ export default function HomeScreen({ location, role, onOpenCategories }: HomeScr
       );
     }
 
-    if (activeTab === 'favorites') {
+    if (activeTab === 'wallet') {
       return (
-        <ClientUtilityTab title="Favorites" subtitle="Saved professionals and services for fast repeat bookings." action="Explore saved">
-          {premiumProfessionals.map((pro) => (
-            <ProfessionalCard key={pro.id} pro={pro} onPress={() => setSelectedProfessional(pro)} compact />
-          ))}
-        </ClientUtilityTab>
+        <ClientWalletScreen
+          wallet={marketplace.clientWallet}
+          orders={marketplace.orders}
+          onApplyPromo={marketplace.applyPromoCode}
+          onReservePayment={marketplace.reservePayment}
+          onRefundPayment={marketplace.refundPayment}
+          onReleasePayment={marketplace.releasePayment}
+        />
       );
     }
 
@@ -250,20 +271,23 @@ export default function HomeScreen({ location, role, onOpenCategories }: HomeScr
   }, [activeTab, clientChatOrderId, location, marketplace, nearby, onOpenCategories, premiumProfessionals, roleLabel, selectedProfessional]);
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <LinearGradient
-        colors={['#050816', '#07111F', '#09071D', '#050816']}
+        colors={theme.gradients.appBackground}
         locations={[0, 0.42, 0.78, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={styles.blueGlow} />
-      <View style={styles.purpleGlow} />
+      <View style={[styles.blueGlow, { backgroundColor: theme.colors.accent, opacity: theme.isDark ? 0.14 : 0.08 }]} />
+      <View style={[styles.purpleGlow, { opacity: theme.isDark ? 0.14 : 0.07 }]} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {content}
       </ScrollView>
       {!selectedProfessional ? (
         <View style={styles.bottomShell}>
-          <LinearGradient colors={['rgba(9,14,34,0.96)', 'rgba(12,9,31,0.96)']} style={styles.bottomNav}>
+          <LinearGradient
+            colors={theme.isDark ? ['rgba(9,14,34,0.96)', 'rgba(12,9,31,0.96)'] : ['rgba(255,255,255,0.96)', 'rgba(238,244,255,0.96)']}
+            style={[styles.bottomNav, { borderColor: theme.colors.stroke }]}
+          >
             {tabItems.map((item) => {
               const selected = activeTab === item.id;
 
@@ -523,12 +547,14 @@ function MasterSide({
   orders,
   messages,
   notifications,
+  masterWallet,
   activeChatOrderId,
   onChangeTab,
   onAccept,
   onDecline,
   onStart,
   onComplete,
+  onRequestPayout,
   onOpenChat,
   onBackChat,
   onSendMessage,
@@ -539,17 +565,20 @@ function MasterSide({
   orders: MarketplaceOrder[];
   messages: ChatMessage[];
   notifications: MarketplaceNotification[];
+  masterWallet: MasterWallet;
   activeChatOrderId: string | null;
   onChangeTab: (tab: MasterTab) => void;
   onAccept: (orderId: string) => void;
   onDecline: (orderId: string) => void;
   onStart: (orderId: string) => void;
   onComplete: (orderId: string) => void;
+  onRequestPayout: () => void;
   onOpenChat: (orderId: string) => void;
   onBackChat: () => void;
   onSendMessage: (orderId: string, text: string, kind?: 'text' | 'image' | 'voice') => void;
   onReadNotifications: () => void;
 }) {
+  const { theme } = useTheme();
   const content = useMemo(() => {
     const activeChatOrder = orders.find((item) => item.id === activeChatOrderId);
 
@@ -594,7 +623,7 @@ function MasterSide({
     }
 
     if (activeTab === 'earnings') {
-      return <MasterUtilityScreen title="Earnings" subtitle="Track income, payouts, weekly growth, and service performance." action="View payout details" />;
+      return <MasterWalletScreen wallet={masterWallet} orders={orders} onRequestPayout={onRequestPayout} />;
     }
 
     if (activeTab === 'profile') {
@@ -615,22 +644,25 @@ function MasterSide({
         onReadNotifications={onReadNotifications}
       />
     );
-  }, [activeChatOrderId, activeTab, location, messages, notifications, onAccept, onBackChat, onChangeTab, onComplete, onDecline, onOpenChat, onReadNotifications, onSendMessage, onStart, orders]);
+  }, [activeChatOrderId, activeTab, location, masterWallet, messages, notifications, onAccept, onBackChat, onChangeTab, onComplete, onDecline, onOpenChat, onReadNotifications, onRequestPayout, onSendMessage, onStart, orders]);
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <LinearGradient
-        colors={['#050816', '#07111F', '#09071D', '#050816']}
+        colors={theme.gradients.appBackground}
         locations={[0, 0.42, 0.78, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={styles.blueGlow} />
-      <View style={styles.masterPurpleGlow} />
+      <View style={[styles.blueGlow, { backgroundColor: theme.colors.accent, opacity: theme.isDark ? 0.14 : 0.08 }]} />
+      <View style={[styles.masterPurpleGlow, { opacity: theme.isDark ? 0.14 : 0.07 }]} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {content}
       </ScrollView>
       <View style={styles.bottomShell}>
-        <LinearGradient colors={['rgba(9,14,34,0.96)', 'rgba(12,9,31,0.96)']} style={styles.bottomNav}>
+        <LinearGradient
+          colors={theme.isDark ? ['rgba(9,14,34,0.96)', 'rgba(12,9,31,0.96)'] : ['rgba(255,255,255,0.96)', 'rgba(238,244,255,0.96)']}
+          style={[styles.bottomNav, { borderColor: theme.colors.stroke }]}
+        >
           {masterTabs.map((item) => {
             const selected = activeTab === item.id;
 
@@ -853,6 +885,7 @@ function MasterOrderCard({
         </View>
         <View>
           <View style={styles.statusBadge}><Text style={styles.statusText}>{statusLabel(order.status)}</Text></View>
+          <PaymentBadge order={order} />
           <Text style={styles.distanceText}>{order.distance}</Text>
         </View>
       </View>
@@ -911,7 +944,10 @@ function MasterActiveOrderCard({
           <Text style={styles.orderMeta}>{order.city}, {order.district}</Text>
           <Text style={styles.orderPrice}>{order.price}</Text>
         </View>
-        <View style={styles.statusBadge}><Text style={styles.statusText}>{statusLabel(order.status)}</Text></View>
+        <View>
+          <View style={styles.statusBadge}><Text style={styles.statusText}>{statusLabel(order.status)}</Text></View>
+          <PaymentBadge order={order} />
+        </View>
       </View>
       <OrderStatusTimeline status={order.status} />
       <View style={styles.orderActions}>
@@ -954,6 +990,154 @@ function MasterUtilityScreen({ title, subtitle, action }: { title: string; subti
   );
 }
 
+function ClientWalletScreen({
+  wallet,
+  orders,
+  onApplyPromo,
+  onReservePayment,
+  onRefundPayment,
+  onReleasePayment,
+}: {
+  wallet: ClientWallet;
+  orders: MarketplaceOrder[];
+  onApplyPromo: (code: string) => void;
+  onReservePayment: (orderId: string) => void;
+  onRefundPayment: (orderId: string) => void;
+  onReleasePayment: (orderId: string) => void;
+}) {
+  const [promoCode, setPromoCode] = useState('');
+  const availableMethods = wallet.paymentMethods.filter((method) => {
+    if (method.type === 'apple_pay') {
+      return Platform.OS === 'ios';
+    }
+    if (method.type === 'google_pay') {
+      return Platform.OS === 'android';
+    }
+
+    return true;
+  });
+  const actionableOrder = orders.find((order) => order.paymentStatus === 'unpaid' || order.paymentStatus === 'reserved');
+
+  return (
+    <>
+      <Text style={styles.utilityTitle}>Fixora Wallet</Text>
+      <Text style={styles.utilitySubtitle}>Secure balance, saved cards, promo rewards, and deal protection.</Text>
+      <LinearGradient colors={['rgba(21,123,255,0.92)', 'rgba(85,56,255,0.82)', 'rgba(168,85,247,0.72)']} style={styles.walletHero}>
+        <View>
+          <Text style={styles.walletEyebrow}>Available balance</Text>
+          <Text style={styles.walletBalance}>{formatAmd(wallet.balance)}</Text>
+          <Text style={styles.walletSubline}>{formatAmd(wallet.cashback)} cashback ready</Text>
+        </View>
+        <View style={styles.secureBadge}>
+          <Text style={styles.secureBadgeText}>SECURE DEAL</Text>
+        </View>
+      </LinearGradient>
+
+      <View style={styles.walletStatsRow}>
+        <WalletStat label="Saved cards" value={String(wallet.savedCards.length)} />
+        <WalletStat label="Promo codes" value={String(wallet.promoCodes.length)} />
+        <WalletStat label="Reserved" value={String(orders.filter((order) => order.paymentStatus === 'reserved').length)} />
+      </View>
+
+      <WalletSection title="Payment methods">
+        <View style={styles.paymentGrid}>
+          {availableMethods.map((method) => (
+            <PaymentMethodCard key={method.id} method={method} />
+          ))}
+        </View>
+      </WalletSection>
+
+      <WalletSection title="Promo codes">
+        <View style={styles.promoRow}>
+          <TextInput
+            value={promoCode}
+            onChangeText={setPromoCode}
+            placeholder="Enter code"
+            placeholderTextColor="#69748F"
+            style={styles.promoInput}
+          />
+          <Pressable
+            style={styles.promoButton}
+            onPress={() => {
+              onApplyPromo(promoCode);
+              setPromoCode('');
+            }}
+          >
+            <Text style={styles.acceptText}>Apply</Text>
+          </Pressable>
+        </View>
+        <View style={styles.promoList}>
+          {wallet.promoCodes.map((code) => (
+            <View key={code} style={styles.promoPill}><Text style={styles.promoPillText}>{code}</Text></View>
+          ))}
+        </View>
+      </WalletSection>
+
+      <WalletSection title="Secure deal controls">
+        <Text style={styles.sectionBody}>Mock reserve, release, and refund actions are wired for backend replacement.</Text>
+        <View style={styles.orderActions}>
+          <Pressable style={styles.declineButton} onPress={() => actionableOrder ? onRefundPayment(actionableOrder.id) : undefined}>
+            <Text style={styles.declineText}>Refund</Text>
+          </Pressable>
+          <Pressable style={styles.declineButton} onPress={() => actionableOrder ? onReservePayment(actionableOrder.id) : undefined}>
+            <Text style={styles.declineText}>Reserve</Text>
+          </Pressable>
+          <Pressable style={styles.acceptButton} onPress={() => actionableOrder ? onReleasePayment(actionableOrder.id) : undefined}>
+            <Text style={styles.acceptText}>Release</Text>
+          </Pressable>
+        </View>
+      </WalletSection>
+
+      <WalletSection title="Transactions">
+        <View style={styles.list}>
+          {wallet.transactions.map((transaction) => (
+            <TransactionCard key={transaction.id} transaction={transaction} />
+          ))}
+        </View>
+      </WalletSection>
+    </>
+  );
+}
+
+function MasterWalletScreen({ wallet, orders, onRequestPayout }: { wallet: MasterWallet; orders: MarketplaceOrder[]; onRequestPayout: () => void }) {
+  const paidOrders = orders.filter((order) => order.paymentStatus === 'paid');
+
+  return (
+    <>
+      <Text style={styles.utilityTitle}>Master Wallet</Text>
+      <Text style={styles.utilitySubtitle}>Earnings balance, commissions, and payout requests for completed secure deals.</Text>
+      <LinearGradient colors={['rgba(168,85,247,0.9)', 'rgba(85,56,255,0.78)', 'rgba(21,123,255,0.64)']} style={styles.walletHero}>
+        <View>
+          <Text style={styles.walletEyebrow}>Earnings balance</Text>
+          <Text style={styles.walletBalance}>{formatAmd(wallet.earningsBalance)}</Text>
+          <Text style={styles.walletSubline}>{Math.round(wallet.commissionRate * 100)}% Fixora commission</Text>
+        </View>
+        <Pressable style={styles.secureBadge} onPress={onRequestPayout}>
+          <Text style={styles.secureBadgeText}>PAYOUT</Text>
+        </Pressable>
+      </LinearGradient>
+
+      <View style={styles.walletStatsRow}>
+        <WalletStat label="Pending payouts" value={formatAmd(wallet.pendingPayouts)} />
+        <WalletStat label="Completed payouts" value={formatAmd(wallet.completedPayouts)} />
+        <WalletStat label="Paid orders" value={String(paidOrders.length)} />
+      </View>
+
+      <WalletSection title="Payouts">
+        <GradientButton title="Request payout" onPress={onRequestPayout} style={styles.utilityButton} />
+      </WalletSection>
+
+      <WalletSection title="Transactions">
+        <View style={styles.list}>
+          {wallet.transactions.map((transaction) => (
+            <TransactionCard key={transaction.id} transaction={transaction} />
+          ))}
+        </View>
+      </WalletSection>
+    </>
+  );
+}
+
 function MasterProfileScreen({ location }: { location: LocationSelection }) {
   return (
     <>
@@ -970,6 +1154,7 @@ function MasterProfileScreen({ location }: { location: LocationSelection }) {
           <ProfileRow label="Local marketplace" value={location.region} />
         </View>
       </GlassCard>
+      <AppearanceSettings />
     </>
   );
 }
@@ -982,6 +1167,18 @@ function statusLabel(status: OrderStatus) {
     in_progress: 'In progress',
     completed: 'Completed',
     cancelled: 'Cancelled',
+  };
+
+  return labels[status];
+}
+
+function paymentStatusLabel(status: PaymentStatus) {
+  const labels: Record<PaymentStatus, string> = {
+    unpaid: 'Unpaid',
+    reserved: 'Reserved',
+    paid: 'Paid',
+    refunded: 'Refunded',
+    failed: 'Failed',
   };
 
   return labels[status];
@@ -1354,11 +1551,15 @@ function MapOrderCard({ order, onAccept }: { order: MarketplaceOrder; onAccept: 
 function ClientOrdersScreen({
   orders,
   onCancel,
+  onReleasePayment,
+  onRefundPayment,
   onMessage,
   onReview,
 }: {
   orders: MarketplaceOrder[];
   onCancel: (orderId: string) => void;
+  onReleasePayment: (orderId: string) => void;
+  onRefundPayment: (orderId: string) => void;
   onMessage: (orderId: string) => void;
   onReview: (order: MarketplaceOrder) => void;
 }) {
@@ -1375,9 +1576,13 @@ function ClientOrdersScreen({
                   <Text style={styles.orderTitle}>{order.serviceTitle}</Text>
                   <Text style={styles.orderMeta}>{order.masterName} / {order.city}, {order.district}</Text>
                 </View>
-                <View style={styles.statusBadge}><Text style={styles.statusText}>{statusLabel(order.status)}</Text></View>
+                <View>
+                  <View style={styles.statusBadge}><Text style={styles.statusText}>{statusLabel(order.status)}</Text></View>
+                  <PaymentBadge order={order} />
+                </View>
               </View>
               <Text style={styles.orderPrice}>{order.price}</Text>
+              <Text style={styles.orderMeta}>Secure deal: {formatAmd(order.amount)} / master earns {formatAmd(order.masterEarnings)}</Text>
               <OrderStatusTimeline status={order.status} />
               <View style={styles.orderActions}>
                 <Pressable style={styles.declineButton} onPress={() => onMessage(order.id)}>
@@ -1387,12 +1592,19 @@ function ClientOrdersScreen({
                   <Pressable style={styles.acceptButton} onPress={() => onReview(order)}>
                     <Text style={styles.acceptText}>{order.review ? 'Review sent' : 'Leave review'}</Text>
                   </Pressable>
+                ) : order.paymentStatus === 'reserved' ? (
+                  <Pressable style={styles.acceptButton} onPress={() => onRefundPayment(order.id)}>
+                    <Text style={styles.acceptText}>Refund</Text>
+                  </Pressable>
                 ) : (
                   <Pressable style={styles.acceptButton} onPress={() => onCancel(order.id)}>
                     <Text style={styles.acceptText}>Cancel</Text>
                   </Pressable>
                 )}
               </View>
+              {order.status === 'completed' && order.paymentStatus === 'reserved' ? (
+                <GradientButton title="Confirm and release payment" onPress={() => onReleasePayment(order.id)} style={styles.utilityButton} />
+              ) : null}
             </LinearGradient>
           ))
         ) : (
@@ -1683,6 +1895,7 @@ function ClientProfileTab({
           <ProfileRow label="Marketplace" value={location.region} />
         </View>
       </GlassCard>
+      <AppearanceSettings />
       <NotificationCenter role="client" notifications={notifications} onRead={onReadNotifications} />
     </>
   );
@@ -1702,6 +1915,67 @@ function ProfileRow({ label, value }: { label: string; value: string }) {
     <View style={styles.profileRow}>
       <Text style={styles.profileRowLabel}>{label}</Text>
       <Text style={styles.profileRowValue}>{value}</Text>
+    </View>
+  );
+}
+
+function formatAmd(amount: number) {
+  return `${Math.round(amount).toLocaleString()} AMD`;
+}
+
+function WalletSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <GlassCard style={styles.walletSection}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
+    </GlassCard>
+  );
+}
+
+function WalletStat({ label, value }: { label: string; value: string }) {
+  return (
+    <LinearGradient colors={['rgba(255,255,255,0.1)', 'rgba(21,123,255,0.08)']} style={styles.walletStat}>
+      <Text style={styles.walletStatValue}>{value}</Text>
+      <Text style={styles.walletStatLabel}>{label}</Text>
+    </LinearGradient>
+  );
+}
+
+function PaymentMethodCard({ method }: { method: PaymentMethod }) {
+  return (
+    <View style={styles.paymentMethodCard}>
+      <Text style={styles.paymentMethodIcon}>{method.label.slice(0, 2).toUpperCase()}</Text>
+      <View style={styles.flex}>
+        <Text style={styles.paymentMethodTitle}>{method.label}</Text>
+        <Text style={styles.paymentMethodDetail}>{method.detail}</Text>
+      </View>
+    </View>
+  );
+}
+
+function TransactionCard({ transaction }: { transaction: WalletTransaction }) {
+  const positive = transaction.amount >= 0;
+
+  return (
+    <LinearGradient colors={['rgba(255,255,255,0.1)', 'rgba(124,58,237,0.08)']} style={styles.transactionCard}>
+      <View style={styles.transactionIcon}>
+        <Text style={styles.transactionIconText}>{transaction.type.slice(0, 2).toUpperCase()}</Text>
+      </View>
+      <View style={styles.flex}>
+        <Text style={styles.transactionTitle}>{transaction.title}</Text>
+        <Text style={styles.transactionMeta}>{transaction.status} / {transaction.time}</Text>
+      </View>
+      <Text style={[styles.transactionAmount, positive ? styles.transactionAmountPositive : styles.transactionAmountNegative]}>
+        {positive ? '+' : ''}{formatAmd(transaction.amount)}
+      </Text>
+    </LinearGradient>
+  );
+}
+
+function PaymentBadge({ order }: { order: MarketplaceOrder }) {
+  return (
+    <View style={styles.paymentBadge}>
+      <Text style={styles.paymentBadgeText}>{paymentStatusLabel(order.paymentStatus)}</Text>
     </View>
   );
 }
@@ -1746,6 +2020,226 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 112,
+  },
+  walletHero: {
+    minHeight: 178,
+    marginTop: 22,
+    borderRadius: 28,
+    padding: 20,
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#7C3AED',
+    shadowOpacity: 0.42,
+    shadowRadius: 26,
+    shadowOffset: { width: 0, height: 16 },
+  },
+  walletEyebrow: {
+    color: 'rgba(255,255,255,0.76)',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  walletBalance: {
+    marginTop: 8,
+    color: '#FFFFFF',
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: '900',
+  },
+  walletSubline: {
+    marginTop: 7,
+    color: 'rgba(255,255,255,0.82)',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  secureBadge: {
+    alignSelf: 'flex-start',
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+  },
+  secureBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  walletStatsRow: {
+    marginTop: 14,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  walletStat: {
+    flex: 1,
+    minHeight: 78,
+    borderRadius: 18,
+    padding: 12,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.13)',
+  },
+  walletStatValue: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '900',
+  },
+  walletStatLabel: {
+    marginTop: 4,
+    color: '#AAB0C0',
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '800',
+  },
+  walletSection: {
+    marginTop: 16,
+    borderRadius: 22,
+  },
+  paymentGrid: {
+    marginTop: 12,
+    gap: 10,
+  },
+  paymentMethodCard: {
+    minHeight: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  paymentMethodIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    backgroundColor: 'rgba(21,123,255,0.28)',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  paymentMethodTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  paymentMethodDetail: {
+    marginTop: 3,
+    color: '#AAB0C0',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  promoRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  promoInput: {
+    flex: 1,
+    minHeight: 46,
+    paddingHorizontal: 14,
+    borderRadius: 15,
+    color: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    fontWeight: '800',
+  },
+  promoButton: {
+    minHeight: 46,
+    paddingHorizontal: 16,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#5538FF',
+  },
+  promoList: {
+    marginTop: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  promoPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 12,
+    backgroundColor: 'rgba(65,230,164,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(65,230,164,0.26)',
+  },
+  promoPillText: {
+    color: '#41E6A4',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  transactionCard: {
+    minHeight: 70,
+    borderRadius: 18,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.13)',
+  },
+  transactionIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(168,85,247,0.2)',
+  },
+  transactionIconText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  transactionTitle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  transactionMeta: {
+    marginTop: 4,
+    color: '#AAB0C0',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  transactionAmount: {
+    maxWidth: 96,
+    textAlign: 'right',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '900',
+  },
+  transactionAmountPositive: {
+    color: '#41E6A4',
+  },
+  transactionAmountNegative: {
+    color: '#F9D77E',
+  },
+  paymentBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 11,
+    backgroundColor: 'rgba(65,230,164,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(65,230,164,0.25)',
+  },
+  paymentBadgeText: {
+    color: '#41E6A4',
+    fontSize: 10,
+    fontWeight: '900',
   },
   header: {
     flexDirection: 'row',

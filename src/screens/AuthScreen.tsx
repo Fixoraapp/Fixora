@@ -20,6 +20,7 @@ import { ScreenBackground } from '../components/ScreenBackground';
 import { TextField } from '../components/TextField';
 import { colors, typography } from '../constants/theme';
 import { useLocationContext } from '../context/LocationContext';
+import { authService } from '../services/authService';
 import { AuthMethod, UserRole } from '../types/navigation';
 
 type ClientAuthScreen =
@@ -138,6 +139,8 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [mockUser, setMockUser] = useState<MockUser | null>(null);
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   const appear = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -169,12 +172,24 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     setScreen(nextScreen);
   };
 
+  const runAuth = async (task: () => Promise<void>) => {
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      await task();
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Authentication failed.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const completeAuth = (user: MockUser) => {
     setMockUser(user);
     onAuthenticated();
   };
 
-  const submitClientRegister = () => {
+  const submitClientRegister = () => void runAuth(async () => {
     const nextErrors = validateRequired<ClientRegisterField>(clientRegister, [
       'fullName',
       'phone',
@@ -192,6 +207,15 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       return;
     }
 
+    await authService.signUpWithEmail({
+      role: 'client',
+      authMethod: 'email',
+      fullName: clientRegister.fullName,
+      email: clientRegister.email,
+      phone: clientRegister.phone,
+      password: clientRegister.password,
+      city: selectedLocation.city,
+    });
     setMockUser({
       role: 'client',
       authMethod: 'phone',
@@ -201,9 +225,9 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     });
     setOtp({ code: '' });
     goTo('ClientOtpScreen');
-  };
+  });
 
-  const submitClientLogin = () => {
+  const submitClientLogin = () => void runAuth(async () => {
     const requiredFields: ClientLoginField[] = loginMethod === 'phone' ? ['identifier'] : ['identifier', 'password'];
     const nextErrors = validateRequired<ClientLoginField>(clientLogin, requiredFields);
 
@@ -213,16 +237,18 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     }
 
     if (loginMethod === 'phone') {
+      await authService.signInWithPhone(clientLogin.identifier);
       setMockUser({ role: 'client', authMethod: 'phone', phone: clientLogin.identifier });
       setOtp({ code: '' });
       goTo('ClientOtpScreen');
       return;
     }
 
+    await authService.signInWithEmail(clientLogin.identifier, clientLogin.password);
     completeAuth({ role: 'client', authMethod: 'email', email: clientLogin.identifier });
-  };
+  });
 
-  const submitMasterRegister = () => {
+  const submitMasterRegister = () => void runAuth(async () => {
     const nextErrors = validateRequired<MasterRegisterField>(masterRegister, [
       'fullName',
       'profession',
@@ -243,6 +269,17 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       return;
     }
 
+    await authService.signUpWithEmail({
+      role: 'master',
+      authMethod: 'email',
+      fullName: masterRegister.fullName,
+      email: masterRegister.email,
+      phone: masterRegister.phone,
+      password: masterRegister.password,
+      city: masterRegister.city,
+      profession: masterRegister.profession,
+      serviceCategory: masterRegister.serviceCategory,
+    });
     setMockUser({
       role: 'master',
       authMethod: 'phone',
@@ -252,9 +289,9 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       city: masterRegister.city,
     });
     goTo('MasterProfileSetupScreen');
-  };
+  });
 
-  const submitMasterLogin = () => {
+  const submitMasterLogin = () => void runAuth(async () => {
     const requiredFields: ClientLoginField[] = loginMethod === 'phone' ? ['identifier'] : ['identifier', 'password'];
     const nextErrors = validateRequired<ClientLoginField>(clientLogin, requiredFields);
 
@@ -264,15 +301,17 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     }
 
     if (loginMethod === 'phone') {
+      await authService.signInWithPhone(clientLogin.identifier);
       setMockUser({ role: 'master', authMethod: 'phone', phone: clientLogin.identifier, city: selectedLocation.city });
       setOtp({ code: '' });
       goTo('MasterOtpScreen');
       return;
     }
 
+    await authService.signInWithEmail(clientLogin.identifier, clientLogin.password);
     setMockUser({ role: 'master', authMethod: 'email', email: clientLogin.identifier, city: selectedLocation.city });
     goTo('MasterProfileSetupScreen');
-  };
+  });
 
   const submitForgot = () => {
     const nextErrors = validateRequired<ForgotField>(forgot, ['identifier']);
@@ -286,7 +325,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     goTo(role === 'client' ? 'ClientOtpScreen' : 'MasterOtpScreen');
   };
 
-  const submitOtp = () => {
+  const submitOtp = () => void runAuth(async () => {
     const nextErrors = validateRequired<OtpField>(otp, ['code']);
 
     if (otp.code && otp.code.trim().length < 4) {
@@ -298,13 +337,17 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       return;
     }
 
+    const phone = mockUser?.phone || clientLogin.identifier;
+    if (phone) {
+      await authService.verifyPhoneOtp(phone, otp.code);
+    }
     if (role === 'master') {
       goTo('MasterProfileSetupScreen');
       return;
     }
 
     completeAuth(mockUser ?? { role, authMethod: 'phone' });
-  };
+  });
 
   const submitMasterProfile = () => {
     const nextErrors = validateRequired<MasterProfileField>(masterProfile, [
@@ -331,7 +374,8 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
   };
 
   const continueGuest = () => completeAuth({ role: 'client', authMethod: 'guest', city: selectedLocation.city });
-  const continueSocial = (method: Extract<AuthMethod, 'google' | 'apple'>) => {
+  const continueSocial = (method: Extract<AuthMethod, 'google' | 'apple'>) => void runAuth(async () => {
+    await authService.signInWithOAuth(method);
     const nextUser: MockUser = {
       role,
       authMethod: method,
@@ -346,7 +390,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     }
 
     completeAuth(nextUser);
-  };
+  });
 
   const openPhoneLogin = () => {
     setLoginMethod('phone');
@@ -518,6 +562,8 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
             <FixoraLogo wordmark />
           </View>
           <Animated.View style={animatedStyle}>{content}</Animated.View>
+          {authError ? <Text style={styles.authError}>{authError}</Text> : null}
+          {authLoading ? <Text style={styles.authHint}>Connecting to Supabase...</Text> : null}
         </ScrollView>
       </KeyboardAvoidingView>
     </ScreenBackground>
@@ -1011,6 +1057,21 @@ const styles = StyleSheet.create({
     color: '#FF8AA0',
     fontSize: 12,
     fontWeight: '800',
+  },
+  authError: {
+    marginTop: 14,
+    color: '#FF8AA0',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  authHint: {
+    marginTop: 10,
+    color: '#8EA7FF',
+    fontSize: 12,
+    fontWeight: '900',
+    textAlign: 'center',
   },
   submit: {
     marginTop: 18,

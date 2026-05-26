@@ -2,22 +2,25 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../theme/useTheme';
 
 type ScreenBackgroundProps = {
   children: ReactNode;
 };
 
 export function ScreenBackground({ children }: ScreenBackgroundProps) {
+  const { theme } = useTheme();
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'right', 'bottom', 'left']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.background }]} edges={['top', 'right', 'bottom', 'left']}>
       <LinearGradient
-        colors={['#050816', '#07111F', '#09071D', '#050816']}
+        colors={theme.gradients.appBackground}
         locations={[0, 0.42, 0.76, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={styles.blueGlow} />
-      <View style={styles.purpleGlow} />
-      <View style={styles.grid} />
+      <View style={[styles.blueGlow, { backgroundColor: theme.colors.accent, opacity: theme.isDark ? 0.15 : 0.1 }]} />
+      <View style={[styles.purpleGlow, { opacity: theme.isDark ? 0.14 : 0.08 }]} />
+      <View style={[styles.grid, { borderColor: theme.isDark ? 'rgba(21,123,255,0.16)' : 'rgba(21,123,255,0.1)' }]} />
       {children}
     </SafeAreaView>
   );

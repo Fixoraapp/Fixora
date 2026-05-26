@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, radii } from '../constants/theme';
+import { radii } from '../constants/theme';
+import { useTheme } from '../theme/useTheme';
 
 type GlassCardProps = {
   children: ReactNode;
@@ -10,7 +11,17 @@ type GlassCardProps = {
 };
 
 export function GlassCard({ children, onPress, selected = false, style }: GlassCardProps) {
-  const cardStyle = [styles.card, selected && styles.selected, style];
+  const { theme } = useTheme();
+  const cardStyle = [
+    styles.card,
+    {
+      backgroundColor: selected ? `${theme.colors.accent}24` : theme.colors.card,
+      borderColor: selected ? theme.colors.accent : theme.colors.stroke,
+      shadowColor: theme.colors.glow,
+      shadowOpacity: theme.isDark ? 0.12 : 0.08,
+    },
+    style,
+  ];
 
   if (onPress) {
     return (
@@ -27,13 +38,10 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radii.lg,
     padding: 16,
-    backgroundColor: colors.panel,
     borderWidth: 1,
-    borderColor: colors.stroke,
-  },
-  selected: {
-    backgroundColor: 'rgba(8,168,255,0.16)',
-    borderColor: colors.blue,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
   pressed: {
     opacity: 0.9,

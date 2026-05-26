@@ -23,6 +23,18 @@ type LocationSelectionScreenProps = {
   onComplete: (location: LocationSelection) => void;
 };
 
+function getPrimaryRegion(country: Country) {
+  return (
+    country.regions.find((item) => item.name_en === country.capital_en || item.capital_en === country.capital_en) ??
+    getTopLevelRegions(country.iso2)[0] ??
+    country.regions[0]
+  );
+}
+
+function getPrimaryCity(region: Region) {
+  return getCitiesForRegion(region).find((item) => item.name_en === region.capital_en) ?? getCitiesForRegion(region)[0];
+}
+
 export default function LocationSelectionScreen({ onComplete }: LocationSelectionScreenProps) {
   const { selectedLocation, setSelectedLocation } = useLocationContext();
   const initialCountry = countries.find((item) => item.iso2 === selectedLocation.countryCode) ?? countries[0];
@@ -30,9 +42,8 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
     initialCountry.regions.find(
       (item) => item.name_en === selectedLocation.region || item.name_ru === selectedLocation.region,
     ) ??
-    getTopLevelRegions(initialCountry.iso2)[0] ??
-    initialCountry.regions[0];
-  const initialCity = getCitiesForRegion(initialRegion)[0];
+    getPrimaryRegion(initialCountry);
+  const initialCity = getPrimaryCity(initialRegion);
 
   const [level, setLevel] = useState<LocationLevel>('country');
   const [country, setCountry] = useState<Country>(initialCountry);
@@ -106,10 +117,10 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
 
   const selectCountry = (countryIso2: string) => {
     const nextCountry = countries.find((candidate) => candidate.iso2 === countryIso2) ?? countries[0];
-    const nextRegion = getTopLevelRegions(nextCountry.iso2)[0] ?? nextCountry.regions[0];
+    const nextRegion = getPrimaryRegion(nextCountry);
     const nextChildren = getChildRegions(nextRegion.id);
     const nextFinalRegion = nextChildren[0] ?? nextRegion;
-    const nextCity = getCitiesForRegion(nextFinalRegion)[0];
+    const nextCity = getPrimaryCity(nextFinalRegion);
 
     setCountry(nextCountry);
     setParentRegion(nextChildren.length > 0 ? nextRegion : undefined);
@@ -127,13 +138,13 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
       const firstSubject = children[0];
       setParentRegion(selectedRegion);
       setRegion(firstSubject);
-      setCity(getCitiesForRegion(firstSubject)[0]);
+      setCity(getPrimaryCity(firstSubject));
       setQuery('');
       return;
     }
 
     setRegion(selectedRegion);
-    setCity(getCitiesForRegion(selectedRegion)[0]);
+    setCity(getPrimaryCity(selectedRegion));
     setQuery('');
     setLevel('city');
   };
@@ -164,7 +175,7 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
       if (getChildRegions(region.id).length > 0) {
         setParentRegion(region);
         setRegion(getChildRegions(region.id)[0]);
-        setCity(getCitiesForRegion(getChildRegions(region.id)[0])[0]);
+        setCity(getPrimaryCity(getChildRegions(region.id)[0]));
         setQuery('');
         return;
       }
@@ -178,6 +189,11 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
       country: country.name_en,
       region: region.name_en,
       city: city.name_en,
+      address: `${city.name_en} center, mock address`,
+      district: region.name_en,
+      street: `${city.name_en} center`,
+      postalCode: '',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       countryCode: country.iso2,
       currency: country.currency,
       language: country.language,

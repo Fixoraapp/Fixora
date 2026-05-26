@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { useTheme } from '../theme/useTheme';
 
 type GradientButtonProps = {
   title: string;
@@ -11,21 +12,29 @@ type GradientButtonProps = {
 };
 
 export function GradientButton({ title, onPress, style, children, disabled = false }: GradientButtonProps) {
+  const { theme } = useTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.shell, disabled && styles.disabled, pressed && styles.pressed, style]}
+      style={({ pressed }) => [
+        styles.shell,
+        { shadowColor: theme.colors.glow, borderColor: theme.isDark ? 'rgba(255,255,255,0.22)' : 'rgba(21,123,255,0.2)' },
+        disabled && styles.disabled,
+        pressed && styles.pressed,
+        style,
+      ]}
     >
       <LinearGradient
-        colors={['#157BFF', '#6945FF', '#A855F7']}
+        colors={theme.gradients.primaryButton}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
         {children}
-        <Text style={styles.text}>{title}</Text>
+        <Text style={[styles.text, { fontSize: theme.typography.body + 1 }]}>{title}</Text>
       </LinearGradient>
     </Pressable>
   );
@@ -38,7 +47,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.22)',
-    shadowColor: '#7C3AED',
     shadowOpacity: 0.42,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
