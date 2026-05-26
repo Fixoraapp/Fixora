@@ -1,3 +1,5 @@
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo, useRef } from 'react';
 import {
@@ -10,37 +12,42 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const COLORS = {
-  navy: '#050815',
-  navy2: '#080D20',
-  surface: '#101423',
+  ink: '#020513',
+  navy: '#050817',
   blue: '#08A8FF',
-  blueDeep: '#0A39FF',
-  purple: '#8B35FF',
-  purpleDeep: '#4011A8',
+  blueDeep: '#173BFF',
+  violet: '#9A32FF',
+  violetDeep: '#39108F',
   white: '#F8FBFF',
-  muted: '#AEB8D0',
+  mist: '#AAB7D6',
 };
 
-const PARTICLES = [
-  { x: -118, y: -16, size: 6, delay: 0, color: COLORS.blue },
-  { x: -88, y: 20, size: 4, delay: 24, color: COLORS.purple },
-  { x: -54, y: -34, size: 5, delay: 48, color: COLORS.blue },
-  { x: -24, y: 28, size: 4, delay: 72, color: '#737B94' },
-  { x: 24, y: -38, size: 5, delay: 96, color: COLORS.purple },
-  { x: 58, y: 18, size: 4, delay: 120, color: COLORS.blue },
-  { x: 90, y: -18, size: 6, delay: 144, color: '#6F7890' },
-  { x: 120, y: 22, size: 4, delay: 168, color: COLORS.purple },
-];
+const STAR_FIELD = Array.from({ length: 34 }, (_, index) => ({
+  left: `${(index * 29) % 100}%`,
+  top: `${(index * 47) % 72}%`,
+  size: 1 + (index % 3),
+  opacity: 0.2 + (index % 5) * 0.1,
+}));
+
+const DEBRIS = Array.from({ length: 18 }, (_, index) => ({
+  angle: (index / 18) * Math.PI * 2,
+  distance: 42 + (index % 6) * 16,
+  size: 3 + (index % 4),
+  delay: index * 24,
+  color: index % 3 === 0 ? COLORS.blue : index % 3 === 1 ? COLORS.violet : '#D8E6FF',
+}));
 
 const CRACKS = [
-  { width: 92, left: '50%', bottom: 82, rotate: '-18deg', tx: -6 },
-  { width: 74, left: '50%', bottom: 82, rotate: '24deg', tx: -62 },
-  { width: 58, left: '50%', bottom: 76, rotate: '62deg', tx: 28 },
-  { width: 46, left: '50%', bottom: 76, rotate: '-52deg', tx: -36 },
-  { width: 36, left: '50%', bottom: 72, rotate: '8deg', tx: -112 },
-  { width: 34, left: '50%', bottom: 72, rotate: '-7deg', tx: 78 },
+  { width: 122, tx: -8, ty: 0, rotate: '-12deg' },
+  { width: 94, tx: -82, ty: 16, rotate: '22deg' },
+  { width: 82, tx: 42, ty: 18, rotate: '-30deg' },
+  { width: 64, tx: -118, ty: 38, rotate: '-4deg' },
+  { width: 58, tx: 96, ty: 38, rotate: '7deg' },
+  { width: 54, tx: -34, ty: 44, rotate: '62deg' },
+  { width: 50, tx: 18, ty: 48, rotate: '-66deg' },
 ] as const;
 
 type SplashScreenProps = {
@@ -48,31 +55,55 @@ type SplashScreenProps = {
 };
 
 export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
+  const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const compact = height < 720 || width < 380;
-  const logoSize = Math.min(width * 0.54, compact ? 184 : 226);
+  const logoSize = Math.min(width * 0.48, compact ? 168 : 210);
 
-  const fall = useRef(new Animated.Value(-height * 0.56)).current;
-  const logoScale = useRef(new Animated.Value(1.05)).current;
-  const logoTopShift = useRef(new Animated.Value(0)).current;
-  const logoRotate = useRef(new Animated.Value(-5)).current;
+  const fall = useRef(new Animated.Value(-height * 0.58)).current;
+  const logoScale = useRef(new Animated.Value(0.9)).current;
+  const logoLift = useRef(new Animated.Value(0)).current;
+  const logoRotate = useRef(new Animated.Value(-8)).current;
+  const trail = useRef(new Animated.Value(1)).current;
   const impact = useRef(new Animated.Value(0)).current;
   const shake = useRef(new Animated.Value(0)).current;
-  const content = useRef(new Animated.Value(0)).current;
-  const button = useRef(new Animated.Value(0)).current;
-  const glow = useRef(new Animated.Value(0)).current;
-  const surfacePulse = useRef(new Animated.Value(0)).current;
-  const particles = useMemo(() => PARTICLES.map(() => new Animated.Value(0)), []);
+  const stabilize = useRef(new Animated.Value(0)).current;
+  const brand = useRef(new Animated.Value(0)).current;
+  const cta = useRef(new Animated.Value(0)).current;
+  const stars = useRef(new Animated.Value(0)).current;
+  const debris = useMemo(() => DEBRIS.map(() => new Animated.Value(0)), []);
 
   useEffect(() => {
-    fall.setValue(-height * 0.56);
+    fall.setValue(-height * 0.58);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(stars, {
+          toValue: 1,
+          duration: 2400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(stars, {
+          toValue: 0,
+          duration: 2400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
 
     Animated.sequence([
       Animated.delay(220),
       Animated.parallel([
         Animated.timing(fall, {
           toValue: 0,
-          duration: 820,
+          duration: 860,
+          easing: Easing.bezier(0.12, 0.86, 0.24, 1),
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoScale, {
+          toValue: 1.08,
+          duration: 860,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -82,18 +113,24 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
+        Animated.timing(trail, {
+          toValue: 0,
+          duration: 920,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
       ]),
       Animated.parallel([
         Animated.sequence([
           Animated.timing(shake, {
             toValue: 1,
-            duration: 70,
+            duration: 90,
             easing: Easing.linear,
             useNativeDriver: true,
           }),
           Animated.timing(shake, {
             toValue: 0,
-            duration: 260,
+            duration: 330,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
@@ -101,177 +138,161 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         Animated.sequence([
           Animated.timing(impact, {
             toValue: 1,
-            duration: 150,
+            duration: 170,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(impact, {
-            toValue: 0.78,
-            duration: 520,
+            toValue: 0.56,
+            duration: 680,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
         ]),
-        Animated.sequence([
-          Animated.timing(glow, {
-            toValue: 1,
-            duration: 220,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(glow, {
-            toValue: 0.36,
-            duration: 520,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.sequence([
-          Animated.timing(surfacePulse, {
-            toValue: 1,
-            duration: 180,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(surfacePulse, {
-            toValue: 0,
-            duration: 560,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-        ]),
-        ...particles.map((particle, index) =>
+        ...debris.map((item, index) =>
           Animated.sequence([
-            Animated.delay(PARTICLES[index].delay),
-            Animated.timing(particle, {
+            Animated.delay(DEBRIS[index].delay),
+            Animated.timing(item, {
               toValue: 1,
-              duration: 620,
+              duration: 760,
               easing: Easing.out(Easing.cubic),
               useNativeDriver: true,
             }),
           ]),
         ),
       ]),
-      Animated.delay(120),
       Animated.parallel([
-        Animated.timing(logoScale, {
-          toValue: compact ? 0.43 : 0.48,
-          duration: 720,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoTopShift, {
-          toValue: compact ? -height * 0.22 : -height * 0.25,
-          duration: 720,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(content, {
+        Animated.timing(stabilize, {
           toValue: 1,
+          duration: 740,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoScale, {
+          toValue: 0.58,
           duration: 760,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoLift, {
+          toValue: compact ? -height * 0.2 : -height * 0.23,
+          duration: 760,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.timing(brand, {
+          toValue: 1,
+          duration: 720,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(cta, {
+          toValue: 1,
           delay: 260,
+          duration: 520,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
-      Animated.timing(button, {
-        toValue: 1,
-        duration: 520,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
     ]).start();
-  }, [
-    button,
-    compact,
-    content,
-    fall,
-    glow,
-    height,
-    impact,
-    logoRotate,
-    logoScale,
-    logoTopShift,
-    particles,
-    shake,
-    surfacePulse,
-  ]);
+  }, [compact, cta, debris, fall, height, impact, logoLift, logoRotate, logoScale, shake, stabilize, stars, trail]);
 
-  const stageShake = shake.interpolate({
-    inputRange: [0, 0.2, 0.4, 0.6, 0.8, 1],
-    outputRange: [0, -8, 7, -5, 3, 0],
+  const sceneShake = shake.interpolate({
+    inputRange: [0, 0.18, 0.34, 0.5, 0.7, 1],
+    outputRange: [0, -10, 8, -6, 4, 0],
   });
-
-  const rotate = logoRotate.interpolate({
-    inputRange: [-5, 0],
-    outputRange: ['-5deg', '0deg'],
-  });
-
-  const contentTranslate = content.interpolate({
-    inputRange: [0, 1],
-    outputRange: [22, 0],
-  });
-
-  const buttonTranslate = button.interpolate({
-    inputRange: [0, 1],
-    outputRange: [18, 0],
-  });
-
-  const impactScale = impact.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.78, 1.18],
-  });
-
-  const surfaceScaleX = surfacePulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.78, 1.08],
-  });
+  const logoSpin = logoRotate.interpolate({ inputRange: [-8, 0], outputRange: ['-8deg', '0deg'] });
+  const shockScale = impact.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1.34] });
+  const shockOpacity = impact.interpolate({ inputRange: [0, 0.14, 1], outputRange: [0, 1, 0.22] });
+  const energyScale = stabilize.interpolate({ inputRange: [0, 1], outputRange: [0.64, 1.04] });
+  const brandY = brand.interpolate({ inputRange: [0, 1], outputRange: [24, 0] });
+  const ctaY = cta.interpolate({ inputRange: [0, 1], outputRange: [18, 0] });
+  const starPulse = stars.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] });
 
   return (
     <View style={styles.root}>
       <StatusBar style="light" translucent />
-      <Animated.View style={[styles.stage, { transform: [{ translateX: stageShake }] }]}>
-        <View style={styles.backgroundHalo} />
-        <View style={styles.topAura} />
+      <LinearGradient
+        colors={['#020513', '#07091B', '#090A1F', '#020513']}
+        locations={[0, 0.36, 0.72, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <Animated.View style={[styles.scene, { transform: [{ translateX: sceneShake }] }]}>
+        <View style={styles.skyGlow} />
+        <View style={styles.purpleHaze} />
+        {STAR_FIELD.map((star, index) => (
+          <Animated.View
+            key={`star-${index}`}
+            style={[
+              styles.star,
+              {
+                left: star.left,
+                top: star.top,
+                width: star.size,
+                height: star.size,
+                opacity: starPulse,
+              },
+            ]}
+          />
+        ))}
+
+        <Animated.View style={[styles.trail, { opacity: trail, transform: [{ translateY: fall }] }]}>
+          <LinearGradient
+            colors={['rgba(8,168,255,0)', 'rgba(8,168,255,0.72)', 'rgba(154,50,255,0)']}
+            style={styles.trailBeam}
+          />
+          <LinearGradient
+            colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0)']}
+            style={styles.trailCore}
+          />
+        </Animated.View>
 
         <Animated.View
           style={[
-            styles.logoWrap,
+            styles.logoLayer,
             {
               width: logoSize,
               height: logoSize,
               transform: [
                 { translateY: fall },
-                { translateY: logoTopShift },
+                { translateY: logoLift },
                 { scale: logoScale },
-                { rotate },
+                { rotate: logoSpin },
               ],
             },
           ]}
         >
-          <Animated.View
-            style={[
-              styles.logoGlow,
-              {
-                opacity: glow,
-                transform: [{ scale: impactScale }],
-              },
-            ]}
-          />
+          <View style={styles.logoAura} />
           <FixoraMark size={logoSize} />
         </Animated.View>
 
-        <View style={[styles.surface, { bottom: compact ? 126 : 150 }]}>
+        <View style={[styles.ground, { bottom: compact ? 122 : 150 }]}>
+          <LinearGradient
+            colors={['rgba(6,10,25,0)', 'rgba(23,59,255,0.34)', 'rgba(154,50,255,0.16)', 'rgba(6,10,25,0)']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.horizon}
+          />
           <Animated.View
             style={[
-              styles.surfaceGlow,
+              styles.shockwave,
               {
-                opacity: surfacePulse,
-                transform: [{ scaleX: surfaceScaleX }],
+                opacity: shockOpacity,
+                transform: [{ scaleX: shockScale }, { scaleY: impact }],
               },
             ]}
           />
-          <View style={styles.asphaltLine} />
+          <Animated.View
+            style={[
+              styles.energyRing,
+              {
+                opacity: stabilize,
+                transform: [{ scale: energyScale }],
+              },
+            ]}
+          />
           {CRACKS.map((crack, index) => (
             <Animated.View
               key={`crack-${index}`}
@@ -279,64 +300,57 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
                 styles.crack,
                 {
                   width: crack.width,
-                  left: crack.left,
-                  bottom: crack.bottom,
                   opacity: impact,
-                  transform: [{ translateX: crack.tx }, { rotate: crack.rotate }],
+                  transform: [{ translateX: crack.tx }, { translateY: crack.ty }, { rotate: crack.rotate }],
                 },
               ]}
             />
           ))}
-          {PARTICLES.map((particle, index) => {
-            const progress = particles[index];
+          {DEBRIS.map((particle, index) => {
+            const progress = debris[index];
             const translateX = progress.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, particle.x],
+              outputRange: [0, Math.cos(particle.angle) * particle.distance],
             });
             const translateY = progress.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, particle.y],
+              outputRange: [0, Math.sin(particle.angle) * particle.distance - 28],
             });
             const opacity = progress.interpolate({
-              inputRange: [0, 0.2, 1],
+              inputRange: [0, 0.18, 1],
               outputRange: [0, 1, 0],
             });
-            const scale = progress.interpolate({
-              inputRange: [0, 0.4, 1],
-              outputRange: [0.4, 1, 0.2],
-            });
-
             return (
               <Animated.View
-                key={`particle-${index}`}
+                key={`debris-${index}`}
                 style={[
-                  styles.particle,
+                  styles.debris,
                   {
                     width: particle.size,
                     height: particle.size,
-                    borderRadius: particle.size / 2,
                     backgroundColor: particle.color,
                     opacity,
-                    transform: [{ translateX }, { translateY }, { scale }],
+                    transform: [{ translateX }, { translateY }],
                   },
                 ]}
               />
             );
           })}
+          <Animated.View style={[styles.smoke, { opacity: impact }]} />
         </View>
 
         <Animated.View
           style={[
-            styles.wordmark,
+            styles.brand,
             {
-              opacity: content,
-              transform: [{ translateY: contentTranslate }],
-              top: compact ? height * 0.43 : height * 0.45,
+              top: compact ? height * 0.43 : height * 0.44,
+              opacity: brand,
+              transform: [{ translateY: brandY }],
             },
           ]}
         >
           <Text style={[styles.title, { fontSize: compact ? 58 : 72 }]}>Fixora</Text>
-          <Text style={[styles.tagline, { fontSize: compact ? 18 : 21 }]}>
+          <Text style={[styles.tagline, { fontSize: compact ? 16 : 18 }]}>
             Find trusted professionals instantly.
           </Text>
         </Animated.View>
@@ -345,20 +359,29 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
           style={[
             styles.buttonWrap,
             {
-              opacity: button,
-              transform: [{ translateY: buttonTranslate }],
-              bottom: Platform.select({ ios: compact ? 46 : 58, android: 42, default: 46 }),
+              bottom: Math.max(insets.bottom + 28, compact ? 36 : 52),
+              opacity: cta,
+              transform: [{ translateY: ctaY }],
             },
           ]}
         >
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Get Started"
+            accessibilityLabel="Start Fixora"
             onPress={onGetStarted}
-            android_ripple={{ color: 'rgba(255,255,255,0.16)', borderless: false }}
-            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            android_ripple={{ color: 'rgba(255,255,255,0.16)' }}
+            style={({ pressed }) => [styles.buttonShell, pressed && styles.buttonPressed]}
           >
-            <Text style={styles.buttonText}>Get Started</Text>
+            <BlurView intensity={Platform.OS === 'android' ? 34 : 70} tint="dark" style={styles.buttonBlur}>
+              <LinearGradient
+                colors={['rgba(20,92,255,0.96)', 'rgba(109,58,255,0.98)', 'rgba(184,47,255,0.94)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradient}
+              >
+                <Text style={styles.buttonText}>Start Fixora</Text>
+              </LinearGradient>
+            </BlurView>
           </Pressable>
         </Animated.View>
       </Animated.View>
@@ -367,68 +390,60 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
 }
 
 function FixoraMark({ size }: { size: number }) {
-  const stemWidth = size * 0.32;
-  const barHeight = size * 0.25;
-
   return (
     <View style={[styles.mark, { width: size, height: size }]}>
-      <View
+      <LinearGradient
+        colors={['#06C8FF', '#1571FF', '#8E36FF']}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.88, y: 1 }}
         style={[
-          styles.markStem,
+          styles.topBlade,
           {
-            width: stemWidth,
-            height: size * 0.78,
-            left: size * 0.08,
-            top: size * 0.12,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.markTopBlade,
-          {
-            width: size * 0.84,
-            height: barHeight,
-            left: size * 0.08,
-            top: size * 0.08,
-            borderTopRightRadius: size * 0.21,
-            borderBottomRightRadius: size * 0.21,
-            borderTopLeftRadius: size * 0.08,
-            borderBottomLeftRadius: size * 0.3,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.markMidBlade,
-          {
-            width: size * 0.7,
-            height: barHeight * 0.82,
-            left: size * 0.14,
-            top: size * 0.4,
-            borderTopRightRadius: size * 0.16,
-            borderBottomRightRadius: size * 0.16,
-            borderTopLeftRadius: size * 0.28,
-            borderBottomLeftRadius: size * 0.08,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.markLowerBlade,
-          {
-            width: size * 0.34,
-            height: size * 0.46,
-            left: size * 0.12,
-            top: size * 0.48,
+            width: size * 0.72,
+            height: size * 0.22,
+            left: size * 0.16,
+            top: size * 0.14,
             borderTopRightRadius: size * 0.18,
-            borderBottomLeftRadius: size * 0.2,
-            borderBottomRightRadius: size * 0.3,
+            borderBottomRightRadius: size * 0.18,
+            borderTopLeftRadius: size * 0.05,
+            borderBottomLeftRadius: size * 0.18,
           },
         ]}
       />
-      <Text style={[styles.markLetter, { fontSize: size * 0.78, lineHeight: size * 0.82 }]}>F</Text>
-      <View style={styles.markShine} />
+      <LinearGradient
+        colors={['#16B8FF', '#6346FF', '#B02BFF']}
+        start={{ x: 0.12, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+        style={[
+          styles.midBlade,
+          {
+            width: size * 0.58,
+            height: size * 0.2,
+            left: size * 0.16,
+            top: size * 0.39,
+            borderTopRightRadius: size * 0.15,
+            borderBottomRightRadius: size * 0.15,
+            borderTopLeftRadius: size * 0.2,
+            borderBottomLeftRadius: size * 0.05,
+          },
+        ]}
+      />
+      <LinearGradient
+        colors={['#8E36FF', '#B02BFF', '#4C12C8']}
+        style={[
+          styles.lowerBlade,
+          {
+            width: size * 0.3,
+            height: size * 0.38,
+            left: size * 0.17,
+            top: size * 0.49,
+            borderTopRightRadius: size * 0.13,
+            borderBottomRightRadius: size * 0.24,
+            borderBottomLeftRadius: size * 0.2,
+          },
+        ]}
+      />
+      <View style={[styles.shine, { left: size * 0.22, top: size * 0.19, width: size * 0.48 }]} />
     </View>
   );
 }
@@ -436,142 +451,164 @@ function FixoraMark({ size }: { size: number }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.navy,
+    backgroundColor: COLORS.ink,
   },
-  stage: {
+  scene: {
     flex: 1,
-    overflow: 'hidden',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.navy,
+    overflow: 'hidden',
   },
-  backgroundHalo: {
+  skyGlow: {
     position: 'absolute',
-    width: 520,
-    height: 520,
-    borderRadius: 260,
+    top: -120,
+    width: 420,
+    height: 420,
+    borderRadius: 210,
     backgroundColor: COLORS.blueDeep,
-    opacity: 0.14,
-    transform: [{ translateY: -96 }, { scaleX: 0.72 }],
+    opacity: 0.17,
   },
-  topAura: {
+  purpleHaze: {
     position: 'absolute',
-    top: -180,
-    width: 460,
-    height: 360,
-    borderRadius: 230,
-    backgroundColor: COLORS.purpleDeep,
-    opacity: 0.18,
+    bottom: 68,
+    width: 520,
+    height: 260,
+    borderRadius: 260,
+    backgroundColor: COLORS.violetDeep,
+    opacity: 0.22,
+    transform: [{ scaleX: 1.2 }],
   },
-  logoWrap: {
+  star: {
     position: 'absolute',
+    borderRadius: 3,
+    backgroundColor: COLORS.white,
+  },
+  trail: {
+    position: 'absolute',
+    top: 0,
+    width: 118,
+    height: '62%',
+    transform: [{ rotate: '13deg' }],
+  },
+  trailBeam: {
+    position: 'absolute',
+    left: 18,
+    right: 18,
+    top: -34,
+    bottom: 0,
+    borderRadius: 80,
+  },
+  trailCore: {
+    position: 'absolute',
+    left: 52,
+    right: 52,
+    top: 0,
+    bottom: 16,
+    borderRadius: 18,
+  },
+  logoLayer: {
+    position: 'absolute',
+    top: '30%',
     zIndex: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoGlow: {
+  logoAura: {
     position: 'absolute',
-    width: '86%',
-    height: '86%',
+    width: '82%',
+    height: '82%',
     borderRadius: 999,
     backgroundColor: COLORS.blue,
-    shadowColor: COLORS.purple,
-    shadowOpacity: 0.92,
-    shadowRadius: 34,
+    opacity: 0.18,
+    shadowColor: COLORS.violet,
+    shadowOpacity: 1,
+    shadowRadius: 38,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 22,
+    elevation: 28,
   },
   mark: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markStem: {
-    position: 'absolute',
-    borderTopLeftRadius: 24,
-    borderBottomLeftRadius: 34,
-    borderBottomRightRadius: 58,
-    backgroundColor: COLORS.purpleDeep,
-    shadowColor: COLORS.purple,
-    shadowOpacity: 0.56,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
-  },
-  markTopBlade: {
-    position: 'absolute',
-    backgroundColor: COLORS.blue,
     shadowColor: COLORS.blue,
-    shadowOpacity: 0.72,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 12,
-  },
-  markMidBlade: {
-    position: 'absolute',
-    backgroundColor: COLORS.purple,
-    shadowColor: COLORS.purple,
     shadowOpacity: 0.68,
-    shadowRadius: 18,
+    shadowRadius: 28,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 11,
   },
-  markLowerBlade: {
+  topBlade: {
     position: 'absolute',
-    backgroundColor: COLORS.purpleDeep,
-    transform: [{ rotate: '-15deg' }],
   },
-  markLetter: {
-    color: 'rgba(255,255,255,0.09)',
-    fontWeight: '900',
-    letterSpacing: 0,
-  },
-  markShine: {
+  midBlade: {
     position: 'absolute',
-    top: '12%',
-    left: '18%',
-    width: '66%',
+  },
+  lowerBlade: {
+    position: 'absolute',
+    transform: [{ rotate: '-14deg' }],
+  },
+  shine: {
+    position: 'absolute',
     height: 2,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.42)',
+    backgroundColor: 'rgba(255,255,255,0.46)',
   },
-  surface: {
+  ground: {
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 180,
+    height: 220,
     alignItems: 'center',
-    justifyContent: 'flex-start',
   },
-  surfaceGlow: {
-    width: 290,
-    height: 46,
-    borderRadius: 145,
-    backgroundColor: COLORS.blue,
-    opacity: 0.28,
-    transform: [{ scaleX: 1 }],
+  horizon: {
+    position: 'absolute',
+    top: 36,
+    width: '96%',
+    height: 2,
   },
-  asphaltLine: {
-    width: '82%',
-    height: 1,
-    backgroundColor: COLORS.surface,
-    opacity: 0.96,
+  shockwave: {
+    position: 'absolute',
+    top: 26,
+    width: 250,
+    height: 58,
+    borderRadius: 125,
+    borderWidth: 2,
+    borderColor: 'rgba(103,163,255,0.86)',
+    backgroundColor: 'rgba(8,168,255,0.08)',
+  },
+  energyRing: {
+    position: 'absolute',
+    top: 22,
+    width: 276,
+    height: 72,
+    borderRadius: 138,
+    borderWidth: 2,
+    borderColor: 'rgba(154,50,255,0.72)',
+    shadowColor: COLORS.blue,
+    shadowOpacity: 0.64,
+    shadowRadius: 22,
   },
   crack: {
     position: 'absolute',
+    top: 60,
     height: 2,
-    borderRadius: 1,
-    backgroundColor: 'rgba(208,224,255,0.72)',
+    borderRadius: 2,
+    backgroundColor: 'rgba(188,213,255,0.72)',
   },
-  particle: {
+  debris: {
     position: 'absolute',
-    top: 40,
+    top: 58,
     left: '50%',
+    borderRadius: 8,
   },
-  wordmark: {
+  smoke: {
+    position: 'absolute',
+    top: -6,
+    width: 330,
+    height: 120,
+    borderRadius: 165,
+    backgroundColor: 'rgba(113,92,174,0.22)',
+    transform: [{ scaleX: 1.28 }],
+  },
+  brand: {
     position: 'absolute',
     left: 24,
     right: 24,
-    zIndex: 3,
+    zIndex: 5,
     alignItems: 'center',
   },
   title: {
@@ -579,48 +616,57 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0,
     textAlign: 'center',
-    textShadowColor: 'rgba(8,168,255,0.38)',
+    textShadowColor: 'rgba(8,168,255,0.55)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 18,
+    textShadowRadius: 22,
   },
   tagline: {
+    maxWidth: 280,
     marginTop: 8,
     color: COLORS.white,
     fontWeight: '700',
-    letterSpacing: 0,
+    lineHeight: 24,
     textAlign: 'center',
-    textShadowColor: 'rgba(139,53,255,0.72)',
+    textShadowColor: 'rgba(154,50,255,0.75)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    textShadowRadius: 12,
   },
   buttonWrap: {
     position: 'absolute',
     left: 24,
     right: 24,
-    zIndex: 5,
+    zIndex: 8,
     alignItems: 'center',
   },
-  button: {
-    minWidth: 212,
+  buttonShell: {
+    width: '100%',
+    maxWidth: 332,
     height: 58,
     borderRadius: 29,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.72)',
-    shadowColor: COLORS.blue,
-    shadowOpacity: 0.35,
-    shadowRadius: 22,
+    borderColor: 'rgba(255,255,255,0.34)',
+    shadowColor: COLORS.violet,
+    shadowOpacity: 0.48,
+    shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
-    elevation: 12,
+    elevation: 18,
   },
   buttonPressed: {
-    transform: [{ scale: 0.98 }],
-    opacity: 0.92,
+    transform: [{ scale: 0.985 }],
+    opacity: 0.94,
+  },
+  buttonBlur: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  buttonGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
-    color: COLORS.navy2,
+    color: COLORS.white,
     fontSize: 17,
     fontWeight: '800',
     letterSpacing: 0,
