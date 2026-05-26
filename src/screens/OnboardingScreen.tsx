@@ -1,55 +1,40 @@
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
-  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const COLORS = {
-  ink: '#020513',
-  navy: '#060918',
-  blue: '#0B7CFF',
-  cyan: '#12C8FF',
-  violet: '#9A32FF',
-  violetDeep: '#35108A',
-  white: '#F8FBFF',
-  muted: '#AEB9D4',
-  dim: '#65718D',
-};
+import { FloatingIcon } from '../components/FloatingIcon';
+import { GradientButton } from '../components/GradientButton';
+import { GlassCard } from '../components/GlassCard';
+import { ScreenBackground } from '../components/ScreenBackground';
+import { StepDots } from '../components/StepDots';
 
 const slides = [
   {
-    title: 'Find trusted professionals instantly',
-    body: 'Thousands of verified masters, companies, and premium specialists are ready nearby.',
-    accent: 'Verified network',
+    title: 'Find trusted professionals instantly.',
+    subtitle: 'Thousands of verified specialists are ready to help in your city.',
+    cta: 'Next',
+    kind: 'network',
   },
   {
-    title: 'Book the right service with confidence',
-    body: 'Compare categories, availability, and local options in a calm premium workflow.',
-    accent: 'Smart matching',
+    title: 'Book services near you.',
+    subtitle: 'Choose your city, compare professionals, and book safely.',
+    cta: 'Next',
+    kind: 'map',
   },
   {
-    title: 'Your city, your trusted Fixora team',
-    body: 'Set location once, choose your role, and continue into the real marketplace.',
-    accent: 'Ready to start',
+    title: 'Work with verified experts.',
+    subtitle: 'Chat, call, pay securely, and track every order in real time.',
+    cta: 'Get Started',
+    kind: 'verified',
   },
-];
-
-const iconRows = [
-  { label: 'TOOLS', x: -112, y: 12, scale: 1.07, colors: ['#2A6CFF', '#9A32FF'] },
-  { label: 'HOME', x: -48, y: -28, scale: 0.82, colors: ['#183EFF', '#12C8FF'] },
-  { label: 'AUTO', x: 88, y: 2, scale: 1.02, colors: ['#9A32FF', '#EA48FF'] },
-  { label: 'CLEAN', x: 18, y: 56, scale: 0.9, colors: ['#2C4CFF', '#8E36FF'] },
-  { label: 'BUILD', x: 122, y: -48, scale: 0.66, colors: ['#10276D', '#5532FF'] },
-  { label: 'CARE', x: -132, y: 72, scale: 0.68, colors: ['#10276D', '#8E36FF'] },
 ] as const;
 
 type OnboardingScreenProps = {
@@ -57,476 +42,433 @@ type OnboardingScreenProps = {
 };
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
-  const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const compact = height < 720 || width < 380;
   const [index, setIndex] = useState(0);
-  const isLast = index === slides.length - 1;
+  const page = useRef(new Animated.Value(1)).current;
   const slide = slides[index];
 
-  const float = useRef(new Animated.Value(0)).current;
-  const page = useRef(new Animated.Value(1)).current;
-  const icons = useMemo(() => iconRows.map(() => new Animated.Value(0)), []);
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(float, {
-          toValue: 1,
-          duration: 2600,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(float, {
-          toValue: 0,
-          duration: 2600,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]),
-    ).start();
-
-    Animated.stagger(
-      70,
-      icons.map((item) =>
-        Animated.timing(item, {
-          toValue: 1,
-          duration: 620,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ),
-    ).start();
-  }, [float, icons]);
-
-  useEffect(() => {
+  const restartPage = () => {
     page.setValue(0);
     Animated.timing(page, {
       toValue: 1,
-      duration: 460,
+      duration: 420,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }, [index, page]);
+  };
 
-  const visualLift = float.interpolate({ inputRange: [0, 1], outputRange: [0, -12] });
-  const ringScale = float.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.04] });
-  const copyY = page.interpolate({ inputRange: [0, 1], outputRange: [18, 0] });
-  const copyOpacity = page.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+  const goTo = (nextIndex: number) => {
+    setIndex(nextIndex);
+    restartPage();
+  };
 
-  const continueFlow = () => {
-    if (isLast) {
+  const goNext = () => {
+    if (index === slides.length - 1) {
       onComplete();
       return;
     }
-    setIndex((current) => current + 1);
+    goTo(index + 1);
   };
 
-  return (
-    <SafeAreaView style={styles.safe} edges={['top', 'right', 'bottom', 'left']}>
-      <LinearGradient
-        colors={['#020513', '#080A1D', '#09071E', '#020513']}
-        locations={[0, 0.42, 0.75, 1]}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={styles.blueGlow} />
-      <View style={styles.purpleGlow} />
+  const translateY = page.interpolate({ inputRange: [0, 1], outputRange: [22, 0] });
+  const opacity = page.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
 
-      <View style={[styles.header, { paddingTop: compact ? 8 : 12 }]}>
-        <View style={styles.miniLogo}>
-          <FixoraMini />
-        </View>
+  return (
+    <ScreenBackground>
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+          onPress={() => (index > 0 ? goTo(index - 1) : undefined)}
+          hitSlop={12}
+        >
+          <Text style={[styles.headerAction, index === 0 && styles.hidden]}>‹</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Skip onboarding" onPress={onComplete} hitSlop={12}>
           <Text style={styles.skip}>Skip</Text>
         </Pressable>
       </View>
 
-      <View style={styles.content}>
-        <Animated.View
-          style={[
-            styles.visual,
-            {
-              height: compact ? 270 : 330,
-              transform: [{ translateY: visualLift }],
-            },
-          ]}
-        >
-          <Animated.View style={[styles.energyDisc, { transform: [{ scale: ringScale }] }]}>
-            <LinearGradient
-              colors={['rgba(18,200,255,0.05)', 'rgba(11,124,255,0.2)', 'rgba(154,50,255,0.3)', 'rgba(18,200,255,0.04)']}
-              style={styles.discGradient}
-            />
-          </Animated.View>
-          <View style={styles.orbitLine} />
-          {iconRows.map((item, iconIndex) => {
-            const appear = icons[iconIndex];
-            const translateY = Animated.add(
-              appear.interpolate({ inputRange: [0, 1], outputRange: [34, 0] }),
-              float.interpolate({
-                inputRange: [0, 1],
-                outputRange: [iconIndex % 2 === 0 ? 0 : -4, iconIndex % 2 === 0 ? -10 : 8],
-              }),
-            );
-
-            return (
-              <Animated.View
-                key={item.label}
-                style={[
-                  styles.serviceIcon,
-                  {
-                    opacity: appear,
-                    transform: [
-                      { translateX: item.x * (compact ? 0.82 : 1) },
-                      { translateY: item.y + (compact ? 10 : 0) },
-                      { translateY },
-                      { scale: item.scale },
-                    ],
-                  },
-                ]}
-              >
-                <BlurView intensity={Platform.OS === 'android' ? 28 : 64} tint="dark" style={styles.iconBlur}>
-                  <LinearGradient
-                    colors={item.colors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.iconGradient}
-                  >
-                    <Text style={styles.iconText}>{item.label}</Text>
-                  </LinearGradient>
-                </BlurView>
-              </Animated.View>
-            );
-          })}
-          <View style={styles.centerCard}>
-            <BlurView intensity={Platform.OS === 'android' ? 30 : 76} tint="dark" style={styles.centerBlur}>
-              <FixoraMini large />
-            </BlurView>
-          </View>
-        </Animated.View>
-
-        <Animated.View style={[styles.copy, { opacity: copyOpacity, transform: [{ translateY: copyY }] }]}>
-          <Text style={styles.accent}>{slide.accent}</Text>
-          <Text style={[styles.title, { fontSize: compact ? 28 : 33, lineHeight: compact ? 34 : 39 }]}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: compact ? 18 : 28 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+          <Text style={[styles.title, { fontSize: compact ? 30 : 34, lineHeight: compact ? 36 : 40 }]}>
             {slide.title}
           </Text>
-          <Text style={[styles.body, { fontSize: compact ? 14 : 15 }]}>{slide.body}</Text>
+          <Text style={styles.subtitle}>{slide.subtitle}</Text>
+          <View style={[styles.visual, { height: compact ? 318 : 372 }]}>
+            {slide.kind === 'network' ? <NetworkVisual /> : null}
+            {slide.kind === 'map' ? <MapVisual /> : null}
+            {slide.kind === 'verified' ? <VerifiedVisual /> : null}
+          </View>
         </Animated.View>
+      </ScrollView>
 
-        <View style={styles.dots}>
-          {slides.map((item, dotIndex) => (
-            <Pressable
-              key={item.title}
-              accessibilityRole="button"
-              accessibilityLabel={`Go to onboarding slide ${dotIndex + 1}`}
-              onPress={() => setIndex(dotIndex)}
-              style={[styles.dot, dotIndex === index && styles.activeDot]}
-            />
-          ))}
-        </View>
+      <View style={styles.footer}>
+        <StepDots count={3} activeIndex={index} onSelect={goTo} />
+        <GradientButton title={slide.cta} onPress={goNext} />
       </View>
-
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 8, 18) }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={isLast ? 'Choose Location' : 'Continue'}
-          onPress={continueFlow}
-          android_ripple={{ color: 'rgba(255,255,255,0.16)' }}
-          style={({ pressed }) => [styles.continueButton, pressed && styles.buttonPressed]}
-        >
-          <LinearGradient
-            colors={['#145CFF', '#6840FF', '#B832FF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.continueGradient}
-          >
-            <Text style={styles.continueText}>{isLast ? 'Choose Location' : 'Continue'}</Text>
-          </LinearGradient>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+    </ScreenBackground>
   );
 }
 
-function FixoraMini({ large = false }: { large?: boolean }) {
-  const size = large ? 74 : 30;
+function NetworkVisual() {
+  return (
+    <View style={styles.visualFill}>
+      <View style={styles.worldDisc} />
+      <FloatingIcon label="TOOLS" style={[styles.floating, { left: 22, top: 94 }]} />
+      <FloatingIcon label="HOME" delay={120} style={[styles.floating, { right: 34, top: 70 }]} />
+      <FloatingIcon label="AUTO" delay={220} style={[styles.floating, { right: 70, bottom: 62 }]} />
+      <GlassCard style={styles.proCard}>
+        <View style={styles.avatarRow}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>J</Text>
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.cardTitle}>John Smith</Text>
+            <Text style={styles.cardMeta}>Plumbing • 4.9 ★</Text>
+          </View>
+          <Text style={styles.check}>✓</Text>
+        </View>
+      </GlassCard>
+      <GlassCard style={[styles.proCard, styles.proCardSecond]}>
+        <View style={styles.avatarRow}>
+          <View style={[styles.avatar, styles.avatarPurple]}>
+            <Text style={styles.avatarText}>A</Text>
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.cardTitle}>Anna Beauty</Text>
+            <Text style={styles.cardMeta}>Makeup artist • 4.8 ★</Text>
+          </View>
+          <Text style={styles.check}>✓</Text>
+        </View>
+      </GlassCard>
+    </View>
+  );
+}
+
+function MapVisual() {
+  const pins = useMemo(() => [0, 1, 2], []);
 
   return (
-    <View style={[styles.miniMark, { width: size, height: size }]}>
-      <LinearGradient
-        colors={['#07C8FF', '#2872FF', '#9A32FF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[
-          styles.miniTop,
-          {
-            width: size * 0.72,
-            height: size * 0.22,
-            left: size * 0.15,
-            top: size * 0.16,
-            borderRadius: size * 0.12,
-          },
-        ]}
-      />
-      <LinearGradient
-        colors={['#11ACFF', '#7A3BFF', '#B832FF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[
-          styles.miniMid,
-          {
-            width: size * 0.56,
-            height: size * 0.2,
-            left: size * 0.16,
-            top: size * 0.42,
-            borderRadius: size * 0.11,
-          },
-        ]}
-      />
-      <LinearGradient
-        colors={['#8D35FF', '#C033FF']}
-        style={[
-          styles.miniLower,
-          {
-            width: size * 0.28,
-            height: size * 0.34,
-            left: size * 0.18,
-            top: size * 0.52,
-            borderRadius: size * 0.12,
-          },
-        ]}
-      />
+    <View style={styles.visualFill}>
+      <View style={styles.mapGrid}>
+        {Array.from({ length: 9 }, (_, item) => (
+          <View key={item} style={styles.mapLine} />
+        ))}
+      </View>
+      {pins.map((pin) => (
+        <View key={pin} style={[styles.pin, pin === 1 && styles.pinTwo, pin === 2 && styles.pinThree]}>
+          <View style={styles.pinInner} />
+        </View>
+      ))}
+      <GlassCard style={[styles.proCard, styles.mapCard]}>
+        <Text style={styles.cardTitle}>Choose city</Text>
+        <Text style={styles.cardMeta}>Local marketplace first</Text>
+      </GlassCard>
+      <GlassCard style={[styles.proCard, styles.mapCardSecond]}>
+        <Text style={styles.cardTitle}>Compare experts</Text>
+        <Text style={styles.cardMeta}>Ratings, prices, reviews</Text>
+      </GlassCard>
+      <View style={styles.featureDock}>
+        <Text style={styles.dockItem}>⌖ City</Text>
+        <Text style={styles.dockItem}>★ Rating</Text>
+        <Text style={styles.dockItem}>◆ Safe</Text>
+      </View>
+    </View>
+  );
+}
+
+function VerifiedVisual() {
+  return (
+    <View style={styles.visualFill}>
+      <View style={styles.verifiedShield}>
+        <LinearGradient colors={['#157BFF', '#7C3AED']} style={styles.shieldGradient}>
+          <Text style={styles.shieldText}>✓</Text>
+        </LinearGradient>
+      </View>
+      <GlassCard style={[styles.chatCard, { top: 44, left: 10 }]}>
+        <Text style={styles.cardTitle}>David Master</Text>
+        <Text style={styles.cardMeta}>Hello! I am ready to help you.</Text>
+      </GlassCard>
+      <GlassCard style={[styles.chatCard, { top: 142, right: 4 }]}>
+        <Text style={styles.cardTitle}>Secure Payment</Text>
+        <Text style={styles.cardMeta}>•••• 4242 • Protected</Text>
+      </GlassCard>
+      <GlassCard style={[styles.trackingCard]}>
+        <Text style={styles.cardTitle}>Order tracking</Text>
+        <View style={styles.trackLine}>
+          <View style={styles.trackDot} />
+          <View style={styles.trackDot} />
+          <View style={[styles.trackDot, styles.trackDotActive]} />
+        </View>
+      </GlassCard>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.ink,
-  },
-  blueGlow: {
-    position: 'absolute',
-    top: -110,
-    right: -140,
-    width: 360,
-    height: 360,
-    borderRadius: 180,
-    backgroundColor: COLORS.blue,
-    opacity: 0.16,
-  },
-  purpleGlow: {
-    position: 'absolute',
-    bottom: 118,
-    left: -160,
-    width: 400,
-    height: 400,
-    borderRadius: 200,
-    backgroundColor: COLORS.violet,
-    opacity: 0.13,
-  },
   header: {
-    height: 66,
+    height: 58,
     paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  miniLogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+  headerAction: {
+    color: '#FFFFFF',
+    fontSize: 35,
+    lineHeight: 38,
+    fontWeight: '600',
+  },
+  hidden: {
+    opacity: 0,
   },
   skip: {
-    color: 'rgba(248,251,255,0.78)',
+    color: 'rgba(255,255,255,0.82)',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  title: {
+    maxWidth: 390,
+    marginTop: 8,
+    color: '#FFFFFF',
+    fontWeight: '900',
+    letterSpacing: 0,
+    textShadowColor: 'rgba(21,123,255,0.34)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16,
+  },
+  subtitle: {
+    maxWidth: 340,
+    marginTop: 10,
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 23,
+    fontWeight: '600',
+    letterSpacing: 0,
   },
   visual: {
     width: '100%',
-    maxWidth: 430,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  energyDisc: {
-    position: 'absolute',
-    width: 300,
-    height: 112,
-    borderRadius: 150,
-    bottom: 54,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(90,130,255,0.34)',
-  },
-  discGradient: {
-    flex: 1,
-  },
-  orbitLine: {
-    position: 'absolute',
-    bottom: 88,
-    width: 260,
-    height: 2,
-    borderRadius: 2,
-    backgroundColor: 'rgba(18,200,255,0.35)',
-    shadowColor: COLORS.cyan,
-    shadowOpacity: 0.72,
-    shadowRadius: 14,
-  },
-  serviceIcon: {
-    position: 'absolute',
-    width: 76,
-    height: 76,
-    borderRadius: 22,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: COLORS.violet,
-    shadowOpacity: 0.46,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 14,
-  },
-  iconBlur: {
-    flex: 1,
-    overflow: 'hidden',
-  },
-  iconGradient: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconText: {
-    color: COLORS.white,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0,
-  },
-  centerCard: {
-    width: 112,
-    height: 112,
-    borderRadius: 30,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)',
-    shadowColor: COLORS.blue,
-    shadowOpacity: 0.55,
-    shadowRadius: 28,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 20,
-  },
-  centerBlur: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(7,10,28,0.72)',
-  },
-  copy: {
-    width: '100%',
-    maxWidth: 380,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  accent: {
-    color: COLORS.violet,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '900',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    textShadowColor: 'rgba(154,50,255,0.7)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  title: {
-    marginTop: 8,
-    color: COLORS.white,
-    fontWeight: '900',
-    textAlign: 'center',
-    letterSpacing: 0,
-    textShadowColor: 'rgba(8,168,255,0.28)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 14,
-  },
-  body: {
-    marginTop: 14,
-    maxWidth: 310,
-    color: COLORS.muted,
-    lineHeight: 22,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  dots: {
-    height: 34,
+    maxWidth: 450,
+    alignSelf: 'center',
     marginTop: 18,
+  },
+  visualFill: {
+    flex: 1,
+    overflow: 'hidden',
+    borderRadius: 28,
+  },
+  worldDisc: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: 20,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    borderWidth: 1,
+    borderColor: 'rgba(21,123,255,0.32)',
+    backgroundColor: 'rgba(21,123,255,0.08)',
+    shadowColor: '#157BFF',
+    shadowOpacity: 0.68,
+    shadowRadius: 40,
+  },
+  floating: {
+    position: 'absolute',
+  },
+  proCard: {
+    position: 'absolute',
+    left: 28,
+    right: 52,
+    bottom: 118,
+    padding: 12,
+    borderRadius: 16,
+  },
+  proCardSecond: {
+    left: 56,
+    right: 24,
+    bottom: 54,
+  },
+  avatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: 9,
+    backgroundColor: '#157BFF',
   },
-  dot: {
-    width: 8,
-    height: 8,
+  avatarPurple: {
+    backgroundColor: '#7C3AED',
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 18,
+  },
+  flex: {
+    flex: 1,
+  },
+  cardTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 0,
+  },
+  cardMeta: {
+    marginTop: 4,
+    color: '#AAB0C0',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
+  },
+  check: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  mapGrid: {
+    position: 'absolute',
+    left: -20,
+    right: -20,
+    bottom: 52,
+    height: 180,
+    transform: [{ rotate: '-10deg' }],
+    borderWidth: 1,
+    borderColor: 'rgba(21,123,255,0.16)',
+  },
+  mapLine: {
+    flex: 1,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(168,85,247,0.16)',
+  },
+  pin: {
+    position: 'absolute',
+    left: '42%',
+    top: 76,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(168,85,247,0.94)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#A855F7',
+    shadowOpacity: 0.85,
+    shadowRadius: 20,
+  },
+  pinTwo: {
+    left: '67%',
+    top: 112,
+    backgroundColor: 'rgba(21,123,255,0.94)',
+  },
+  pinThree: {
+    left: '22%',
+    top: 132,
+  },
+  pinInner: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+  },
+  mapCard: {
+    left: 18,
+    right: '42%',
+    bottom: 82,
+  },
+  mapCardSecond: {
+    left: '36%',
+    right: 14,
+    bottom: 26,
+  },
+  featureDock: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 0,
+    minHeight: 78,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  dockItem: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  verifiedShield: {
+    position: 'absolute',
+    right: 34,
+    top: 38,
+    width: 100,
+    height: 122,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: '#157BFF',
+    shadowOpacity: 0.75,
+    shadowRadius: 28,
+  },
+  shieldGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shieldText: {
+    color: '#FFFFFF',
+    fontSize: 54,
+    fontWeight: '900',
+  },
+  chatCard: {
+    position: 'absolute',
+    width: 205,
+    padding: 14,
+  },
+  trackingCard: {
+    position: 'absolute',
+    left: 22,
+    right: 22,
+    bottom: 34,
+  },
+  trackLine: {
+    marginTop: 14,
+    height: 7,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
-  activeDot: {
-    width: 24,
-    backgroundColor: COLORS.white,
+  trackDot: {
+    width: 15,
+    height: 15,
+    borderRadius: 8,
+    backgroundColor: '#157BFF',
+  },
+  trackDotActive: {
+    backgroundColor: '#A855F7',
+    shadowColor: '#A855F7',
+    shadowOpacity: 0.9,
+    shadowRadius: 12,
   },
   footer: {
     paddingHorizontal: 22,
-    paddingTop: 8,
-  },
-  continueButton: {
-    height: 58,
-    borderRadius: 29,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
-    shadowColor: COLORS.violet,
-    shadowOpacity: 0.42,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 16,
-  },
-  buttonPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.94,
-  },
-  continueGradient: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueText: {
-    color: COLORS.white,
-    fontSize: 17,
-    fontWeight: '900',
-  },
-  miniMark: {
-    shadowColor: COLORS.cyan,
-    shadowOpacity: 0.6,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  miniTop: {
-    position: 'absolute',
-  },
-  miniMid: {
-    position: 'absolute',
-  },
-  miniLower: {
-    position: 'absolute',
-    transform: [{ rotate: '-14deg' }],
+    paddingBottom: 20,
+    gap: 10,
   },
 });

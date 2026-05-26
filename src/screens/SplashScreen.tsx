@@ -26,8 +26,8 @@ const COLORS = {
 };
 
 const STAR_FIELD = Array.from({ length: 34 }, (_, index) => ({
-  left: `${(index * 29) % 100}%`,
-  top: `${(index * 47) % 72}%`,
+  left: `${(index * 29) % 100}%` as `${number}%`,
+  top: `${(index * 47) % 72}%` as `${number}%`,
   size: 1 + (index % 3),
   opacity: 0.2 + (index % 5) * 0.1,
 }));

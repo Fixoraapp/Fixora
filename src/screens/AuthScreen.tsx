@@ -1,15 +1,11 @@
-import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { AppShell } from '../components/AppShell';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { PremiumButton } from '../components/PremiumButton';
-import { TextField } from '../components/TextField';
+import { ScreenBackground } from '../components/ScreenBackground';
 import { colors, typography } from '../constants/theme';
 import { UserRole } from '../types/navigation';
-
-type AuthMode = 'login' | 'register';
-type LoginMethod = 'phone' | 'email';
 
 type AuthScreenProps = {
   role: UserRole;
@@ -17,50 +13,38 @@ type AuthScreenProps = {
 };
 
 export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
-  const [mode, setMode] = useState<AuthMode>('login');
-  const [method, setMethod] = useState<LoginMethod>('phone');
+  const roleLabel = role === 'client' ? 'Client' : 'Master';
 
   return (
-    <AppShell>
+    <ScreenBackground>
+      <View style={styles.root}>
       <View style={styles.brand}>
         <FixoraLogo wordmark />
       </View>
-      <Text style={styles.kicker}>{role}</Text>
-      <Text style={styles.title}>{mode === 'login' ? 'Welcome back' : 'Create your Fixora account'}</Text>
-      <Text style={styles.body}>Use phone, email, or social sign in. Auth is UI-ready and backend-ready.</Text>
+      <Text style={styles.kicker}>{roleLabel}</Text>
+      <Text style={styles.title}>Welcome to Fixora</Text>
+      <Text style={styles.body}>Sign in or create your account</Text>
 
-      <View style={styles.segment}>
-        <PremiumButton title="Login" variant={mode === 'login' ? 'primary' : 'secondary'} onPress={() => setMode('login')} style={styles.segmentButton} />
-        <PremiumButton title="Register" variant={mode === 'register' ? 'primary' : 'secondary'} onPress={() => setMode('register')} style={styles.segmentButton} />
-      </View>
-
-      <GlassCard>
-        <View style={styles.methodRow}>
-          <PremiumButton title="Phone" variant={method === 'phone' ? 'primary' : 'ghost'} onPress={() => setMethod('phone')} style={styles.methodButton} />
-          <PremiumButton title="Email" variant={method === 'email' ? 'primary' : 'ghost'} onPress={() => setMethod('email')} style={styles.methodButton} />
-        </View>
-        {method === 'phone' ? (
-          <TextField keyboardType="phone-pad" placeholder="+1 555 000 0000" />
-        ) : (
-          <TextField keyboardType="email-address" autoCapitalize="none" placeholder="you@fixora.com" />
-        )}
-        {mode === 'register' ? <TextField placeholder="Full name" style={styles.inputGap} /> : null}
-        <TextField secureTextEntry placeholder="Password" style={styles.inputGap} />
-        <PremiumButton title={mode === 'login' ? 'Login' : 'Create Account'} onPress={onAuthenticated} style={styles.submit} />
+      <GlassCard style={styles.card}>
+        <GradientButton title="Continue with Phone" onPress={onAuthenticated} />
+        <PremiumButton title="Continue with Email" variant="secondary" onPress={onAuthenticated} style={styles.buttonGap} />
+        <PremiumButton title="Continue as Guest" variant="ghost" onPress={onAuthenticated} style={styles.buttonGap} />
       </GlassCard>
-
-      <Text style={styles.divider}>or continue with</Text>
-      <View style={styles.socialRow}>
-        <PremiumButton title="Apple" variant="secondary" onPress={onAuthenticated} style={styles.socialButton} />
-        <PremiumButton title="Google" variant="secondary" onPress={onAuthenticated} style={styles.socialButton} />
+      <Text style={styles.legal}>Final authentication will connect to phone, email, and secure identity providers.</Text>
       </View>
-    </AppShell>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    paddingHorizontal: 22,
+    justifyContent: 'center',
+  },
   brand: {
     marginBottom: 28,
+    alignSelf: 'center',
   },
   kicker: {
     color: colors.blue,
@@ -84,41 +68,19 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     letterSpacing: 0,
   },
-  segment: {
-    marginVertical: 22,
-    flexDirection: 'row',
-    gap: 10,
+  card: {
+    marginTop: 28,
+    gap: 0,
   },
-  segmentButton: {
-    flex: 1,
-  },
-  methodRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 14,
-  },
-  methodButton: {
-    flex: 1,
-    minHeight: 48,
-  },
-  inputGap: {
+  buttonGap: {
     marginTop: 12,
   },
-  submit: {
-    marginTop: 16,
-  },
-  divider: {
-    marginVertical: 18,
-    textAlign: 'center',
+  legal: {
+    marginTop: 20,
     color: colors.dim,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
     fontWeight: '700',
-    letterSpacing: 0,
-  },
-  socialRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  socialButton: {
-    flex: 1,
   },
 });

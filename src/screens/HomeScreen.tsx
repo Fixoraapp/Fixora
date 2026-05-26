@@ -20,13 +20,14 @@ export default function HomeScreen({ location, role, onOpenCategories }: HomeScr
   const premiumProfessionals = professionals.filter((item) => item.premium);
   const nearbyProfessionals = professionals.filter((item) => item.city === location.city).slice(0, 3);
   const nearby = nearbyProfessionals.length > 0 ? nearbyProfessionals : professionals.slice(0, 3);
+  const roleLabel = role === 'client' ? 'Client' : 'Master';
 
   return (
     <AppShell>
       <View style={styles.header}>
         <FixoraLogo wordmark />
         <View style={styles.rolePill}>
-          <Text style={styles.roleText}>{role}</Text>
+          <Text style={styles.roleText}>{roleLabel}</Text>
         </View>
       </View>
       <Text style={styles.location}>{location.city}, {location.region}</Text>

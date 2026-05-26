@@ -7,10 +7,13 @@ export type AppRoute =
   | 'home'
   | 'categories';
 
-export type UserRole = 'Client' | 'Master' | 'Premium Master' | 'Company';
+export type UserRole = 'client' | 'master';
 
 export type LocationSelection = {
   country: string;
   region: string;
   city: string;
+  countryCode: string;
+  currency: string;
+  language: string;
 };

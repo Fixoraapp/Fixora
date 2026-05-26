@@ -1,134 +1,410 @@
 import { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { AppShell } from '../components/AppShell';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
-import { PremiumButton } from '../components/PremiumButton';
-import { SectionHeader } from '../components/SectionHeader';
-import { colors, typography } from '../constants/theme';
-import { locationTree } from '../data/locations';
-import { getCities, getMockLocation, getRegions } from '../utils/location';
+import { LocationSelector, LocationSelectorItem } from '../components/LocationSelector';
+import { ScreenBackground } from '../components/ScreenBackground';
+import { useLocationContext } from '../context/LocationContext';
+import { countries } from '../data/locations';
+import { City, Country, Region } from '../types/location';
 import { LocationSelection } from '../types/navigation';
+import {
+  getChildRegions,
+  getCitiesForRegion,
+  getTopLevelRegions,
+  searchCities,
+  searchCountries,
+  searchRegions,
+} from '../utils/locationSearch';
+
+type LocationLevel = 'country' | 'region' | 'city';
 
 type LocationSelectionScreenProps = {
   onComplete: (location: LocationSelection) => void;
 };
 
 export default function LocationSelectionScreen({ onComplete }: LocationSelectionScreenProps) {
-  const detected = getMockLocation();
-  const [country, setCountry] = useState(detected.country);
-  const [region, setRegion] = useState(detected.region);
-  const [city, setCity] = useState(detected.city);
-  const regions = useMemo(() => getRegions(country), [country]);
-  const cities = useMemo(() => getCities(country, region), [country, region]);
+  const { selectedLocation, setSelectedLocation } = useLocationContext();
+  const initialCountry = countries.find((item) => item.iso2 === selectedLocation.countryCode) ?? countries[0];
+  const initialRegion =
+    initialCountry.regions.find(
+      (item) => item.name_en === selectedLocation.region || item.name_ru === selectedLocation.region,
+    ) ??
+    getTopLevelRegions(initialCountry.iso2)[0] ??
+    initialCountry.regions[0];
+  const initialCity = getCitiesForRegion(initialRegion)[0];
 
-  function selectCountry(nextCountry: string) {
-    const firstRegion = getRegions(nextCountry)[0];
+  const [level, setLevel] = useState<LocationLevel>('country');
+  const [country, setCountry] = useState<Country>(initialCountry);
+  const [parentRegion, setParentRegion] = useState<Region | undefined>(
+    initialRegion.parent_region_id ? initialCountry.regions.find((item) => item.id === initialRegion.parent_region_id) : undefined,
+  );
+  const [region, setRegion] = useState<Region>(initialRegion);
+  const [city, setCity] = useState<City>(initialCity);
+  const [query, setQuery] = useState('');
+
+  const regionParentId = parentRegion?.id;
+  const regionOptions = useMemo(
+    () => searchRegions(country.iso2, query, regionParentId),
+    [country.iso2, query, regionParentId],
+  );
+  const hasChildRegions = level === 'region' ? regionOptions.some((item) => getChildRegions(item.id).length > 0) : false;
+
+  const title =
+    level === 'country'
+      ? 'Where are you located?'
+      : level === 'region'
+        ? parentRegion
+          ? 'Select Subject'
+          : country.iso2 === 'RU'
+            ? 'Select Federal District'
+            : 'Select Region'
+        : 'Select City';
+  const subtitle =
+    level === 'country'
+      ? 'Select your country to get started'
+      : level === 'region'
+        ? parentRegion
+          ? `${country.emoji} ${parentRegion.name_en}`
+          : `${country.emoji} ${country.name_en} • ${country.iso2} • ${country.currency}`
+        : `${country.emoji} ${region.name_en}, ${country.name_en}`;
+
+  const items = useMemo<LocationSelectorItem[]>(() => {
+    if (level === 'country') {
+      return searchCountries(query).map((item) => ({
+        id: item.iso2,
+        title: item.name_en,
+        subtitle: `${item.name_ru} • ${item.iso2}/${item.iso3} • ${item.currency} • ${item.language.toUpperCase()}`,
+        meta: item.capital_en,
+        leading: <Text style={styles.flag}>{item.emoji}</Text>,
+      }));
+    }
+
+    if (level === 'region') {
+      return regionOptions.map((item) => {
+        const children = getChildRegions(item.id);
+        const itemCities = getCitiesForRegion(item);
+
+        return {
+          id: item.id,
+          title: item.name_en,
+          subtitle: `${item.name_ru} • ${item.type_en}`,
+          meta: children.length > 0 ? `${children.length} subjects` : itemCities[0]?.name_en ?? item.capital_en,
+        };
+      });
+    }
+
+    return searchCities(region.id, query).map((item) => ({
+      id: item.id,
+      title: item.name_en,
+      subtitle: item.name_ru,
+      meta: country.currency,
+    }));
+  }, [country.currency, level, query, region.id, regionOptions]);
+
+  const selectedId = level === 'country' ? country.iso2 : level === 'region' ? region.id : city.id;
+
+  const selectCountry = (countryIso2: string) => {
+    const nextCountry = countries.find((candidate) => candidate.iso2 === countryIso2) ?? countries[0];
+    const nextRegion = getTopLevelRegions(nextCountry.iso2)[0] ?? nextCountry.regions[0];
+    const nextChildren = getChildRegions(nextRegion.id);
+    const nextFinalRegion = nextChildren[0] ?? nextRegion;
+    const nextCity = getCitiesForRegion(nextFinalRegion)[0];
+
     setCountry(nextCountry);
-    setRegion(firstRegion?.name ?? '');
-    setCity(firstRegion?.cities[0] ?? '');
-  }
+    setParentRegion(nextChildren.length > 0 ? nextRegion : undefined);
+    setRegion(nextFinalRegion);
+    setCity(nextCity);
+    setQuery('');
+    setLevel('region');
+  };
 
-  function selectRegion(nextRegion: string) {
-    const firstCity = getCities(country, nextRegion)[0];
-    setRegion(nextRegion);
-    setCity(firstCity ?? '');
-  }
+  const selectRegion = (regionId: string) => {
+    const selectedRegion = country.regions.find((candidate) => candidate.id === regionId) ?? region;
+    const children = getChildRegions(selectedRegion.id);
+
+    if (children.length > 0) {
+      const firstSubject = children[0];
+      setParentRegion(selectedRegion);
+      setRegion(firstSubject);
+      setCity(getCitiesForRegion(firstSubject)[0]);
+      setQuery('');
+      return;
+    }
+
+    setRegion(selectedRegion);
+    setCity(getCitiesForRegion(selectedRegion)[0]);
+    setQuery('');
+    setLevel('city');
+  };
+
+  const selectItem = (item: LocationSelectorItem) => {
+    if (level === 'country') {
+      selectCountry(item.id);
+      return;
+    }
+
+    if (level === 'region') {
+      selectRegion(item.id);
+      return;
+    }
+
+    const nextCity = getCitiesForRegion(region).find((candidate) => candidate.id === item.id) ?? city;
+    setCity(nextCity);
+  };
+
+  const continueFlow = () => {
+    if (level === 'country') {
+      setLevel('region');
+      setQuery('');
+      return;
+    }
+
+    if (level === 'region') {
+      if (getChildRegions(region.id).length > 0) {
+        setParentRegion(region);
+        setRegion(getChildRegions(region.id)[0]);
+        setCity(getCitiesForRegion(getChildRegions(region.id)[0])[0]);
+        setQuery('');
+        return;
+      }
+
+      setLevel('city');
+      setQuery('');
+      return;
+    }
+
+    const nextLocation: LocationSelection = {
+      country: country.name_en,
+      region: region.name_en,
+      city: city.name_en,
+      countryCode: country.iso2,
+      currency: country.currency,
+      language: country.language,
+    };
+
+    setSelectedLocation(nextLocation);
+    onComplete(nextLocation);
+  };
+
+  const goBack = () => {
+    if (level === 'city') {
+      setLevel('region');
+      setQuery('');
+      return;
+    }
+
+    if (level === 'region' && parentRegion) {
+      setRegion(parentRegion);
+      setParentRegion(undefined);
+      setQuery('');
+      return;
+    }
+
+    if (level === 'region') {
+      setLevel('country');
+      setQuery('');
+    }
+  };
 
   return (
-    <AppShell>
-      <Text style={styles.kicker}>Location intelligence</Text>
-      <Text style={styles.title}>Choose your local marketplace</Text>
-      <Text style={styles.body}>
-        Mock geo selected {detected.city}. You can override it before Fixora opens the marketplace.
-      </Text>
-
-      <SectionHeader title="Country" />
-      <View style={styles.grid}>
-        {locationTree.map((item) => (
-          <GlassCard
-            key={item.country}
-            selected={country === item.country}
-            onPress={() => selectCountry(item.country)}
-          >
-            <Text style={styles.optionTitle}>{item.country}</Text>
-          </GlassCard>
-        ))}
+    <ScreenBackground>
+      <View style={styles.header}>
+        <Text style={styles.back} onPress={goBack}>{level === 'country' ? ' ' : '‹'}</Text>
+        <View style={styles.progress}>
+          <View style={[styles.step, styles.stepActive]}><Text style={styles.stepText}>1</Text></View>
+          <View style={[styles.line, level !== 'country' && styles.lineActive]} />
+          <View style={[styles.step, level !== 'country' && styles.stepActive]}><Text style={styles.stepText}>2</Text></View>
+          <View style={[styles.line, level === 'city' && styles.lineActive]} />
+          <View style={[styles.step, level === 'city' && styles.stepActive]}><Text style={styles.stepText}>3</Text></View>
+        </View>
+        <View style={styles.headerSpacer} />
       </View>
 
-      <SectionHeader title="Region" />
-      <View style={styles.grid}>
-        {regions.map((item) => (
-          <GlassCard
-            key={item.name}
-            selected={region === item.name}
-            onPress={() => selectRegion(item.name)}
-          >
-            <Text style={styles.optionTitle}>{item.name}</Text>
-          </GlassCard>
-        ))}
-      </View>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.world}>
+          <View style={styles.worldGlow} />
+          <Text style={styles.worldText}>{country.iso2}</Text>
+        </View>
 
-      <SectionHeader title="City" />
-      <View style={styles.grid}>
-        {cities.map((item) => (
-          <GlassCard key={item} selected={city === item} onPress={() => setCity(item)}>
-            <Text style={styles.optionTitle}>{item}</Text>
-          </GlassCard>
-        ))}
-      </View>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
 
-      <View style={styles.summary}>
-        <Text style={styles.summaryText}>{country} / {region} / {city}</Text>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={level === 'country' ? 'Search country, ISO, currency' : level === 'region' ? 'Search region, subject, capital' : 'Search city'}
+          placeholderTextColor="rgba(255,255,255,0.48)"
+          style={styles.search}
+          autoCapitalize="none"
+        />
+
+        <Text style={styles.sectionLabel}>
+          {level === 'country'
+            ? 'Countries'
+            : level === 'region'
+              ? parentRegion
+                ? 'Subjects of Russia'
+                : hasChildRegions
+                  ? 'Federal Districts'
+                  : 'Regions / States / Provinces'
+              : 'Cities / Administrative centers'}
+        </Text>
+        <LocationSelector items={items} selectedId={selectedId} onSelect={selectItem} />
+
+        <GlassCard style={styles.summary}>
+          <Text style={styles.summaryTitle}>Local marketplace routing</Text>
+          <Text style={styles.summaryText}>Country: {country.name_en} ({country.iso2})</Text>
+          {parentRegion ? <Text style={styles.summaryText}>Federal District: {parentRegion.name_en}</Text> : null}
+          <Text style={styles.summaryText}>Region: {region.name_en}</Text>
+          <Text style={styles.summaryText}>City: {city.name_en}</Text>
+          <Text style={styles.summaryText}>Currency: {country.currency}</Text>
+          <Text style={styles.summaryText}>Language: {country.language}</Text>
+        </GlassCard>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <GradientButton title={level === 'city' ? 'Continue' : 'Next'} onPress={continueFlow} />
       </View>
-      <PremiumButton title="Show Local Marketplace" onPress={() => onComplete({ country, region, city })} />
-    </AppShell>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  kicker: {
-    color: colors.blue,
-    fontSize: typography.small,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0,
+  header: {
+    height: 58,
+    paddingHorizontal: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  title: {
-    marginTop: 10,
-    color: colors.white,
-    fontSize: typography.title,
-    lineHeight: 40,
+  back: {
+    width: 40,
+    color: '#FFFFFF',
+    fontSize: 35,
+    lineHeight: 38,
+    fontWeight: '600',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  progress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  step: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  stepActive: {
+    backgroundColor: '#6945FF',
+    borderColor: '#8EA7FF',
+  },
+  stepText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  line: {
+    width: 34,
+    height: 2,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  lineActive: {
+    backgroundColor: '#A855F7',
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 22,
+    paddingBottom: 110,
+  },
+  world: {
+    height: 156,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  worldGlow: {
+    position: 'absolute',
+    width: 146,
+    height: 146,
+    borderRadius: 73,
+    borderWidth: 1,
+    borderColor: 'rgba(21,123,255,0.42)',
+    backgroundColor: 'rgba(21,123,255,0.1)',
+    shadowColor: '#A855F7',
+    shadowOpacity: 0.8,
+    shadowRadius: 28,
+  },
+  worldText: {
+    color: '#FFFFFF',
+    fontSize: 23,
     fontWeight: '900',
     letterSpacing: 0,
   },
-  body: {
-    marginTop: 10,
-    color: colors.muted,
-    fontSize: typography.body,
-    lineHeight: 23,
+  title: {
+    color: '#FFFFFF',
+    fontSize: 31,
+    lineHeight: 37,
+    fontWeight: '900',
     letterSpacing: 0,
   },
-  grid: {
-    gap: 10,
+  subtitle: {
+    marginTop: 8,
+    color: '#FFFFFF',
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '700',
   },
-  optionTitle: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0,
+  search: {
+    marginTop: 18,
+    height: 48,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
+  sectionLabel: {
+    marginTop: 16,
+    marginBottom: 10,
+    color: '#AAB0C0',
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  flag: {
+    fontSize: 24,
   },
   summary: {
-    marginTop: 24,
-    marginBottom: 14,
-    padding: 14,
+    marginTop: 16,
+    marginBottom: 12,
     borderRadius: 18,
-    backgroundColor: 'rgba(8,168,255,0.12)',
-    borderWidth: 1,
-    borderColor: colors.strokeStrong,
+  },
+  summaryTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 10,
   },
   summaryText: {
-    color: colors.white,
+    color: '#AAB0C0',
+    fontSize: 13,
+    lineHeight: 22,
     fontWeight: '800',
-    letterSpacing: 0,
+  },
+  footer: {
+    position: 'absolute',
+    left: 22,
+    right: 22,
+    bottom: 20,
   },
 });
