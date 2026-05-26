@@ -2,6 +2,10 @@ export type Category = {
   id: string;
   title: string;
   description: string;
+  icon?: string;
+  subcategories?: string[];
+  popularServices?: string[];
+  localServices?: string[];
 };
 
 export type Professional = {

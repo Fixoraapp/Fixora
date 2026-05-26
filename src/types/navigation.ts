@@ -9,6 +9,8 @@ export type AppRoute =
 
 export type UserRole = 'client' | 'master';
 
+export type AuthMethod = 'phone' | 'email' | 'google' | 'apple' | 'guest';
+
 export type LocationSelection = {
   country: string;
   region: string;
