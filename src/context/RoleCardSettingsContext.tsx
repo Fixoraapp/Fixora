@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { UserRole } from '../types/navigation';
+import { storage } from '../utils/storage';
 
 export type RoleCardLayout = 'visualTop' | 'split' | 'compact';
 export type RoleCardAnimation = 'float' | 'pulse' | 'none';
@@ -194,7 +194,7 @@ export function RoleCardSettingsProvider({ children }: { children: ReactNode }) 
   useEffect(() => {
     let mounted = true;
 
-    AsyncStorage.getItem(STORAGE_KEY)
+    storage.getItem(STORAGE_KEY)
       .then((stored) => {
         if (!mounted || !stored) {
           return;
@@ -215,7 +215,7 @@ export function RoleCardSettingsProvider({ children }: { children: ReactNode }) 
 
   const persist = useCallback(async (next: RoleCardSettingsState) => {
     setSettings(next);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    await storage.setItem(STORAGE_KEY, JSON.stringify(next));
   }, []);
 
   const updateRoleCard = useCallback(async (role: UserRole, patch: Partial<RoleCardSettings>) => {

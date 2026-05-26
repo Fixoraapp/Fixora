@@ -14,6 +14,7 @@ import {
 import { GradientButton } from '../components/GradientButton';
 import { ScreenBackground } from '../components/ScreenBackground';
 import { RoleCardSettings, useRoleCardSettings } from '../context/RoleCardSettingsContext';
+import { useTranslation } from '../i18n/I18nProvider';
 import { UserRole } from '../types/navigation';
 
 const PARTICLES = Array.from({ length: 18 }, (_, index) => ({
@@ -39,6 +40,7 @@ export default function RoleSelectionScreen({
   onResetAppState,
 }: RoleSelectionScreenProps) {
   const { height } = useWindowDimensions();
+  const { t } = useTranslation();
   const { settings } = useRoleCardSettings();
   const compact = height < 720;
   const buttonPulse = useRef(new Animated.Value(0)).current;
@@ -118,9 +120,9 @@ export default function RoleSelectionScreen({
 
       <ScrollView contentContainerStyle={[styles.content, compact && styles.compactContent]} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <Text style={styles.kicker}>Fixora premium access</Text>
-          <Text style={styles.title}>Choose your path</Text>
-          <Text style={styles.subtitle}>Select how you want to enter the marketplace</Text>
+          <Text style={styles.kicker}>{t('roleSelection.kicker', 'Fixora premium access')}</Text>
+          <Text style={styles.title}>{t('roleSelection.title', 'Choose your path')}</Text>
+          <Text style={styles.subtitle}>{t('roleSelection.subtitle', 'Select how you want to enter the marketplace')}</Text>
         </View>
 
         <View style={styles.cards}>
@@ -136,15 +138,15 @@ export default function RoleSelectionScreen({
       </ScrollView>
 
       <Animated.View style={[styles.footer, { transform: [{ scale: buttonScale }] }]}>
-        <GradientButton title={selectedCard?.buttonText || 'Continue'} onPress={onContinue} disabled={roleCards.length === 0}>
+        <GradientButton title={selectedCard?.buttonText || t('buttons.continue', 'Continue')} onPress={onContinue} disabled={roleCards.length === 0}>
           <Text style={styles.buttonArrow}>{'->'}</Text>
         </GradientButton>
         <Pressable accessibilityRole="button" onPress={onOpenAdmin} style={styles.adminLink}>
-          <Text style={styles.adminLinkText}>Open Pro Admin Panel</Text>
+          <Text style={styles.adminLinkText}>{t('roleSelection.openAdmin', 'Open Pro Admin Panel')}</Text>
         </Pressable>
         {__DEV__ && onResetAppState ? (
           <Pressable accessibilityRole="button" onPress={onResetAppState} style={styles.resetLink}>
-            <Text style={styles.resetLinkText}>Reset onboarding and location</Text>
+            <Text style={styles.resetLinkText}>{t('roleSelection.resetDev', 'Reset onboarding and location')}</Text>
           </Pressable>
         ) : null}
       </Animated.View>

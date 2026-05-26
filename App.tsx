@@ -12,11 +12,14 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import RoleSelectionScreen from './src/screens/RoleSelectionScreen';
 import SmartLocationScreen from './src/screens/SmartLocationScreen';
 import SplashScreen from './src/screens/SplashScreen';
+import { AdminConfigProvider } from './src/context/AdminConfigContext';
+import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 import { AppStateProvider, useAppStateContext } from './src/context/AppStateContext';
 import { LocationProvider, defaultLocation, useLocationContext } from './src/context/LocationContext';
 import { MarketplaceProvider } from './src/context/MarketplaceContext';
 import { RoleCardSettingsProvider } from './src/context/RoleCardSettingsContext';
 import { ThemeProvider } from './src/theme/ThemeProvider';
+import { I18nProvider } from './src/i18n/I18nProvider';
 import { AppRoute, LocationSelection, UserRole } from './src/types/navigation';
 
 NativeSplashScreen.preventAutoHideAsync();
@@ -32,9 +35,13 @@ export default function App() {
         <AppStateProvider>
           <LocationProvider>
             <MarketplaceProvider>
-              <RoleCardSettingsProvider>
-                <AppContent />
-              </RoleCardSettingsProvider>
+              <AdminConfigProvider>
+                <I18nProvider>
+                  <RoleCardSettingsProvider>
+                    <AppContent />
+                  </RoleCardSettingsProvider>
+                </I18nProvider>
+              </AdminConfigProvider>
             </MarketplaceProvider>
           </LocationProvider>
         </AppStateProvider>
@@ -156,7 +163,18 @@ function AppContent() {
           <Text style={styles.devResetText}>RESET</Text>
         </Pressable>
       ) : null}
+      {!appState.loading && route !== 'admin' ? (
+        <SafeLanguageDock />
+      ) : null}
     </>
+  );
+}
+
+function SafeLanguageDock() {
+  return (
+    <Pressable style={styles.languageDock}>
+      <LanguageSwitcher compact />
+    </Pressable>
   );
 }
 
@@ -179,5 +197,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '900',
+  },
+  languageDock: {
+    position: 'absolute',
+    left: 14,
+    top: 48,
+    zIndex: 9998,
   },
 });

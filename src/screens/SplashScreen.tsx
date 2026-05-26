@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from '../i18n/I18nProvider';
 
 const COLORS = {
   ink: '#020513',
@@ -55,6 +56,7 @@ type SplashScreenProps = {
 };
 
 export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const compact = height < 720 || width < 380;
@@ -351,7 +353,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         >
           <Text style={[styles.title, { fontSize: compact ? 58 : 72 }]}>Fixora</Text>
           <Text style={[styles.tagline, { fontSize: compact ? 16 : 18 }]}>
-            Find trusted professionals instantly.
+            {t('splash.tagline', 'Find trusted professionals instantly.')}
           </Text>
         </Animated.View>
 
@@ -367,7 +369,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         >
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Start Fixora"
+            accessibilityLabel={t('splash.start', 'Start Fixora')}
             onPress={onGetStarted}
             android_ripple={{ color: 'rgba(255,255,255,0.16)' }}
             style={({ pressed }) => [styles.buttonShell, pressed && styles.buttonPressed]}
@@ -379,7 +381,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
               >
-                <Text style={styles.buttonText}>Start Fixora</Text>
+                <Text style={styles.buttonText}>{t('splash.start', 'Start Fixora')}</Text>
               </LinearGradient>
             </BlurView>
           </Pressable>

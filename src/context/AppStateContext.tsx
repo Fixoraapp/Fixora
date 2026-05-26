@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultLocation } from './LocationContext';
 import { LocationSelection, UserRole } from '../types/navigation';
+import { storage } from '../utils/storage';
 
 type PersistedAppState = {
   hasSeenOnboarding: boolean;
@@ -61,7 +61,7 @@ function normalizePersistedState(state: PersistedAppState): PersistedAppState {
 }
 
 async function persist(nextState: PersistedAppState) {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+  await storage.setItem(STORAGE_KEY, JSON.stringify(nextState));
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
@@ -72,7 +72,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    AsyncStorage.getItem(STORAGE_KEY)
+    storage.getItem(STORAGE_KEY)
       .then((stored) => {
         if (!mounted || !stored) {
           return;
@@ -112,7 +112,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const resetAppState = useCallback(async () => {
     stateRef.current = initialState;
     setState(initialState);
-    await AsyncStorage.removeItem(STORAGE_KEY);
+    await storage.removeItem(STORAGE_KEY);
   }, []);
 
   const value = useMemo<AppStateContextValue>(

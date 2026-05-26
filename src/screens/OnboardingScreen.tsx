@@ -15,6 +15,7 @@ import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { ScreenBackground } from '../components/ScreenBackground';
 import { StepDots } from '../components/StepDots';
+import { useTranslation } from '../i18n/I18nProvider';
 
 const slides = [
   {
@@ -42,11 +43,18 @@ type OnboardingScreenProps = {
 };
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
+  const { t } = useTranslation();
   const { height, width } = useWindowDimensions();
   const compact = height < 720 || width < 380;
   const [index, setIndex] = useState(0);
   const page = useRef(new Animated.Value(1)).current;
   const slide = slides[index];
+  const translatedSlide = {
+    ...slide,
+    title: t(`onboarding.slide${index + 1}.title`, slide.title),
+    subtitle: t(`onboarding.slide${index + 1}.subtitle`, slide.subtitle),
+    cta: index === slides.length - 1 ? t('buttons.getStarted', slide.cta) : t('buttons.next', slide.cta),
+  };
 
   const restartPage = () => {
     page.setValue(0);
@@ -86,7 +94,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           <Text style={[styles.headerAction, index === 0 && styles.hidden]}>‹</Text>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Skip onboarding" onPress={onComplete} hitSlop={12}>
-          <Text style={styles.skip}>Skip</Text>
+          <Text style={styles.skip}>{t('onboarding.skip', 'Skip')}</Text>
         </Pressable>
       </View>
 
@@ -96,9 +104,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       >
         <Animated.View style={{ opacity, transform: [{ translateY }] }}>
           <Text style={[styles.title, { fontSize: compact ? 30 : 34, lineHeight: compact ? 36 : 40 }]}>
-            {slide.title}
+            {translatedSlide.title}
           </Text>
-          <Text style={styles.subtitle}>{slide.subtitle}</Text>
+          <Text style={styles.subtitle}>{translatedSlide.subtitle}</Text>
           <View style={[styles.visual, { height: compact ? 318 : 372 }]}>
             {slide.kind === 'network' ? <NetworkVisual /> : null}
             {slide.kind === 'map' ? <MapVisual /> : null}
@@ -109,7 +117,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
       <View style={styles.footer}>
         <StepDots count={3} activeIndex={index} onSelect={goTo} />
-        <GradientButton title={slide.cta} onPress={goNext} />
+        <GradientButton title={translatedSlide.cta} onPress={goNext} />
       </View>
     </ScreenBackground>
   );

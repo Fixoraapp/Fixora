@@ -3,12 +3,14 @@ import { useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppearanceSettings } from '../components/AppearanceSettings';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
 import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { SectionHeader } from '../components/SectionHeader';
 import { TextField } from '../components/TextField';
 import { colors } from '../constants/theme';
+import { useAdminConfig } from '../context/AdminConfigContext';
 import {
   ChatMessage,
   ClientWallet,
@@ -23,6 +25,7 @@ import {
 } from '../context/MarketplaceContext';
 import { popularServices, professionals } from '../data/marketplace';
 import { useTheme } from '../theme/useTheme';
+import { useTranslation } from '../i18n/I18nProvider';
 import { Professional } from '../types/marketplace';
 import { LocationSelection, UserRole } from '../types/navigation';
 
@@ -338,12 +341,21 @@ function MarketplaceHome({
   onOpenCategories: () => void;
   onOpenProfessional: (pro: Professional) => void;
 }) {
+  const adminConfig = useAdminConfig();
+  const { t } = useTranslation();
+  const adminCategories = useMemo(
+    () => adminConfig.state.categories
+      .filter((category) => category.isActive)
+      .sort((left, right) => left.sortOrder - right.sortOrder),
+    [adminConfig.state.categories],
+  );
+  const marketingBanners = adminConfig.state.marketingBanners.filter((banner) => banner.isActive);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sort, setSort] = useState<SortOption>('recommended');
   const [activeFilters, setActiveFilters] = useState<FilterKey[]>([]);
   const normalizedQuery = searchQuery.trim().toLowerCase();
-  const categoryPool = ['All', ...categoryVisuals.slice(0, 7)];
+  const categoryPool = ['All', ...adminCategories.slice(0, 7).map((category) => category.name_en || category.slug)];
   const searchedServices = popularServices.filter((service) =>
     !normalizedQuery
       ? false
@@ -459,6 +471,13 @@ function MarketplaceHome({
         </ScrollView>
       </View>
 
+      {adminConfig.state.appSettings.maintenanceMode ? (
+        <GlassCard style={styles.adminNotice}>
+          <Text style={styles.adminNoticeTitle}>Maintenance mode</Text>
+          <Text style={styles.adminNoticeText}>Some marketplace actions may be limited by admin settings.</Text>
+        </GlassCard>
+      ) : null}
+
       {hasSearchMode ? (
         <SearchResultsBlock
           query={searchQuery}
@@ -476,8 +495,8 @@ function MarketplaceHome({
         style={styles.heroBanner}
       >
         <View style={styles.heroCopy}>
-          <Text style={styles.heroKicker}>Find the best specialists near you</Text>
-          <Text style={styles.heroText}>Fast booking, verified reviews, secure payments, local pricing.</Text>
+          <Text style={styles.heroKicker}>{t('clientHome.hero.title', 'Find the best specialists near you')}</Text>
+          <Text style={styles.heroText}>{t('clientHome.hero.subtitle', 'Fast booking, verified reviews, secure payments, local pricing.')}</Text>
           <Pressable onPress={onOpenCategories} style={styles.heroButton}>
             <Text style={styles.heroButtonText}>Find a master</Text>
           </Pressable>
@@ -487,24 +506,35 @@ function MarketplaceHome({
         </View>
       </LinearGradient>
 
-      <SectionHeader title="Service categories" action="All" />
+      {marketingBanners.length > 0 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+          {marketingBanners.map((banner) => (
+            <LinearGradient key={banner.id} colors={['rgba(249,215,126,0.2)', 'rgba(21,123,255,0.14)']} style={styles.marketingBanner}>
+              <Text style={styles.marketingBannerTitle}>{banner.title_en}</Text>
+              <Text style={styles.marketingBannerMeta}>{banner.target} / {banner.startDate} - {banner.endDate}</Text>
+            </LinearGradient>
+          ))}
+        </ScrollView>
+      ) : null}
+
+      <SectionHeader title={t('clientHome.categories', 'Service categories')} action="All" />
       <View style={styles.categoryGrid}>
-        {categoryVisuals.map((item, index) => (
+        {[...adminCategories.slice(0, 7), { id: 'more', name_en: 'More', icon: 'MO', color: '#7C3AED' }].map((item, index) => (
           <Pressable
-            key={item}
+            key={item.id}
             accessibilityRole="button"
-            onPress={index === categoryVisuals.length - 1 ? onOpenCategories : undefined}
+            onPress={index === Math.min(adminCategories.length, 7) ? onOpenCategories : undefined}
             style={styles.categoryCard}
           >
-            <LinearGradient colors={['rgba(21,123,255,0.18)', 'rgba(168,85,247,0.12)']} style={styles.categoryIcon}>
-              <Text style={styles.categoryIconText}>{item.slice(0, 2).toUpperCase()}</Text>
+            <LinearGradient colors={[`${item.color ?? '#157BFF'}33`, 'rgba(168,85,247,0.12)']} style={styles.categoryIcon}>
+              <Text style={styles.categoryIconText}>{item.icon ?? item.name_en.slice(0, 2).toUpperCase()}</Text>
             </LinearGradient>
-            <Text style={styles.categoryLabel}>{item}</Text>
+            <Text style={styles.categoryLabel}>{item.name_en}</Text>
           </Pressable>
         ))}
       </View>
 
-      <SectionHeader title="Popular services" action="All" />
+      <SectionHeader title={t('clientHome.popularServices', 'Popular services')} action="All" />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
         {popularServices.map((service, index) => (
           <Pressable key={service.id} style={styles.serviceCard}>
@@ -520,7 +550,7 @@ function MarketplaceHome({
         ))}
       </ScrollView>
 
-      <SectionHeader title="Best masters nearby" />
+      <SectionHeader title={t('clientHome.bestNearby', 'Best masters nearby')} />
       <View style={styles.list}>
         {nearby.map((pro) => (
           <ProfessionalCard key={pro.id} pro={pro} onPress={() => onOpenProfessional(pro)} />
@@ -1139,9 +1169,10 @@ function MasterWalletScreen({ wallet, orders, onRequestPayout }: { wallet: Maste
 }
 
 function MasterProfileScreen({ location }: { location: LocationSelection }) {
+  const { t } = useTranslation();
   return (
     <>
-      <Text style={styles.utilityTitle}>Master profile</Text>
+      <Text style={styles.utilityTitle}>{t('profile.title', 'Profile')}</Text>
       <Text style={styles.utilitySubtitle}>Grow profile rating, services, reviews, and local visibility.</Text>
       <GlassCard style={styles.profileCard}>
         <View style={styles.clientAvatar}><Text style={styles.clientAvatarText}>M</Text></View>
@@ -1153,6 +1184,9 @@ function MasterProfileScreen({ location }: { location: LocationSelection }) {
           <ProfileRow label="Profile completion" value="85%" />
           <ProfileRow label="Local marketplace" value={location.region} />
         </View>
+      </GlassCard>
+      <GlassCard style={styles.profileCard}>
+        <LanguageSwitcher />
       </GlassCard>
       <AppearanceSettings />
     </>
@@ -1881,9 +1915,10 @@ function ClientProfileTab({
   notifications: MarketplaceNotification[];
   onReadNotifications: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <>
-      <Text style={styles.utilityTitle}>Profile</Text>
+      <Text style={styles.utilityTitle}>{t('profile.title', 'Profile')}</Text>
       <Text style={styles.utilitySubtitle}>Your premium client account and marketplace preferences.</Text>
       <GlassCard style={styles.profileCard}>
         <View style={styles.clientAvatar}><Text style={styles.clientAvatarText}>C</Text></View>
@@ -1894,6 +1929,9 @@ function ClientProfileTab({
           <ProfileRow label="Language" value={location.language.toUpperCase()} />
           <ProfileRow label="Marketplace" value={location.region} />
         </View>
+      </GlassCard>
+      <GlassCard style={styles.profileCard}>
+        <LanguageSwitcher />
       </GlassCard>
       <AppearanceSettings />
       <NotificationCenter role="client" notifications={notifications} onRead={onReadNotifications} />
@@ -2457,6 +2495,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
   },
+  adminNotice: {
+    marginTop: 14,
+    borderRadius: 18,
+  },
+  adminNoticeTitle: {
+    color: '#F9D77E',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  adminNoticeText: {
+    marginTop: 6,
+    color: '#D7DDF0',
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '800',
+  },
   heroBanner: {
     minHeight: 160,
     marginTop: 16,
@@ -2555,6 +2609,26 @@ const styles = StyleSheet.create({
   horizontalList: {
     gap: 12,
     paddingRight: 20,
+  },
+  marketingBanner: {
+    width: 230,
+    minHeight: 88,
+    marginTop: 14,
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(249,215,126,0.22)',
+  },
+  marketingBannerTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  marketingBannerMeta: {
+    marginTop: 8,
+    color: '#F9D77E',
+    fontSize: 11,
+    fontWeight: '800',
   },
   serviceCard: {
     width: 142,

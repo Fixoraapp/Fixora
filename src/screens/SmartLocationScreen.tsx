@@ -6,6 +6,7 @@ import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { ScreenBackground } from '../components/ScreenBackground';
 import { locationService } from '../services/locationService';
+import { useTranslation } from '../i18n/I18nProvider';
 import { LocationSelection } from '../types/navigation';
 import { getMockLocation } from '../utils/location';
 
@@ -24,6 +25,7 @@ const stars = Array.from({ length: 54 }, (_, index) => ({
 }));
 
 export default function SmartLocationScreen({ onContinue, onManual }: SmartLocationScreenProps) {
+  const { t } = useTranslation();
   const { height, width } = useWindowDimensions();
   const compact = height < 740;
   const [location, setLocation] = useState<LocationSelection | null>(null);
@@ -133,14 +135,14 @@ export default function SmartLocationScreen({ onContinue, onManual }: SmartLocat
 
         <View style={styles.statusPill}>
           <View style={[styles.statusDot, detected && styles.statusDotDone, status === 'failed' && styles.statusDotError]} />
-          <Text style={styles.statusText}>{statusLabel(status)}</Text>
+          <Text style={styles.statusText}>{statusLabel(status, t)}</Text>
         </View>
 
-        <Text style={styles.title}>{detected ? 'Your location detected' : 'Real GPS location'}</Text>
+        <Text style={styles.title}>{detected ? t('location.smart.title.detected', 'Your location detected') : t('location.smart.title.ready', 'Real GPS location')}</Text>
         <Text style={styles.subtitle}>
           {detected
-            ? 'Fixora matched your local marketplace, language, currency, and exact coordinates.'
-            : 'Use GPS to set your local marketplace with real address details.'}
+            ? t('location.smart.subtitle.detected', 'Fixora matched your local marketplace, language, currency, and exact coordinates.')
+            : t('location.smart.subtitle.ready', 'Use GPS to set your local marketplace with real address details.')}
         </Text>
 
         {hasCoordinates ? (
@@ -177,7 +179,7 @@ export default function SmartLocationScreen({ onContinue, onManual }: SmartLocat
       <View style={styles.footer}>
         {detected ? (
           <>
-            <GradientButton title="Continue" onPress={() => onContinue(displayLocation)} />
+            <GradientButton title={t('buttons.continue', 'Continue')} onPress={() => onContinue(displayLocation)} />
             <View style={styles.footerRow}>
               <Pressable accessibilityRole="button" onPress={detectLocation} style={styles.secondaryButton}>
                 <Text style={styles.manualText}>Refresh location</Text>
@@ -200,12 +202,12 @@ export default function SmartLocationScreen({ onContinue, onManual }: SmartLocat
   );
 }
 
-function statusLabel(status: DetectionStatus) {
+function statusLabel(status: DetectionStatus, t: (key: string, fallback?: string) => string) {
   if (status === 'detecting') return 'Detecting GPS location...';
   if (status === 'detected') return 'Location found';
   if (status === 'denied') return 'Permission denied';
   if (status === 'failed') return 'GPS failed';
-  return 'GPS ready';
+  return t('location.status.ready', 'GPS ready');
 }
 
 function Pin() {

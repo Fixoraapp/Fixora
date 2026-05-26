@@ -20,6 +20,7 @@ import { ScreenBackground } from '../components/ScreenBackground';
 import { TextField } from '../components/TextField';
 import { colors, typography } from '../constants/theme';
 import { useLocationContext } from '../context/LocationContext';
+import { useTranslation } from '../i18n/I18nProvider';
 import { authService } from '../services/authService';
 import { AuthMethod, UserRole } from '../types/navigation';
 
@@ -120,6 +121,7 @@ const profileInitial: Record<MasterProfileField, string> = {
 };
 
 export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
+  const { t } = useTranslation();
   const { selectedLocation } = useLocationContext();
   const [screen, setScreen] = useState<AuthScreenName>(
     role === 'client' ? 'ClientWelcomeAuthScreen' : 'MasterWelcomeAuthScreen',
@@ -178,7 +180,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
     try {
       await task();
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : 'Authentication failed.');
+      setAuthError(error instanceof Error ? error.message : t('errors.authFailed', 'Authentication failed.'));
     } finally {
       setAuthLoading(false);
     }
@@ -196,10 +198,10 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       'email',
       'password',
       'confirmPassword',
-    ]);
+    ], t('errors.required', 'This field is required.'));
 
     if (clientRegister.password && clientRegister.confirmPassword && clientRegister.password !== clientRegister.confirmPassword) {
-      nextErrors.confirmPassword = 'Passwords do not match.';
+      nextErrors.confirmPassword = t('errors.passwordMismatch', 'Passwords do not match.');
     }
 
     if (hasErrors(nextErrors)) {
@@ -229,7 +231,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
 
   const submitClientLogin = () => void runAuth(async () => {
     const requiredFields: ClientLoginField[] = loginMethod === 'phone' ? ['identifier'] : ['identifier', 'password'];
-    const nextErrors = validateRequired<ClientLoginField>(clientLogin, requiredFields);
+    const nextErrors = validateRequired<ClientLoginField>(clientLogin, requiredFields, t('errors.required', 'This field is required.'));
 
     if (hasErrors(nextErrors)) {
       setErrors(nextErrors);
@@ -258,10 +260,10 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       'password',
       'confirmPassword',
       'city',
-    ]);
+    ], t('errors.required', 'This field is required.'));
 
     if (masterRegister.password && masterRegister.confirmPassword && masterRegister.password !== masterRegister.confirmPassword) {
-      nextErrors.confirmPassword = 'Passwords do not match.';
+      nextErrors.confirmPassword = t('errors.passwordMismatch', 'Passwords do not match.');
     }
 
     if (hasErrors(nextErrors)) {
@@ -293,7 +295,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
 
   const submitMasterLogin = () => void runAuth(async () => {
     const requiredFields: ClientLoginField[] = loginMethod === 'phone' ? ['identifier'] : ['identifier', 'password'];
-    const nextErrors = validateRequired<ClientLoginField>(clientLogin, requiredFields);
+    const nextErrors = validateRequired<ClientLoginField>(clientLogin, requiredFields, t('errors.required', 'This field is required.'));
 
     if (hasErrors(nextErrors)) {
       setErrors(nextErrors);
@@ -314,7 +316,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
   });
 
   const submitForgot = () => {
-    const nextErrors = validateRequired<ForgotField>(forgot, ['identifier']);
+    const nextErrors = validateRequired<ForgotField>(forgot, ['identifier'], t('errors.required', 'This field is required.'));
 
     if (hasErrors(nextErrors)) {
       setErrors(nextErrors);
@@ -326,7 +328,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
   };
 
   const submitOtp = () => void runAuth(async () => {
-    const nextErrors = validateRequired<OtpField>(otp, ['code']);
+    const nextErrors = validateRequired<OtpField>(otp, ['code'], t('errors.required', 'This field is required.'));
 
     if (otp.code && otp.code.trim().length < 4) {
       nextErrors.code = 'Enter the OTP code.';
@@ -359,7 +361,7 @@ export default function AuthScreen({ role, onAuthenticated }: AuthScreenProps) {
       'workLocation',
       'priceRange',
       'availability',
-    ]);
+    ], t('errors.required', 'This field is required.'));
 
     if (hasErrors(nextErrors)) {
       setErrors(nextErrors);
@@ -952,10 +954,10 @@ function FooterLink({ text, action, onPress }: { text: string; action: string; o
   );
 }
 
-function validateRequired<T extends string>(values: Record<T, string>, fields: T[]): FormErrors<T> {
+function validateRequired<T extends string>(values: Record<T, string>, fields: T[], message = 'This field is required.'): FormErrors<T> {
   return fields.reduce<FormErrors<T>>((nextErrors, field) => {
     if (!values[field]?.trim()) {
-      nextErrors[field] = 'This field is required.';
+      nextErrors[field] = message;
     }
 
     return nextErrors;

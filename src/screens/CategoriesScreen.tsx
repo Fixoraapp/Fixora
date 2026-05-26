@@ -5,18 +5,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
 import { GradientButton } from '../components/GradientButton';
 import { colors } from '../constants/theme';
+import { useAdminConfig } from '../context/AdminConfigContext';
 import { categories } from '../data/categories';
 import { popularServices } from '../data/marketplace';
+import { useTranslation } from '../i18n/I18nProvider';
 
 type CategoriesScreenProps = {
   onBack: () => void;
 };
 
 export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(categories[0]?.id ?? 'repair');
+  const adminConfig = useAdminConfig();
+  const { t } = useTranslation();
+  const adminCategories = useMemo(
+    () => adminConfig.state.categories
+      .filter((category) => category.isActive)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((category) => ({
+        id: category.id,
+        title: category.name_en || category.slug,
+        description: `${category.availableCities.join(', ') || 'Local'} marketplace category`,
+        icon: category.icon,
+        subcategories: category.availableRegions,
+        popularServices: [category.name_en],
+        localServices: category.availableCities,
+      })),
+    [adminConfig.state.categories],
+  );
+  const visibleCategories = adminCategories.length > 0 ? adminCategories : categories;
+  const [selectedCategoryId, setSelectedCategoryId] = useState(visibleCategories[0]?.id ?? 'repair');
   const selectedCategory = useMemo(
-    () => categories.find((category) => category.id === selectedCategoryId) ?? categories[0],
-    [selectedCategoryId],
+    () => visibleCategories.find((category) => category.id === selectedCategoryId) ?? visibleCategories[0],
+    [selectedCategoryId, visibleCategories],
   );
   const localServices = selectedCategory?.localServices ?? [];
   const categoryServices = popularServices.filter((service) =>
@@ -39,11 +59,11 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
         </Pressable>
 
         <Text style={styles.kicker}>Fixora marketplace</Text>
-        <Text style={styles.title}>Categories</Text>
-        <Text style={styles.body}>Explore local services, subcategories, popular bookings, and premium professionals by vertical.</Text>
+        <Text style={styles.title}>{t('categories.title', 'Categories')}</Text>
+        <Text style={styles.body}>{t('categories.subtitle', 'Explore local services, subcategories, popular bookings, and premium professionals by vertical.')}</Text>
 
         <View style={styles.categoryGrid}>
-          {categories.map((category) => {
+          {visibleCategories.map((category) => {
             const selected = selectedCategoryId === category.id;
 
             return (

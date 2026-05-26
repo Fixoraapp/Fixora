@@ -4,7 +4,9 @@ import { GradientButton } from '../components/GradientButton';
 import { GlassCard } from '../components/GlassCard';
 import { LocationSelector, LocationSelectorItem } from '../components/LocationSelector';
 import { ScreenBackground } from '../components/ScreenBackground';
+import { useAdminConfig } from '../context/AdminConfigContext';
 import { useLocationContext } from '../context/LocationContext';
+import { useTranslation } from '../i18n/I18nProvider';
 import { countries } from '../data/locations';
 import { City, Country, Region } from '../types/location';
 import { LocationSelection } from '../types/navigation';
@@ -36,8 +38,12 @@ function getPrimaryCity(region: Region) {
 }
 
 export default function LocationSelectionScreen({ onComplete }: LocationSelectionScreenProps) {
+  const adminConfig = useAdminConfig();
+  const { t } = useTranslation();
   const { selectedLocation, setSelectedLocation } = useLocationContext();
-  const initialCountry = countries.find((item) => item.iso2 === selectedLocation.countryCode) ?? countries[0];
+  const activeCountryCodes = adminConfig.state.countries.filter((item) => item.isActive && item.marketplaceEnabled).map((item) => item.iso2);
+  const visibleCountries = activeCountryCodes.length > 0 ? countries.filter((item) => activeCountryCodes.includes(item.iso2)) : countries;
+  const initialCountry = visibleCountries.find((item) => item.iso2 === selectedLocation.countryCode) ?? visibleCountries[0] ?? countries[0];
   const initialRegion =
     initialCountry.regions.find(
       (item) => item.name_en === selectedLocation.region || item.name_ru === selectedLocation.region,
@@ -63,7 +69,7 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
 
   const title =
     level === 'country'
-      ? 'Where are you located?'
+      ? t('location.manual.title', 'Where are you located?')
       : level === 'region'
         ? parentRegion
           ? 'Select Subject'
@@ -73,7 +79,7 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
         : 'Select City';
   const subtitle =
     level === 'country'
-      ? 'Select your country to get started'
+      ? t('location.manual.country', 'Select your country to get started')
       : level === 'region'
         ? parentRegion
           ? `${country.emoji} ${parentRegion.name_en}`
@@ -82,7 +88,8 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
 
   const items = useMemo<LocationSelectorItem[]>(() => {
     if (level === 'country') {
-      return searchCountries(query).map((item) => ({
+      const available = activeCountryCodes.length > 0 ? searchCountries(query).filter((item) => activeCountryCodes.includes(item.iso2)) : searchCountries(query);
+      return available.map((item) => ({
         id: item.iso2,
         title: item.name_en,
         subtitle: `${item.name_ru} • ${item.iso2}/${item.iso3} • ${item.currency} • ${item.language.toUpperCase()}`,
@@ -111,12 +118,12 @@ export default function LocationSelectionScreen({ onComplete }: LocationSelectio
       subtitle: item.name_ru,
       meta: country.currency,
     }));
-  }, [country.currency, level, query, region.id, regionOptions]);
+  }, [activeCountryCodes, country.currency, level, query, region.id, regionOptions]);
 
   const selectedId = level === 'country' ? country.iso2 : level === 'region' ? region.id : city.id;
 
   const selectCountry = (countryIso2: string) => {
-    const nextCountry = countries.find((candidate) => candidate.iso2 === countryIso2) ?? countries[0];
+    const nextCountry = visibleCountries.find((candidate) => candidate.iso2 === countryIso2) ?? visibleCountries[0] ?? countries[0];
     const nextRegion = getPrimaryRegion(nextCountry);
     const nextChildren = getChildRegions(nextRegion.id);
     const nextFinalRegion = nextChildren[0] ?? nextRegion;
