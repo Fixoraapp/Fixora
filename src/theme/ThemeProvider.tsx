@@ -1,8 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { AccentColor } from './colors';
 import { AnimationSpeed, createTheme, defaultThemePreferences, FixoraTheme, ThemeMode, ThemePreferences } from './themes';
+import { storage, subscribeStorage } from '../utils/storage';
 
 type ThemeContextValue = {
   theme: FixoraTheme;
@@ -17,8 +17,16 @@ type ThemeContextValue = {
 const STORAGE_KEY = 'fixora.theme.v1';
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function normalizeThemePreferences(stored?: Partial<ThemePreferences> | null): ThemePreferences {
+  return {
+    ...defaultThemePreferences,
+    ...stored,
+    fontScale: Math.min(1.2, Math.max(0.9, Number(stored?.fontScale ?? defaultThemePreferences.fontScale))),
+  };
+}
+
 async function persist(preferences: ThemePreferences) {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+  await storage.setItem(STORAGE_KEY, JSON.stringify(preferences));
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -26,16 +34,33 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<ThemePreferences>(defaultThemePreferences);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
+    let mounted = true;
+
+    storage.getItem(STORAGE_KEY)
       .then((stored) => {
-        if (!stored) return;
-        setPreferences({ ...defaultThemePreferences, ...(JSON.parse(stored) as Partial<ThemePreferences>) });
+        if (!mounted || !stored) return;
+        setPreferences(normalizeThemePreferences(JSON.parse(stored) as Partial<ThemePreferences>));
       })
       .catch(() => undefined);
+
+    const unsubscribe = subscribeStorage(STORAGE_KEY, (value) => {
+      if (!mounted || !value) return;
+
+      try {
+        setPreferences(normalizeThemePreferences(JSON.parse(value) as Partial<ThemePreferences>));
+      } catch {
+        // ignore broken local storage values
+      }
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const update = async (patch: Partial<ThemePreferences>) => {
-    const nextPreferences = { ...preferences, ...patch };
+    const nextPreferences = normalizeThemePreferences({ ...preferences, ...patch });
     setPreferences(nextPreferences);
     await persist(nextPreferences);
   };
@@ -46,7 +71,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       preferences,
       setThemeMode: (mode) => update({ selectedTheme: mode }),
       setAccentColor: (accent) => update({ accentColor: accent }),
-      setFontScale: (scale) => update({ fontScale: Math.min(1.2, Math.max(0.9, scale)) }),
+      setFontScale: (scale) => update({ fontScale: scale }),
       setAnimationSpeed: (speed) => update({ animationSpeed: speed }),
       setReduceMotion: (reduceMotion) => update({ reduceMotion }),
     }),
