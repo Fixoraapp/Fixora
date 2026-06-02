@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultTranslations } from '../i18n/defaultTranslations';
-import { storage } from '../utils/storage';
+import { storage, subscribeStorage } from '../utils/storage';
 
 type Status = 'active' | 'pending' | 'blocked' | 'completed' | 'failed';
 type SectionKey = keyof AdminConfigState;
@@ -481,8 +481,23 @@ export function AdminConfigProvider({ children }: { children: ReactNode }) {
         }
       });
 
+    const unsubscribe = subscribeStorage(STORAGE_KEY, (value) => {
+      if (!mounted || !value) {
+        return;
+      }
+
+      try {
+        const next = mergeState(JSON.parse(value) as Partial<AdminConfigState>);
+        stateRef.current = next;
+        setState(next);
+      } catch {
+        // ignore broken local storage values
+      }
+    });
+
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, []);
 
