@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { UserRole } from '../types/navigation';
-import { storage } from '../utils/storage';
+import { storage, subscribeStorage } from '../utils/storage';
 
 export type RoleCardLayout = 'visualTop' | 'split' | 'compact';
 export type RoleCardAnimation = 'float' | 'pulse' | 'none';
@@ -211,8 +211,21 @@ export function RoleCardSettingsProvider({ children }: { children: ReactNode }) 
         }
       });
 
+    const unsubscribe = subscribeStorage(STORAGE_KEY, (value) => {
+      if (!mounted || !value) {
+        return;
+      }
+
+      try {
+        setSettings(normalizeSettings(JSON.parse(value) as Partial<RoleCardSettingsState>));
+      } catch {
+        // ignore broken local storage values
+      }
+    });
+
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, []);
 
