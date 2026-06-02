@@ -46,7 +46,7 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
   return (
     <SafeAreaView style={styles.root}>
       <LinearGradient
-        colors={['#050816', '#07111F', '#09071D', '#050816']}
+        colors={['#F7F8FC', '#FFFFFF', '#F5F0FF', '#EEF4FF']}
         locations={[0, 0.45, 0.78, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -69,7 +69,7 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
             return (
               <Pressable key={category.id} onPress={() => setSelectedCategoryId(category.id)} style={styles.categoryPress}>
                 <LinearGradient
-                  colors={selected ? ['rgba(21,123,255,0.34)', 'rgba(168,85,247,0.24)'] : ['rgba(255,255,255,0.09)', 'rgba(255,255,255,0.04)']}
+                  colors={selected ? ['rgba(214,91,255,0.14)', 'rgba(45,124,255,0.12)'] : ['#FFFFFF', '#FFFFFF']}
                   style={[styles.categoryCard, selected && styles.categoryCardActive]}
                 >
                   <View style={styles.categoryIcon}>
@@ -130,7 +130,7 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#050816',
+    backgroundColor: '#F7F8FC',
   },
   blueGlow: {
     position: 'absolute',
@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
     width: 330,
     height: 330,
     borderRadius: 165,
-    backgroundColor: '#157BFF',
-    opacity: 0.14,
+    backgroundColor: '#2D7CFF',
+    opacity: 0.1,
   },
   purpleGlow: {
     position: 'absolute',
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
     width: 380,
     height: 380,
     borderRadius: 190,
-    backgroundColor: '#7C3AED',
-    opacity: 0.16,
+    backgroundColor: '#D65BFF',
+    opacity: 0.1,
   },
   content: {
     paddingHorizontal: 20,
@@ -165,32 +165,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   backText: {
-    color: colors.white,
+    color: colors.text,
     fontSize: 22,
     fontWeight: '900',
   },
   backLabel: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     fontWeight: '800',
   },
   kicker: {
     marginTop: 12,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   title: {
     marginTop: 8,
-    color: colors.white,
+    color: colors.text,
     fontSize: 36,
     lineHeight: 42,
     fontWeight: '900',
   },
   body: {
     marginTop: 10,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '700',
@@ -210,12 +210,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#6D5DFB',
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
   },
   categoryCardActive: {
-    borderColor: 'rgba(142,167,255,0.58)',
-    shadowColor: '#157BFF',
-    shadowOpacity: 0.28,
+    borderColor: 'rgba(109,93,251,0.32)',
+    shadowColor: '#6D5DFB',
+    shadowOpacity: 0.14,
     shadowRadius: 18,
   },
   categoryIcon: {
@@ -224,25 +229,25 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(21,123,255,0.2)',
+    backgroundColor: 'rgba(109,93,251,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(142,167,255,0.38)',
+    borderColor: 'rgba(109,93,251,0.18)',
   },
   categoryIconText: {
-    color: '#FFFFFF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
   categoryTitle: {
     marginTop: 12,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     lineHeight: 20,
     fontWeight: '900',
   },
   categoryBody: {
     marginTop: 6,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
@@ -258,14 +263,14 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   detailTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 22,
     lineHeight: 28,
     fontWeight: '900',
   },
   detailMeta: {
     marginTop: 5,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
@@ -275,17 +280,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(124,58,237,0.24)',
+    backgroundColor: 'rgba(109,93,251,0.1)',
   },
   detailIconText: {
-    color: '#FFFFFF',
+    color: '#6D5DFB',
     fontSize: 15,
     fontWeight: '900',
   },
   sectionLabel: {
     marginTop: 18,
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -298,20 +303,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderRadius: 13,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   localChip: {
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderRadius: 13,
-    backgroundColor: 'rgba(21,123,255,0.14)',
+    backgroundColor: 'rgba(45,124,255,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(142,167,255,0.28)',
+    borderColor: 'rgba(45,124,255,0.18)',
   },
   chipText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     fontWeight: '900',
   },
@@ -325,18 +330,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: '#E5E7EB',
   },
   serviceTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
   serviceMeta: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 11,
     fontWeight: '900',
   },

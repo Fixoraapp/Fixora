@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+﻿import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlassCard } from './GlassCard';
 
@@ -39,7 +39,7 @@ export function LocationSelector({ items, selectedId, onSelect }: LocationSelect
               onPress={() => onSelect(item)}
               style={[styles.check, selectedId === item.id && styles.checkActive]}
             >
-              <Text style={styles.checkText}>{selectedId === item.id ? '✓' : '›'}</Text>
+              <Text style={styles.checkText}>{selectedId === item.id ? 'вњ“' : 'вЂє'}</Text>
             </Pressable>
           </View>
         </GlassCard>
@@ -70,20 +70,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 0,
   },
   subtitle: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0,
   },
   meta: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -95,18 +95,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.18)',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
   },
   checkActive: {
-    backgroundColor: '#157BFF',
+    backgroundColor: '#2D7CFF',
     borderColor: '#78A8FF',
-    shadowColor: '#157BFF',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.7,
     shadowRadius: 12,
   },
   checkText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 17,
     fontWeight: '900',
   },
 });
+

@@ -16,14 +16,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from '../i18n/I18nProvider';
 
 const COLORS = {
-  ink: '#020513',
-  navy: '#050817',
-  blue: '#08A8FF',
-  blueDeep: '#173BFF',
-  violet: '#9A32FF',
-  violetDeep: '#39108F',
-  white: '#F8FBFF',
-  mist: '#AAB7D6',
+  ink: '#F7F8FC',
+  navy: '#FFFFFF',
+  blue: '#2D7CFF',
+  blueDeep: '#DCEBFF',
+  violet: '#6D5DFB',
+  violetDeep: '#F2E8FF',
+  white: '#111827',
+  mist: '#6B7280',
 };
 
 const STAR_FIELD = Array.from({ length: 34 }, (_, index) => ({
@@ -215,9 +215,9 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" translucent />
+      <StatusBar style="dark" translucent />
       <LinearGradient
-        colors={['#020513', '#07091B', '#090A1F', '#020513']}
+        colors={['#F7F8FC', '#FFFFFF', '#F5F0FF', '#EEF4FF']}
         locations={[0, 0.36, 0.72, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -242,7 +242,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
 
         <Animated.View style={[styles.trail, { opacity: trail, transform: [{ translateY: fall }] }]}>
           <LinearGradient
-            colors={['rgba(8,168,255,0)', 'rgba(8,168,255,0.72)', 'rgba(154,50,255,0)']}
+            colors={['rgba(45,124,255,0)', 'rgba(109,93,251,0.22)', 'rgba(214,91,255,0)']}
             style={styles.trailBeam}
           />
           <LinearGradient
@@ -272,7 +272,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
 
         <View style={[styles.ground, { bottom: compact ? 122 : 150 }]}>
           <LinearGradient
-            colors={['rgba(6,10,25,0)', 'rgba(23,59,255,0.34)', 'rgba(154,50,255,0.16)', 'rgba(6,10,25,0)']}
+            colors={['rgba(255,255,255,0)', 'rgba(109,93,251,0.2)', 'rgba(214,91,255,0.12)', 'rgba(255,255,255,0)']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.horizon}
@@ -374,9 +374,9 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
             android_ripple={{ color: 'rgba(255,255,255,0.16)' }}
             style={({ pressed }) => [styles.buttonShell, pressed && styles.buttonPressed]}
           >
-            <BlurView intensity={Platform.OS === 'android' ? 34 : 70} tint="dark" style={styles.buttonBlur}>
+            <BlurView intensity={Platform.OS === 'android' ? 34 : 70} tint="light" style={styles.buttonBlur}>
               <LinearGradient
-                colors={['rgba(20,92,255,0.96)', 'rgba(109,58,255,0.98)', 'rgba(184,47,255,0.94)']}
+                colors={['#D65BFF', '#6D5DFB', '#2D7CFF']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     height: 420,
     borderRadius: 210,
     backgroundColor: COLORS.blueDeep,
-    opacity: 0.17,
+    opacity: 0.72,
   },
   purpleHaze: {
     position: 'absolute',
@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
     height: 260,
     borderRadius: 260,
     backgroundColor: COLORS.violetDeep,
-    opacity: 0.22,
+    opacity: 0.8,
     transform: [{ scaleX: 1.2 }],
   },
   star: {
     position: 'absolute',
     borderRadius: 3,
-    backgroundColor: COLORS.white,
+    backgroundColor: '#6D5DFB',
   },
   trail: {
     position: 'absolute',
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     width: 330,
     height: 120,
     borderRadius: 165,
-    backgroundColor: 'rgba(113,92,174,0.22)',
+    backgroundColor: 'rgba(214,91,255,0.12)',
     transform: [{ scaleX: 1.28 }],
   },
   brand: {
@@ -618,14 +618,14 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0,
     textAlign: 'center',
-    textShadowColor: 'rgba(8,168,255,0.55)',
+    textShadowColor: 'rgba(109,93,251,0.16)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 22,
   },
   tagline: {
     maxWidth: 280,
     marginTop: 8,
-    color: COLORS.white,
+    color: '#374151',
     fontWeight: '700',
     lineHeight: 24,
     textAlign: 'center',
@@ -647,10 +647,10 @@ const styles = StyleSheet.create({
     borderRadius: 29,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.34)',
+    borderColor: 'rgba(109,93,251,0.22)',
     shadowColor: COLORS.violet,
-    shadowOpacity: 0.48,
-    shadowRadius: 24,
+    shadowOpacity: 0.22,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 12 },
     elevation: 18,
   },

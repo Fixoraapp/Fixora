@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+﻿import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from '../i18n/I18nProvider';
 import { AppLanguage } from '../i18n/defaultTranslations';
 
 const languages: Array<{ id: AppLanguage; label: string }> = [
-  { id: 'ru', label: 'Русский' },
-  { id: 'hy', label: 'Հայերեն' },
+  { id: 'ru', label: 'Р СѓСЃСЃРєРёР№' },
+  { id: 'hy', label: 'ХЂХЎХµХҐЦЂХҐХ¶' },
   { id: 'en', label: 'English' },
 ];
 
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     minWidth: 124,
   },
   label: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -51,20 +51,21 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   optionActive: {
     backgroundColor: 'rgba(21,123,255,0.2)',
     borderColor: 'rgba(142,167,255,0.48)',
   },
   optionText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 11,
     fontWeight: '900',
   },
   optionTextActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
 });
+

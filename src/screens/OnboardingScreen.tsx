@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+﻿import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -91,7 +91,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           onPress={() => (index > 0 ? goTo(index - 1) : undefined)}
           hitSlop={12}
         >
-          <Text style={[styles.headerAction, index === 0 && styles.hidden]}>‹</Text>
+          <Text style={[styles.headerAction, index === 0 && styles.hidden]}>вЂ№</Text>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Skip onboarding" onPress={onComplete} hitSlop={12}>
           <Text style={styles.skip}>{t('onboarding.skip', 'Skip')}</Text>
@@ -137,9 +137,9 @@ function NetworkVisual() {
           </View>
           <View style={styles.flex}>
             <Text style={styles.cardTitle}>John Smith</Text>
-            <Text style={styles.cardMeta}>Plumbing • 4.9 ★</Text>
+            <Text style={styles.cardMeta}>Plumbing вЂў 4.9 в…</Text>
           </View>
-          <Text style={styles.check}>✓</Text>
+          <Text style={styles.check}>вњ“</Text>
         </View>
       </GlassCard>
       <GlassCard style={[styles.proCard, styles.proCardSecond]}>
@@ -149,9 +149,9 @@ function NetworkVisual() {
           </View>
           <View style={styles.flex}>
             <Text style={styles.cardTitle}>Anna Beauty</Text>
-            <Text style={styles.cardMeta}>Makeup artist • 4.8 ★</Text>
+            <Text style={styles.cardMeta}>Makeup artist вЂў 4.8 в…</Text>
           </View>
-          <Text style={styles.check}>✓</Text>
+          <Text style={styles.check}>вњ“</Text>
         </View>
       </GlassCard>
     </View>
@@ -182,9 +182,9 @@ function MapVisual() {
         <Text style={styles.cardMeta}>Ratings, prices, reviews</Text>
       </GlassCard>
       <View style={styles.featureDock}>
-        <Text style={styles.dockItem}>⌖ City</Text>
-        <Text style={styles.dockItem}>★ Rating</Text>
-        <Text style={styles.dockItem}>◆ Safe</Text>
+        <Text style={styles.dockItem}>вЊ– City</Text>
+        <Text style={styles.dockItem}>в… Rating</Text>
+        <Text style={styles.dockItem}>в—† Safe</Text>
       </View>
     </View>
   );
@@ -194,8 +194,8 @@ function VerifiedVisual() {
   return (
     <View style={styles.visualFill}>
       <View style={styles.verifiedShield}>
-        <LinearGradient colors={['#157BFF', '#7C3AED']} style={styles.shieldGradient}>
-          <Text style={styles.shieldText}>✓</Text>
+        <LinearGradient colors={['#2D7CFF', '#6D5DFB']} style={styles.shieldGradient}>
+          <Text style={styles.shieldText}>вњ“</Text>
         </LinearGradient>
       </View>
       <GlassCard style={[styles.chatCard, { top: 44, left: 10 }]}>
@@ -204,7 +204,7 @@ function VerifiedVisual() {
       </GlassCard>
       <GlassCard style={[styles.chatCard, { top: 142, right: 4 }]}>
         <Text style={styles.cardTitle}>Secure Payment</Text>
-        <Text style={styles.cardMeta}>•••• 4242 • Protected</Text>
+        <Text style={styles.cardMeta}>вЂўвЂўвЂўвЂў 4242 вЂў Protected</Text>
       </GlassCard>
       <GlassCard style={[styles.trackingCard]}>
         <Text style={styles.cardTitle}>Order tracking</Text>
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerAction: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 35,
     lineHeight: 38,
     fontWeight: '600',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   title: {
     maxWidth: 390,
     marginTop: 8,
-    color: '#FFFFFF',
+    color: '#111827',
     fontWeight: '900',
     letterSpacing: 0,
     textShadowColor: 'rgba(21,123,255,0.34)',
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   subtitle: {
     maxWidth: 340,
     marginTop: 10,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 16,
     lineHeight: 23,
     fontWeight: '600',
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(21,123,255,0.32)',
     backgroundColor: 'rgba(21,123,255,0.08)',
-    shadowColor: '#157BFF',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.68,
     shadowRadius: 40,
   },
@@ -315,13 +315,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#157BFF',
+    backgroundColor: '#2D7CFF',
   },
   avatarPurple: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#6D5DFB',
   },
   avatarText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontWeight: '900',
     fontSize: 18,
   },
@@ -329,20 +329,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 0,
   },
   cardMeta: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
   },
   check: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 18,
     fontWeight: '900',
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(168,85,247,0.94)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#A855F7',
+    shadowColor: '#B75CFF',
     shadowOpacity: 0.85,
     shadowRadius: 20,
   },
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#111827',
   },
   mapCard: {
     left: 18,
@@ -407,15 +407,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     minHeight: 78,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(109,93,251,0.16)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
   },
   dockItem: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     height: 122,
     borderRadius: 28,
     overflow: 'hidden',
-    shadowColor: '#157BFF',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.75,
     shadowRadius: 28,
   },
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   shieldText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 54,
     fontWeight: '900',
   },
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     height: 7,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: '#F3F4F6',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -466,11 +466,11 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     borderRadius: 8,
-    backgroundColor: '#157BFF',
+    backgroundColor: '#2D7CFF',
   },
   trackDotActive: {
-    backgroundColor: '#A855F7',
-    shadowColor: '#A855F7',
+    backgroundColor: '#B75CFF',
+    shadowColor: '#B75CFF',
     shadowOpacity: 0.9,
     shadowRadius: 12,
   },
@@ -480,3 +480,4 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 });
+

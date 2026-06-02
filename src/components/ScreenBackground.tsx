@@ -25,10 +25,10 @@ export function ScreenBackground({ children }: ScreenBackgroundProps) {
         style={[styles.aurora, { opacity: theme.isDark ? 0.42 : 0.18 }]}
       />
       <View style={[styles.blueGlow, { backgroundColor: theme.colors.accent, opacity: theme.isDark ? 0.18 : 0.1 }]} />
-      <View style={[styles.goldGlow, { opacity: theme.isDark ? 0.1 : 0.05 }]} />
-      <View style={[styles.purpleGlow, { opacity: theme.isDark ? 0.16 : 0.08 }]} />
+      <View style={[styles.goldGlow, { opacity: theme.isDark ? 0.1 : 0.06 }]} />
+      <View style={[styles.purpleGlow, { opacity: theme.isDark ? 0.16 : 0.11 }]} />
       <View style={[styles.grid, { borderColor: theme.isDark ? 'rgba(220,232,255,0.13)' : 'rgba(35,184,255,0.1)' }]} />
-      <View style={styles.vignette} />
+      <View style={[styles.vignette, { backgroundColor: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.22)' }]} />
       {children}
     </SafeAreaView>
   );
@@ -37,7 +37,7 @@ export function ScreenBackground({ children }: ScreenBackgroundProps) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#030611',
+    backgroundColor: '#F7F8FC',
   },
   aurora: {
     position: 'absolute',
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     width: 360,
     height: 360,
     borderRadius: 180,
-    backgroundColor: '#23B8FF',
+    backgroundColor: '#2D7CFF',
     opacity: 0.18,
   },
   goldGlow: {
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: '#F7D47A',
+    backgroundColor: '#D65BFF',
     opacity: 0.1,
   },
   purpleGlow: {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     width: 430,
     height: 430,
     borderRadius: 215,
-    backgroundColor: '#9B5CFF',
+    backgroundColor: '#6D5DFB',
     opacity: 0.16,
   },
   grid: {
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
   },
   vignette: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.22)',
   },
 });

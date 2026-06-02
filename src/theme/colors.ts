@@ -1,12 +1,12 @@
 export const accentPalette = {
-  blue: '#23B8FF',
-  purple: '#9B5CFF',
-  cyan: '#2EE7F0',
-  green: '#35E6A6',
-  red: '#FF5D7A',
-  orange: '#FF9D43',
-  pink: '#FF66C8',
-  gold: '#F7D47A',
+  blue: '#2D7CFF',
+  purple: '#6D5DFB',
+  cyan: '#38BDF8',
+  green: '#22C55E',
+  red: '#EF4444',
+  orange: '#F59E0B',
+  pink: '#D65BFF',
+  gold: '#F59E0B',
 } as const;
 
 export type AccentColor = keyof typeof accentPalette;

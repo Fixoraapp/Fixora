@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+﻿import { LinearGradient } from 'expo-linear-gradient';
 import React, { forwardRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { LocationSelection } from '../../types/navigation';
@@ -14,7 +14,7 @@ function FixoraMap(
   _ref: React.ForwardedRef<unknown>,
 ) {
   return (
-    <LinearGradient colors={['#050816', '#08152E', '#120A2A']} style={styles.webMap}>
+    <LinearGradient colors={['#F7F8FC', '#08152E', '#120A2A']} style={styles.webMap}>
       <View style={styles.gridLayer}>
         {Array.from({ length: 10 }, (_, index) => <View key={`v-${index}`} style={[styles.gridLineVertical, { left: `${index * 11.11}%` }]} />)}
         {Array.from({ length: 7 }, (_, index) => <View key={`h-${index}`} style={[styles.gridLineHorizontal, { top: `${index * 16.66}%` }]} />)}
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(142,167,255,0.4)',
-    backgroundColor: '#050816',
-    shadowColor: '#157BFF',
+    backgroundColor: '#F7F8FC',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.38,
     shadowRadius: 26,
     shadowOffset: { width: 0, height: 16 },
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     marginTop: -65,
     borderRadius: 65,
     borderWidth: 2,
-    borderColor: '#A855F7',
+    borderColor: '#B75CFF',
     backgroundColor: 'rgba(21,123,255,0.14)',
   },
   pin: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#111827',
   },
   pinTail: {
     width: 22,
@@ -163,23 +163,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(5,8,22,0.78)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(109,93,251,0.16)',
   },
   title: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
   subtitle: {
     marginTop: 4,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
   location: {
     marginTop: 6,
-    color: '#D7DDF0',
+    color: '#374151',
     fontSize: 12,
     fontWeight: '800',
   },
 });
+

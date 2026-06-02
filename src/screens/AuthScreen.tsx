@@ -991,7 +991,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 8,
-    color: colors.white,
+    color: colors.text,
     fontSize: typography.title,
     lineHeight: 40,
     fontWeight: '900',
@@ -1014,7 +1014,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(109,93,251,0.16)',
   },
   heroBadgeText: {
     color: '#FFFFFF',
@@ -1035,7 +1035,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     marginBottom: 7,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0,
@@ -1043,7 +1043,7 @@ const styles = StyleSheet.create({
   inputFrame: {
     borderRadius: 18,
     borderWidth: 1,
-    backgroundColor: 'rgba(255,255,255,0.045)',
+    backgroundColor: '#FFFFFF',
   },
   fieldReset: {
     borderWidth: 0,
@@ -1056,13 +1056,13 @@ const styles = StyleSheet.create({
   },
   errorText: {
     marginTop: 6,
-    color: '#FF8AA0',
+    color: '#EF4444',
     fontSize: 12,
     fontWeight: '800',
   },
   authError: {
     marginTop: 14,
-    color: '#FF8AA0',
+    color: '#EF4444',
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '800',
@@ -1070,7 +1070,7 @@ const styles = StyleSheet.create({
   },
   authHint: {
     marginTop: 10,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
     textAlign: 'center',
@@ -1095,7 +1095,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   textActionLabel: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 13,
     fontWeight: '800',
   },
@@ -1104,12 +1104,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerLinkText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     fontWeight: '700',
   },
   footerLinkAction: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontWeight: '900',
   },
   avatarUpload: {
@@ -1119,9 +1119,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#E5E7EB',
   },
   avatarCircle: {
     width: 62,
@@ -1139,20 +1139,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   uploadTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
   uploadBody: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '700',
   },
   resend: {
     marginTop: 16,
-    color: '#AAB0C0',
+    color: '#6B7280',
     textAlign: 'center',
     fontSize: 13,
     fontWeight: '800',
@@ -1183,7 +1183,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 24,
     fontWeight: '900',
   },

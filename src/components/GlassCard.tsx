@@ -18,7 +18,7 @@ export function GlassCard({ children, onPress, selected = false, style }: GlassC
       backgroundColor: selected ? `${theme.colors.accent}28` : theme.colors.card,
       borderColor: selected ? theme.colors.strokeStrong : theme.colors.stroke,
       shadowColor: theme.colors.glow,
-      shadowOpacity: selected ? (theme.isDark ? 0.34 : 0.18) : (theme.isDark ? 0.2 : 0.1),
+      shadowOpacity: selected ? (theme.isDark ? 0.34 : 0.14) : (theme.isDark ? 0.2 : 0.08),
     },
     style,
   ];
@@ -36,12 +36,12 @@ export function GlassCard({ children, onPress, selected = false, style }: GlassC
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radii.lg,
+    borderRadius: radii.md,
     padding: 18,
     borderWidth: 1,
-    shadowRadius: 28,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 12,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 7,
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(22px)' } as ViewStyle : null),
   },
   pressed: {

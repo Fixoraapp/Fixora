@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+﻿import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -519,14 +519,14 @@ function MarketplaceHome({
 
       <SectionHeader title={t('clientHome.categories', 'Service categories')} action="All" />
       <View style={styles.categoryGrid}>
-        {[...adminCategories.slice(0, 7), { id: 'more', name_en: 'More', icon: 'MO', color: '#7C3AED' }].map((item, index) => (
+        {[...adminCategories.slice(0, 7), { id: 'more', name_en: 'More', icon: 'MO', color: '#6D5DFB' }].map((item, index) => (
           <Pressable
             key={item.id}
             accessibilityRole="button"
             onPress={index === Math.min(adminCategories.length, 7) ? onOpenCategories : undefined}
             style={styles.categoryCard}
           >
-            <LinearGradient colors={[`${item.color ?? '#157BFF'}33`, 'rgba(168,85,247,0.12)']} style={styles.categoryIcon}>
+            <LinearGradient colors={[`${item.color ?? '#2D7CFF'}33`, 'rgba(168,85,247,0.12)']} style={styles.categoryIcon}>
               <Text style={styles.categoryIconText}>{item.icon ?? item.name_en.slice(0, 2).toUpperCase()}</Text>
             </LinearGradient>
             <Text style={styles.categoryLabel}>{item.name_en}</Text>
@@ -539,7 +539,7 @@ function MarketplaceHome({
         {popularServices.map((service, index) => (
           <Pressable key={service.id} style={styles.serviceCard}>
             <LinearGradient
-              colors={index % 2 === 0 ? ['rgba(255,255,255,0.12)', 'rgba(21,123,255,0.16)'] : ['rgba(255,255,255,0.1)', 'rgba(168,85,247,0.14)']}
+              colors={index % 2 === 0 ? ['#F3F4F6', 'rgba(21,123,255,0.16)'] : ['rgba(255,255,255,0.1)', 'rgba(168,85,247,0.14)']}
               style={styles.serviceImage}
             >
               <Text style={styles.serviceImageText}>{service.category.slice(0, 2).toUpperCase()}</Text>
@@ -1314,7 +1314,7 @@ function ProfessionalCard({
   return (
     <Pressable accessibilityRole="button" onPress={onPress}>
       <LinearGradient
-        colors={premium || pro.premium ? ['rgba(124,58,237,0.26)', 'rgba(21,123,255,0.12)'] : ['rgba(255,255,255,0.095)', 'rgba(255,255,255,0.045)']}
+        colors={premium || pro.premium ? ['rgba(124,58,237,0.26)', 'rgba(21,123,255,0.12)'] : ['rgba(255,255,255,0.095)', '#FFFFFF']}
         style={[styles.proCard, compact && styles.proCardCompact]}
       >
         <View style={styles.proAvatar}>
@@ -1508,7 +1508,7 @@ function MapScreen({
             })}
       </LinearGradient>
 
-      <LinearGradient colors={['rgba(9,14,34,0.96)', 'rgba(14,9,36,0.96)']} style={styles.mapBottomSheet}>
+      <LinearGradient colors={['#FFFFFF', '#F8F0FF']} style={styles.mapBottomSheet}>
         <View style={styles.sheetHandle} />
         <View style={styles.sectionHeaderMini}>
           <Text style={styles.sectionTitle}>{role === 'client' ? 'Available now' : 'Nearest requests'}</Text>
@@ -1742,7 +1742,7 @@ function ChatConversationScreen({
           return (
             <View key={message.id} style={[styles.messageRow, own && styles.messageRowOwn]}>
               <LinearGradient
-                colors={own ? ['#157BFF', '#7C3AED'] : ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.07)']}
+                colors={own ? ['#2D7CFF', '#6D5DFB'] : ['#F3F4F6', '#FFFFFF']}
                 style={[styles.messageBubble, own && styles.messageBubbleOwn]}
               >
                 <Text style={styles.messageText}>
@@ -1847,7 +1847,7 @@ function ReviewModal({
 
   return (
     <View style={styles.modalOverlay}>
-      <LinearGradient colors={['rgba(9,14,34,0.98)', 'rgba(12,9,31,0.98)']} style={styles.reviewModal}>
+      <LinearGradient colors={['#FFFFFF', '#F8F0FF']} style={styles.reviewModal}>
         <View style={styles.sectionHeaderMini}>
           <Text style={styles.sectionTitle}>Rate your order</Text>
           <Pressable onPress={onClose}><Text style={styles.sectionAction}>Close</Text></Pressable>
@@ -2021,7 +2021,7 @@ function PaymentBadge({ order }: { order: MarketplaceOrder }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#030611',
+    backgroundColor: '#F7F8FC',
   },
   blueGlow: {
     position: 'absolute',
@@ -2030,7 +2030,7 @@ const styles = StyleSheet.create({
     width: 390,
     height: 390,
     borderRadius: 195,
-    backgroundColor: '#23B8FF',
+    backgroundColor: '#2D7CFF',
     opacity: 0.18,
   },
   purpleGlow: {
@@ -2040,8 +2040,8 @@ const styles = StyleSheet.create({
     width: 440,
     height: 440,
     borderRadius: 220,
-    backgroundColor: '#9B5CFF',
-    opacity: 0.17,
+    backgroundColor: '#D65BFF',
+    opacity: 0.1,
   },
   masterPurpleGlow: {
     position: 'absolute',
@@ -2050,7 +2050,7 @@ const styles = StyleSheet.create({
     width: 340,
     height: 340,
     borderRadius: 170,
-    backgroundColor: '#9B5CFF',
+    backgroundColor: '#D65BFF',
     opacity: 0.2,
   },
   content: {
@@ -2079,7 +2079,7 @@ const styles = StyleSheet.create({
   },
   walletBalance: {
     marginTop: 8,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 34,
     lineHeight: 40,
     fontWeight: '900',
@@ -2097,12 +2097,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: 'rgba(109,93,251,0.16)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.28)',
   },
   secureBadgeText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -2118,17 +2118,17 @@ const styles = StyleSheet.create({
     padding: 12,
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   walletStatValue: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 17,
     lineHeight: 22,
     fontWeight: '900',
   },
   walletStatLabel: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 10,
     lineHeight: 14,
     fontWeight: '800',
@@ -2148,15 +2148,15 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
   },
   paymentMethodIcon: {
     width: 40,
     height: 40,
     borderRadius: 14,
-    color: '#FFFFFF',
+    color: '#111827',
     textAlign: 'center',
     textAlignVertical: 'center',
     backgroundColor: 'rgba(21,123,255,0.28)',
@@ -2164,13 +2164,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   paymentMethodTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '900',
   },
   paymentMethodDetail: {
     marginTop: 3,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -2184,10 +2184,10 @@ const styles = StyleSheet.create({
     minHeight: 46,
     paddingHorizontal: 14,
     borderRadius: 15,
-    color: '#FFFFFF',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    color: '#111827',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
     fontWeight: '800',
   },
   promoButton: {
@@ -2213,7 +2213,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(65,230,164,0.26)',
   },
   promoPillText: {
-    color: '#41E6A4',
+    color: '#22C55E',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -2225,7 +2225,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   transactionIcon: {
     width: 42,
@@ -2236,18 +2236,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(168,85,247,0.2)',
   },
   transactionIconText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 11,
     fontWeight: '900',
   },
   transactionTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
   transactionMeta: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 11,
     fontWeight: '700',
   },
@@ -2259,10 +2259,10 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   transactionAmountPositive: {
-    color: '#41E6A4',
+    color: '#22C55E',
   },
   transactionAmountNegative: {
-    color: '#F7D47A',
+    color: '#F59E0B',
   },
   paymentBadge: {
     alignSelf: 'flex-start',
@@ -2275,7 +2275,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(65,230,164,0.25)',
   },
   paymentBadgeText: {
-    color: '#41E6A4',
+    color: '#22C55E',
     fontSize: 10,
     fontWeight: '900',
   },
@@ -2287,7 +2287,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     marginBottom: 8,
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 13,
     fontWeight: '800',
   },
@@ -2317,18 +2317,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(220,232,255,0.18)',
+    borderColor: 'rgba(109,93,251,0.18)',
   },
   bellText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     fontWeight: '900',
   },
   search: {
     marginTop: 18,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.095)',
-    borderColor: 'rgba(220,232,255,0.2)',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E5E7EB',
   },
   searchChipRow: {
     gap: 8,
@@ -2343,30 +2343,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.085)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
   },
   searchChipActive: {
     backgroundColor: 'rgba(35,184,255,0.24)',
     borderColor: 'rgba(220,232,255,0.46)',
   },
   searchChipText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '900',
   },
   searchChipTextActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
   filterPanel: {
     marginTop: 12,
     padding: 13,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(220,232,255,0.16)',
+    borderColor: '#E5E7EB',
   },
   filterPanelTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -2391,12 +2391,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(182,88,255,0.58)',
   },
   filterPillText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 11,
     fontWeight: '900',
   },
   filterPillTextActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
   sortRow: {
     gap: 8,
@@ -2409,21 +2409,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.11)',
   },
   sortPillActive: {
-    backgroundColor: '#157BFF',
-    borderColor: '#8EA7FF',
+    backgroundColor: '#2D7CFF',
+    borderColor: '#6D5DFB',
   },
   sortPillText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 11,
     fontWeight: '900',
   },
   sortPillTextActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
   searchResultsPanel: {
     marginTop: 14,
@@ -2431,7 +2431,7 @@ const styles = StyleSheet.create({
   },
   searchContext: {
     marginTop: 5,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -2451,14 +2451,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142,167,255,0.26)',
   },
   serviceResultTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
   },
   serviceResultMeta: {
     marginTop: 5,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -2470,11 +2470,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   searchMetaLine: {
     marginTop: 5,
-    color: '#69748F',
+    color: '#9CA3AF',
     fontSize: 11,
     fontWeight: '800',
   },
@@ -2483,7 +2483,7 @@ const styles = StyleSheet.create({
     gap: 7,
   },
   availableText: {
-    color: '#41E6A4',
+    color: '#22C55E',
     fontSize: 10,
     fontWeight: '900',
   },
@@ -2491,22 +2491,22 @@ const styles = StyleSheet.create({
     marginTop: 14,
     padding: 14,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
   },
   adminNotice: {
     marginTop: 14,
     borderRadius: 18,
   },
   adminNoticeTitle: {
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 14,
     fontWeight: '900',
   },
   adminNoticeText: {
     marginTop: 6,
-    color: '#D7DDF0',
+    color: '#374151',
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '800',
@@ -2520,8 +2520,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
-    shadowColor: '#157BFF',
+    borderColor: 'rgba(109,93,251,0.16)',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.3,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 14 },
@@ -2530,7 +2530,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   heroKicker: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 18,
     lineHeight: 24,
     fontWeight: '900',
@@ -2548,7 +2548,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 14,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#6D5DFB',
   },
   heroButtonText: {
     color: '#FFFFFF',
@@ -2563,7 +2563,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(3,8,24,0.45)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   heroPersonText: {
     color: '#FFFFFF',
@@ -2582,9 +2582,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
   },
   categoryIcon: {
     width: 42,
@@ -2595,12 +2595,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryIconText: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 11,
     fontWeight: '900',
   },
   categoryLabel: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 10,
     lineHeight: 13,
     fontWeight: '800',
@@ -2620,13 +2620,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(249,215,126,0.22)',
   },
   marketingBannerTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '900',
   },
   marketingBannerMeta: {
     marginTop: 8,
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 11,
     fontWeight: '800',
   },
@@ -2634,9 +2634,9 @@ const styles = StyleSheet.create({
     width: 142,
     borderRadius: 18,
     padding: 10,
-    backgroundColor: 'rgba(255,255,255,0.075)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   serviceImage: {
     height: 82,
@@ -2646,19 +2646,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   serviceImageText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 20,
     fontWeight: '900',
   },
   serviceTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
   },
   servicePrice: {
     marginTop: 5,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -2673,7 +2673,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   proCardCompact: {
     marginTop: 10,
@@ -2689,7 +2689,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142,167,255,0.42)',
   },
   proAvatarText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 20,
     fontWeight: '900',
   },
@@ -2702,7 +2702,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   proName: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
@@ -2713,18 +2713,18 @@ const styles = StyleSheet.create({
   },
   proRole: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '700',
   },
   proMeta: {
     marginTop: 5,
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 11,
     fontWeight: '800',
   },
   proPrice: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
@@ -2737,14 +2737,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(168,85,247,0.32)',
   },
   premiumTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 19,
     fontWeight: '900',
   },
   premiumBody: {
     marginTop: 8,
     marginBottom: 14,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 14,
     lineHeight: 20,
     fontWeight: '600',
@@ -2757,8 +2757,8 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(220,232,255,0.18)',
-    shadowColor: '#23B8FF',
+    borderColor: 'rgba(109,93,251,0.18)',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.22,
     shadowRadius: 28,
     shadowOffset: { width: 0, height: 14 },
@@ -2784,19 +2784,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabIconActive: {
-    backgroundColor: '#23B8FF',
-    shadowColor: '#23B8FF',
+    backgroundColor: '#2D7CFF',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.62,
     shadowRadius: 16,
   },
   masterTabIconActive: {
-    backgroundColor: '#9B5CFF',
-    shadowColor: '#B658FF',
+    backgroundColor: '#6D5DFB',
+    shadowColor: '#B75CFF',
     shadowOpacity: 0.58,
     shadowRadius: 14,
   },
   tabIconText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '900',
   },
@@ -2804,12 +2804,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   tabLabel: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 10,
     fontWeight: '800',
   },
   tabLabelActive: {
-    color: '#FFFFFF',
+    color: '#6D5DFB',
   },
   profileHeaderBar: {
     minHeight: 48,
@@ -2824,12 +2824,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 22,
     fontWeight: '900',
   },
   profileNavTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
@@ -2839,10 +2839,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
   },
   heartText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontWeight: '900',
   },
   profileHero: {
@@ -2852,7 +2852,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   profileAvatar: {
     width: 96,
@@ -2865,7 +2865,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142,167,255,0.5)',
   },
   profileAvatarText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 35,
     fontWeight: '900',
   },
@@ -2894,7 +2894,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   profileName: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 21,
     lineHeight: 26,
     fontWeight: '900',
@@ -2906,13 +2906,13 @@ const styles = StyleSheet.create({
   },
   profileRole: {
     marginTop: 5,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     fontWeight: '800',
   },
   profileMeta: {
     marginTop: 8,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -2934,12 +2934,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(249,215,126,0.18)',
   },
   badgeText: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 11,
     fontWeight: '900',
   },
   goldBadgeText: {
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -2954,18 +2954,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
   },
   statValue: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
   statLabel: {
     marginTop: 5,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 10,
     fontWeight: '800',
   },
@@ -2979,18 +2979,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 16,
     fontWeight: '900',
   },
   sectionAction: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
   sectionBody: {
     marginTop: 10,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 14,
     lineHeight: 21,
     fontWeight: '600',
@@ -2999,19 +2999,19 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.09)',
+    borderTopColor: '#F9FAFB',
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
   },
   pricingTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '800',
   },
   pricingPrice: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '900',
   },
@@ -3026,12 +3026,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   secondaryActionText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '900',
   },
@@ -3040,14 +3040,14 @@ const styles = StyleSheet.create({
   },
   utilityTitle: {
     marginTop: 20,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 32,
     lineHeight: 39,
     fontWeight: '900',
   },
   utilitySubtitle: {
     marginTop: 8,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '700',
@@ -3063,7 +3063,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   utilityVisualText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 24,
     fontWeight: '900',
   },
@@ -3085,7 +3085,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142,167,255,0.5)',
   },
   clientAvatarText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 38,
     fontWeight: '900',
   },
@@ -3102,12 +3102,12 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.1)',
   },
   profileRowLabel: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     fontWeight: '800',
   },
   profileRowValue: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -3123,23 +3123,23 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   menuText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     fontWeight: '900',
   },
   masterGreeting: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 17,
     fontWeight: '900',
   },
   masterLocation: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -3148,13 +3148,13 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   masterCardTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 16,
     fontWeight: '900',
   },
   masterCardBody: {
     marginTop: 7,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '700',
@@ -3170,7 +3170,7 @@ const styles = StyleSheet.create({
     width: '85%',
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#A855F7',
+    backgroundColor: '#B75CFF',
   },
   incomeCard: {
     marginTop: 14,
@@ -3178,8 +3178,8 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#7C3AED',
+    borderColor: '#E5E7EB',
+    shadowColor: '#6D5DFB',
     shadowOpacity: 0.35,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 14 },
@@ -3190,13 +3190,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   incomeLabel: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 13,
     fontWeight: '800',
   },
   incomeValue: {
     marginTop: 5,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 31,
     lineHeight: 38,
     fontWeight: '900',
@@ -3214,12 +3214,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(168,85,247,0.9)',
-    shadowColor: '#A855F7',
+    shadowColor: '#B75CFF',
     shadowOpacity: 0.75,
     shadowRadius: 18,
   },
   moneyText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 24,
     fontWeight: '900',
   },
@@ -3234,7 +3234,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 5,
     backgroundColor: '#426BFF',
-    shadowColor: '#157BFF',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.45,
     shadowRadius: 8,
   },
@@ -3250,17 +3250,17 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
     justifyContent: 'center',
   },
   masterMetricTitle: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '800',
   },
   masterMetricValue: {
     marginTop: 6,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 22,
     fontWeight: '900',
   },
@@ -3275,27 +3275,27 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   masterFilterActive: {
-    backgroundColor: '#157BFF',
-    borderColor: '#8EA7FF',
+    backgroundColor: '#2D7CFF',
+    borderColor: '#6D5DFB',
   },
   masterFilterText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '900',
   },
   masterFilterTextActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
   masterOrderCard: {
     borderRadius: 20,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   orderTop: {
     flexDirection: 'row',
@@ -3313,25 +3313,25 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142,167,255,0.42)',
   },
   orderAvatarText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 18,
     fontWeight: '900',
   },
   orderTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     lineHeight: 20,
     fontWeight: '900',
   },
   orderMeta: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '700',
   },
   orderPrice: {
     marginTop: 5,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -3345,13 +3345,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(249,215,126,0.24)',
   },
   statusText: {
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 10,
     fontWeight: '900',
   },
   distanceText: {
     marginTop: 10,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 11,
     fontWeight: '900',
     textAlign: 'right',
@@ -3367,12 +3367,12 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   declineText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
@@ -3383,7 +3383,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#5538FF',
-    shadowColor: '#7C3AED',
+    shadowColor: '#6D5DFB',
     shadowOpacity: 0.42,
     shadowRadius: 12,
   },
@@ -3396,7 +3396,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     height: 5,
     borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: '#F3F4F6',
     overflow: 'hidden',
   },
   orderProgressFill: {
@@ -3409,7 +3409,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   mapHeader: {
     minHeight: 56,
@@ -3419,7 +3419,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   mapTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 30,
     lineHeight: 36,
     fontWeight: '900',
@@ -3439,13 +3439,13 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#41E6A4',
-    shadowColor: '#41E6A4',
+    backgroundColor: '#22C55E',
+    shadowColor: '#22C55E',
     shadowOpacity: 0.8,
     shadowRadius: 10,
   },
   liveText: {
-    color: '#41E6A4',
+    color: '#22C55E',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -3457,18 +3457,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(109,93,251,0.16)',
   },
   mapSearchIcon: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
   mapSearchInput: {
     flex: 1,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -3484,29 +3484,29 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   mapChipActive: {
     backgroundColor: 'rgba(21,123,255,0.34)',
     borderColor: 'rgba(142,167,255,0.55)',
   },
   mapChipText: {
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '900',
   },
   mapChipTextActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
   mapCanvas: {
     height: 470,
     borderRadius: 28,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
-    shadowColor: '#157BFF',
+    borderColor: 'rgba(109,93,251,0.16)',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.22,
     shadowRadius: 28,
     shadowOffset: { width: 0, height: 16 },
@@ -3576,16 +3576,16 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#41E6A4',
+    backgroundColor: '#22C55E',
     borderWidth: 4,
-    borderColor: '#FFFFFF',
-    shadowColor: '#41E6A4',
+    borderColor: '#111827',
+    shadowColor: '#22C55E',
     shadowOpacity: 0.9,
     shadowRadius: 18,
   },
   markerMiniLabel: {
     marginTop: 5,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 10,
     fontWeight: '900',
   },
@@ -3596,10 +3596,10 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#157BFF',
+    backgroundColor: '#2D7CFF',
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.7)',
-    shadowColor: '#157BFF',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.85,
     shadowRadius: 18,
   },
@@ -3610,19 +3610,19 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#6D5DFB',
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.7)',
-    shadowColor: '#A855F7',
+    shadowColor: '#B75CFF',
     shadowOpacity: 0.85,
     shadowRadius: 18,
   },
   mapMarkerSelected: {
     transform: [{ scale: 1.14 }],
-    borderColor: '#F9D77E',
+    borderColor: '#F59E0B',
   },
   markerText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 16,
     fontWeight: '900',
   },
@@ -3632,8 +3632,8 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
-    shadowColor: '#7C3AED',
+    borderColor: 'rgba(109,93,251,0.16)',
+    shadowColor: '#6D5DFB',
     shadowOpacity: 0.32,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
@@ -3650,9 +3650,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
     padding: 12,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.075)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   timeline: {
     marginTop: 14,
@@ -3669,22 +3669,22 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 5,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: 'rgba(109,93,251,0.16)',
   },
   timelineDotActive: {
-    backgroundColor: '#8EA7FF',
-    shadowColor: '#157BFF',
+    backgroundColor: '#6D5DFB',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.8,
     shadowRadius: 10,
   },
   timelineLabel: {
-    color: '#69748F',
+    color: '#9CA3AF',
     fontSize: 9,
     fontWeight: '900',
     textAlign: 'center',
   },
   timelineLabelActive: {
-    color: '#FFFFFF',
+    color: '#111827',
   },
   chatHeader: {
     minHeight: 56,
@@ -3713,13 +3713,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(168,85,247,0.5)',
   },
   chatAvatarText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 17,
     fontWeight: '900',
   },
   onlineText: {
     marginTop: 3,
-    color: '#41E6A4',
+    color: '#22C55E',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -3735,7 +3735,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   chatTitleRow: {
     flexDirection: 'row',
@@ -3744,13 +3744,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   chatTime: {
-    color: '#69748F',
+    color: '#9CA3AF',
     fontSize: 10,
     fontWeight: '900',
   },
   chatPreview: {
     marginTop: 5,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -3760,10 +3760,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#A855F7',
+    backgroundColor: '#B75CFF',
   },
   unreadText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -3782,15 +3782,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: '#F3F4F6',
   },
   messageBubbleOwn: {
-    shadowColor: '#7C3AED',
+    shadowColor: '#6D5DFB',
     shadowOpacity: 0.34,
     shadowRadius: 16,
   },
   messageText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     lineHeight: 20,
     fontWeight: '700',
@@ -3803,7 +3803,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   typingText: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -3814,9 +3814,9 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   composerIcon: {
     minWidth: 42,
@@ -3827,14 +3827,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(21,123,255,0.18)',
   },
   composerIconText: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 10,
     fontWeight: '900',
   },
   chatInput: {
     flex: 1,
     minHeight: 42,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -3865,7 +3865,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: '#F9FAFB',
   },
   notificationIcon: {
     width: 34,
@@ -3873,7 +3873,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
   },
   notificationIconUnread: {
     backgroundColor: 'rgba(21,123,255,0.24)',
@@ -3881,18 +3881,18 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(142,167,255,0.45)',
   },
   notificationIconText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 12,
     fontWeight: '900',
   },
   notificationTitle: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 13,
     fontWeight: '900',
   },
   notificationBody: {
     marginTop: 4,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
@@ -3905,13 +3905,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     padding: 20,
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.62)',
+    backgroundColor: 'rgba(17,24,39,0.36)',
   },
   reviewModal: {
     borderRadius: 24,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(109,93,251,0.16)',
   },
   starRow: {
     marginTop: 14,
@@ -3924,16 +3924,16 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
+    borderColor: '#E5E7EB',
   },
   starButtonActive: {
     backgroundColor: 'rgba(249,215,126,0.24)',
     borderColor: 'rgba(249,215,126,0.5)',
   },
   starText: {
-    color: '#F9D77E',
+    color: '#F59E0B',
     fontSize: 22,
     fontWeight: '900',
   },
@@ -3942,10 +3942,10 @@ const styles = StyleSheet.create({
     marginTop: 14,
     padding: 14,
     borderRadius: 16,
-    color: '#FFFFFF',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    color: '#111827',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
     textAlignVertical: 'top',
     fontWeight: '700',
   },
@@ -3955,11 +3955,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: '#E5E7EB',
   },
   emptyMasterCard: {
     borderRadius: 20,
   },
 });
+

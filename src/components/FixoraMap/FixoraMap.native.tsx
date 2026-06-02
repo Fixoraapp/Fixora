@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+﻿import { LinearGradient } from 'expo-linear-gradient';
 import React, { forwardRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -12,10 +12,10 @@ type FixoraMapProps = {
 
 const darkMapStyle = [
   { elementType: 'geometry', stylers: [{ color: '#080B18' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#8EA7FF' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#050816' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#6D5DFB' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#F7F8FC' }] },
   { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#151B35' }] },
-  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#AAB0C0' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#6B7280' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#061D3E' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(142,167,255,0.4)',
-    backgroundColor: '#050816',
-    shadowColor: '#157BFF',
+    backgroundColor: '#F7F8FC',
+    shadowColor: '#2D7CFF',
     shadowOpacity: 0.38,
     shadowRadius: 26,
     shadowOffset: { width: 0, height: 16 },
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     marginTop: -65,
     borderRadius: 65,
     borderWidth: 2,
-    borderColor: '#A855F7',
+    borderColor: '#B75CFF',
     backgroundColor: 'rgba(21,123,255,0.14)',
   },
   mapOverlay: {
@@ -104,16 +104,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(5,8,22,0.76)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(109,93,251,0.16)',
   },
   mapOverlayText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
   mapOverlaySubtext: {
     marginTop: 3,
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '800',
   },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#111827',
   },
   pinTail: {
     width: 22,
@@ -144,3 +144,4 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
 });
+

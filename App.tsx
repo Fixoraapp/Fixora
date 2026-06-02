@@ -112,7 +112,7 @@ function AppContent() {
 
   return (
     <>
-      <StatusBar style="light" translucent />
+      <StatusBar style="dark" translucent />
       {appState.loading ? <SplashScreen onGetStarted={() => undefined} /> : null}
       {!appState.loading && route === 'splash' ? (
         <SplashScreen onGetStarted={() => setRoute('onboarding')} />
@@ -203,5 +203,11 @@ const styles = StyleSheet.create({
     left: 14,
     top: 48,
     zIndex: 9998,
+    backgroundColor: 'rgba(255,255,255,0.86)',
+    borderRadius: 14,
+    shadowColor: '#6D5DFB',
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
   },
 });

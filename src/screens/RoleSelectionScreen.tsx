@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+﻿import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
@@ -231,7 +231,7 @@ function PremiumRoleCard({
           style={styles.cardPressable}
         >
           <LinearGradient
-            colors={selected ? [role.design.background, `${role.design.selectedGlow}3D`] : [role.design.background, 'rgba(255,255,255,0.045)']}
+            colors={selected ? [role.design.background, `${role.design.selectedGlow}3D`] : [role.design.background, '#FFFFFF']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[styles.cardInner, { borderColor: selected ? role.design.selectedBorder : role.design.borderColor }]}
@@ -347,8 +347,8 @@ const styles = StyleSheet.create({
   particle: {
     position: 'absolute',
     borderRadius: 5,
-    backgroundColor: '#8EA7FF',
-    shadowColor: '#A855F7',
+    backgroundColor: '#6D5DFB',
+    shadowColor: '#B75CFF',
     shadowOpacity: 0.8,
     shadowRadius: 8,
   },
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   kicker: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '900',
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 8,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 31,
     lineHeight: 38,
     fontWeight: '900',
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 8,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '700',
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   illustrationGrid: {
     ...StyleSheet.absoluteFillObject,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: '#F9FAFB',
     backgroundColor: 'rgba(5,8,22,0.22)',
   },
   roleImage: {
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 38,
     borderBottomLeftRadius: 14,
     borderBottomRightRadius: 14,
-    backgroundColor: '#F9D77E',
+    backgroundColor: '#F59E0B',
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.42)',
   },
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 88,
     borderRadius: 6,
-    backgroundColor: '#AAB0C0',
+    backgroundColor: '#6B7280',
     transform: [{ rotate: '-28deg' }],
   },
   toolHead: {
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
     top: 14,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#157BFF',
+    backgroundColor: '#2D7CFF',
   },
   trustBadge: {
     position: 'absolute',
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#41E6A4',
+    backgroundColor: '#22C55E',
     borderWidth: 3,
     borderColor: 'rgba(255,255,255,0.76)',
   },
@@ -659,13 +659,13 @@ const styles = StyleSheet.create({
     borderColor: '#AFC2FF',
   },
   selectedBadgeText: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 10,
     fontWeight: '900',
   },
   roleLabel: {
     marginTop: 16,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 20,
     lineHeight: 25,
     fontWeight: '900',
@@ -674,14 +674,14 @@ const styles = StyleSheet.create({
   },
   roleSubtitle: {
     marginTop: 7,
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 16,
     lineHeight: 22,
     fontWeight: '800',
   },
   roleDescription: {
     marginTop: 8,
-    color: '#AAB0C0',
+    color: '#6B7280',
     fontSize: 14,
     lineHeight: 21,
     fontWeight: '600',
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
   },
   featureText: {
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
     bottom: 20,
   },
   buttonArrow: {
-    color: '#FFFFFF',
+    color: '#111827',
     fontSize: 18,
     fontWeight: '900',
   },
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   adminLinkText: {
-    color: '#8EA7FF',
+    color: '#6D5DFB',
     fontSize: 12,
     fontWeight: '900',
   },
@@ -736,3 +736,4 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 });
+

@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+﻿import { LinearGradient } from 'expo-linear-gradient';
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import {
   Modal,
@@ -212,20 +212,20 @@ const modules: Array<{ id: AdminModule; label: string; group: string }> = [
 ];
 
 const moduleIcons: Record<AdminModule, string> = {
-  dashboard: '▦',
-  categories: '□',
-  locations: '⌖',
+  dashboard: 'в–¦',
+  categories: 'в–Ў',
+  locations: 'вЊ–',
   translations: 'T',
-  users: '♙',
-  verification: '◊',
-  orders: '◉',
+  users: 'в™™',
+  verification: 'в—Љ',
+  orders: 'в—‰',
   finance: '$',
-  marketing: '↗',
-  support: '✉',
-  roleCustomization: '♢',
-  telegram: '✈',
-  logs: '≡',
-  settings: '⚙',
+  marketing: 'в†—',
+  support: 'вњ‰',
+  roleCustomization: 'в™ў',
+  telegram: 'вњ€',
+  logs: 'в‰Ў',
+  settings: 'вљ™',
 };
 
 const categorySeeds = [
@@ -258,7 +258,7 @@ const initialCategories: CategoryRecord[] = categorySeeds.map((name, index) => (
   name_hy: name,
   slug: name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
   icon: name.slice(0, 2).toUpperCase(),
-  color: ['#157BFF', '#7C3AED', '#41E6A4', '#F9D77E'][index % 4],
+  color: ['#2D7CFF', '#6D5DFB', '#22C55E', '#F59E0B'][index % 4],
   isActive: index < 14,
   sortOrder: index + 1,
   parentCategoryId: '',
@@ -270,9 +270,9 @@ const initialCategories: CategoryRecord[] = categorySeeds.map((name, index) => (
 const initialCountries: CountryRecord[] = [
   {
     id: 'country-am',
-    name_ru: 'Армения',
+    name_ru: 'РђСЂРјРµРЅРёСЏ',
     name_en: 'Armenia',
-    name_hy: 'Հայաստան',
+    name_hy: 'ХЂХЎХµХЎХЅХїХЎХ¶',
     iso2: 'AM',
     iso3: 'ARM',
     emoji: 'AM',
@@ -280,16 +280,16 @@ const initialCountries: CountryRecord[] = [
     countryPhoto: 'country-photo-am.png',
     currency: 'AMD',
     language: 'hy',
-    capital_ru: 'Ереван',
+    capital_ru: 'Р•СЂРµРІР°РЅ',
     capital_en: 'Yerevan',
     isActive: true,
     marketplaceEnabled: true,
   },
   {
     id: 'country-us',
-    name_ru: 'США',
+    name_ru: 'РЎРЁРђ',
     name_en: 'United States',
-    name_hy: 'ԱՄՆ',
+    name_hy: 'Ф±Х„Х†',
     iso2: 'US',
     iso3: 'USA',
     emoji: 'US',
@@ -297,7 +297,7 @@ const initialCountries: CountryRecord[] = [
     countryPhoto: 'country-photo-us.png',
     currency: 'USD',
     language: 'en',
-    capital_ru: 'Вашингтон',
+    capital_ru: 'Р’Р°С€РёРЅРіС‚РѕРЅ',
     capital_en: 'Washington',
     isActive: true,
     marketplaceEnabled: false,
@@ -305,19 +305,19 @@ const initialCountries: CountryRecord[] = [
 ];
 
 const initialRegions: RegionRecord[] = [
-  { id: 'region-yerevan', countryIso2: 'AM', name_ru: 'Ереван', name_en: 'Yerevan', name_hy: 'Երևան', type_ru: 'город', type_en: 'city', capital_ru: 'Ереван', capital_en: 'Yerevan', isActive: true },
-  { id: 'region-california', countryIso2: 'US', name_ru: 'Калифорния', name_en: 'California', name_hy: 'Կալիֆոռնիա', type_ru: 'штат', type_en: 'state', capital_ru: 'Сакраменто', capital_en: 'Sacramento', isActive: true },
+  { id: 'region-yerevan', countryIso2: 'AM', name_ru: 'Р•СЂРµРІР°РЅ', name_en: 'Yerevan', name_hy: 'ФµЦЂЦ‡ХЎХ¶', type_ru: 'РіРѕСЂРѕРґ', type_en: 'city', capital_ru: 'Р•СЂРµРІР°РЅ', capital_en: 'Yerevan', isActive: true },
+  { id: 'region-california', countryIso2: 'US', name_ru: 'РљР°Р»РёС„РѕСЂРЅРёСЏ', name_en: 'California', name_hy: 'ФїХЎХ¬Х«Ц†ХёХјХ¶Х«ХЎ', type_ru: 'С€С‚Р°С‚', type_en: 'state', capital_ru: 'РЎР°РєСЂР°РјРµРЅС‚Рѕ', capital_en: 'Sacramento', isActive: true },
 ];
 
 const initialCities: CityRecord[] = [
-  { id: 'city-yerevan', regionId: 'region-yerevan', name_ru: 'Ереван', name_en: 'Yerevan', name_hy: 'Երևան', isActive: true, latitude: '40.1792', longitude: '44.4991' },
-  { id: 'city-la', regionId: 'region-california', name_ru: 'Лос-Анджелес', name_en: 'Los Angeles', name_hy: 'Լոս Անջելես', isActive: true, latitude: '34.0522', longitude: '-118.2437' },
+  { id: 'city-yerevan', regionId: 'region-yerevan', name_ru: 'Р•СЂРµРІР°РЅ', name_en: 'Yerevan', name_hy: 'ФµЦЂЦ‡ХЎХ¶', isActive: true, latitude: '40.1792', longitude: '44.4991' },
+  { id: 'city-la', regionId: 'region-california', name_ru: 'Р›РѕСЃ-РђРЅРґР¶РµР»РµСЃ', name_en: 'Los Angeles', name_hy: 'ФјХёХЅ Ф±Х¶Х»ХҐХ¬ХҐХЅ', isActive: true, latitude: '34.0522', longitude: '-118.2437' },
 ];
 
 const initialTranslations: TranslationRecord[] = [
-  { id: 'tr-1', key: 'home.hero.title', module: 'home', ru: 'Найдите мастера', en: 'Find a master', hy: 'Գտեք վարպետ', status: 'complete', updatedAt: 'Today' },
-  { id: 'tr-2', key: 'wallet.secure_deal', module: 'wallet', ru: 'Безопасная сделка', en: 'Secure deal', hy: '', status: 'missing', updatedAt: 'Today' },
-  { id: 'tr-3', key: 'admin.telegram.title', module: 'admin', ru: 'Telegram уведомления', en: 'Telegram notifications', hy: 'Telegram ծանուցումներ', status: 'complete', updatedAt: 'Yesterday' },
+  { id: 'tr-1', key: 'home.hero.title', module: 'home', ru: 'РќР°Р№РґРёС‚Рµ РјР°СЃС‚РµСЂР°', en: 'Find a master', hy: 'ФіХїХҐЦ„ ХѕХЎЦЂХєХҐХї', status: 'complete', updatedAt: 'Today' },
+  { id: 'tr-2', key: 'wallet.secure_deal', module: 'wallet', ru: 'Р‘РµР·РѕРїР°СЃРЅР°СЏ СЃРґРµР»РєР°', en: 'Secure deal', hy: '', status: 'missing', updatedAt: 'Today' },
+  { id: 'tr-3', key: 'admin.telegram.title', module: 'admin', ru: 'Telegram СѓРІРµРґРѕРјР»РµРЅРёСЏ', en: 'Telegram notifications', hy: 'Telegram Х®ХЎХ¶ХёЦ‚ЦЃХёЦ‚ХґХ¶ХҐЦЂ', status: 'complete', updatedAt: 'Yesterday' },
 ];
 
 const initialUsers: AdminUser[] = [
@@ -617,7 +617,7 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
 
   return (
     <SafeAreaView style={styles.root}>
-      <LinearGradient colors={['#030611', '#071325', '#100A26', '#030611']} locations={[0, 0.44, 0.78, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['#F7F8FC', '#071325', '#100A26', '#F7F8FC']} locations={[0, 0.44, 0.78, 1]} style={StyleSheet.absoluteFill} />
       <View style={styles.adminAurora} />
       <View style={styles.adminGoldGlow} />
       <View style={[styles.shell, compact && styles.shellCompact]}>
@@ -694,7 +694,7 @@ function Sidebar({ active, compact, onSelect, onExit }: { active: AdminModule; c
   return (
     <View style={[styles.sidebar, compact && styles.sidebarCompact]}>
       <View style={styles.brandRow}>
-        <LinearGradient colors={['#7C3AED', '#2563EB']} style={styles.brandMark}><Text style={styles.brandMarkText}>◇</Text></LinearGradient>
+        <LinearGradient colors={['#6D5DFB', '#2563EB']} style={styles.brandMark}><Text style={styles.brandMarkText}>в—‡</Text></LinearGradient>
         {!compact ? <View><Text style={styles.brandTitle}>Fixora Pro</Text><Text style={styles.brandSubtitle}>Super Admin</Text></View> : null}
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -707,7 +707,7 @@ function Sidebar({ active, compact, onSelect, onExit }: { active: AdminModule; c
                 <Pressable key={item.id} onPress={() => onSelect(item.id)} style={[styles.navItem, selected && styles.navItemActive]}>
                   <Text style={[styles.navIcon, selected && styles.navTextActive]}>{moduleIcons[item.id]}</Text>
                   {!compact ? <Text style={[styles.navText, selected && styles.navTextActive]}>{t(adminModuleKey(item.id), item.label)}</Text> : null}
-                  {!compact && selected ? <Text style={styles.navChevron}>›</Text> : null}
+                  {!compact && selected ? <Text style={styles.navChevron}>вЂє</Text> : null}
                 </Pressable>
               );
             })}
@@ -721,7 +721,7 @@ function Sidebar({ active, compact, onSelect, onExit }: { active: AdminModule; c
             <Text style={styles.adminProfileName}>Super Admin</Text>
             <Text style={styles.adminProfileEmail}>admin@fixora.pro</Text>
           </View>
-          <Text style={styles.adminProfileChevron}>›</Text>
+          <Text style={styles.adminProfileChevron}>вЂє</Text>
         </View>
       ) : null}
       <Pressable onPress={onExit} style={styles.exitButton}><Text style={styles.exitText}>{compact ? '<' : 'Exit admin'}</Text></Pressable>
@@ -744,8 +744,8 @@ function Topbar({ active, query, onQuery }: { active: AdminModule; query: string
         <TextInput value={query} onChangeText={onQuery} placeholder={t('placeholders.searchAdmin', 'Search admin data...')} placeholderTextColor="#69748F" style={styles.searchInput} />
         <View style={styles.liveBadge}><View style={styles.liveDot} /><Text style={styles.liveText}>Live</Text></View>
         <LanguageSwitcher compact />
-        <View style={styles.bell}><Text style={styles.bellText}>□</Text></View>
-        <View style={styles.bell}><Text style={styles.bellText}>◌</Text></View>
+        <View style={styles.bell}><Text style={styles.bellText}>в–Ў</Text></View>
+        <View style={styles.bell}><Text style={styles.bellText}>в—Њ</Text></View>
         <ActionButton label="+ Quick Action" onPress={() => undefined} />
         <View style={styles.dateRange}><Text style={styles.dateRangeText}>May 23, 2025 - May 30, 2025</Text></View>
         <View style={styles.adminAvatar}><Text style={styles.adminAvatarText}>SA</Text></View>
@@ -757,10 +757,10 @@ function Topbar({ active, query, onQuery }: { active: AdminModule; query: string
 function Dashboard({ dashboard }: { dashboard: Record<string, number> }) {
   const metrics = [
     ['Total Revenue', dashboard.revenue, '+12.5%', '$'],
-    ['Total Orders', dashboard.activeOrders + dashboard.completedOrders, '+8.3%', '□'],
-    ['Total Users', dashboard.totalClients + dashboard.totalMasters, '+15.2%', '♙'],
-    ['Active Masters', dashboard.totalMasters, '+7.1%', '♕'],
-    ['Conversion Rate', '8.24%', '+3.6%', '↗'],
+    ['Total Orders', dashboard.activeOrders + dashboard.completedOrders, '+8.3%', 'в–Ў'],
+    ['Total Users', dashboard.totalClients + dashboard.totalMasters, '+15.2%', 'в™™'],
+    ['Active Masters', dashboard.totalMasters, '+7.1%', 'в™•'],
+    ['Conversion Rate', '8.24%', '+3.6%', 'в†—'],
   ];
   return (
     <>
@@ -788,7 +788,7 @@ function Dashboard({ dashboard }: { dashboard: Record<string, number> }) {
   );
 }
 
-function MetricCard({ label, value, trend = '+4.8%', icon = '▦' }: { label: string; value: string; trend?: string; icon?: string }) {
+function MetricCard({ label, value, trend = '+4.8%', icon = 'в–¦' }: { label: string; value: string; trend?: string; icon?: string }) {
   return (
     <LinearGradient colors={['rgba(17,24,48,0.98)', 'rgba(25,36,78,0.76)', 'rgba(91,33,182,0.18)']} style={styles.metricCard}>
       <View style={styles.metricTop}>
@@ -828,7 +828,7 @@ function ActivityFeed({ title, items }: { title: string; items: string[] }) {
       <View style={styles.activityList}>
         {items.map((item, index) => (
           <View key={item} style={styles.activityRow}>
-            <LinearGradient colors={index % 2 === 0 ? ['#7C3AED', '#2563EB'] : ['#0F766E', '#2563EB']} style={styles.activityIcon}>
+            <LinearGradient colors={index % 2 === 0 ? ['#6D5DFB', '#2563EB'] : ['#0F766E', '#2563EB']} style={styles.activityIcon}>
               <Text style={styles.activityIconText}>{index + 1}</Text>
             </LinearGradient>
             <View style={styles.flex}>
@@ -884,7 +884,7 @@ function TelegramSettingsPanel({
       </GlassCard>
       <View style={styles.telegramChannelGrid}>
         {channels.map((channel) => (
-          <LinearGradient key={channel.id} colors={channel.enabled ? ['rgba(15,23,42,0.98)', 'rgba(37,99,235,0.22)'] : ['rgba(15,23,42,0.86)', 'rgba(30,41,59,0.58)']} style={styles.telegramChannelCard}>
+          <LinearGradient key={channel.id} colors={channel.enabled ? ['#FFFFFF', 'rgba(45,124,255,0.08)'] : ['#FFFFFF', '#F9FAFB']} style={styles.telegramChannelCard}>
             <View style={styles.sectionHeader}>
               <View style={styles.flex}>
                 <Text style={styles.cardTitle}>{channel.name}</Text>
@@ -954,7 +954,7 @@ function LogsPanel({ logs, query, onDetails }: { logs: AdminLog[]; query: string
           <SectionTitle title="Activity Timeline" action="Latest" />
           {filtered.slice(0, 7).map((log) => (
             <View key={log.id} style={styles.activityRow}>
-              <LinearGradient colors={['#7C3AED', '#2563EB']} style={styles.activityIcon}><Text style={styles.activityIconText}>{log.module.slice(0, 1)}</Text></LinearGradient>
+              <LinearGradient colors={['#6D5DFB', '#2563EB']} style={styles.activityIcon}><Text style={styles.activityIconText}>{log.module.slice(0, 1)}</Text></LinearGradient>
               <View style={styles.flex}>
                 <Text style={styles.activityTitle}>{log.action}</Text>
                 <Text style={styles.activityMeta}>{log.module} / {log.createdAt || log.dateTime}</Text>
@@ -1334,7 +1334,7 @@ function VerificationPanel({
       </View>
       <View style={styles.operationGrid}>
         {filtered.map((master) => (
-          <LinearGradient key={master.id} colors={['rgba(15,23,42,0.96)', 'rgba(30,41,59,0.82)']} style={styles.verificationCard}>
+          <LinearGradient key={master.id} colors={['#FFFFFF', 'rgba(109,93,251,0.08)']} style={styles.verificationCard}>
             <View style={styles.sectionHeader}>
               <UserIdentity user={master} />
               <Badge label={master.verification === 'verified' ? 'approved' : master.verification} tone={master.verification === 'verified' ? 'green' : master.verification === 'pending' ? 'gold' : 'blue'} />
@@ -1348,7 +1348,7 @@ function VerificationPanel({
             <Text style={styles.cardMeta}>Registered {master.completedOrders > 100 ? 'May 12, 2026' : 'May 24, 2026'}</Text>
             <View style={styles.docGrid}>
               {['ID document', 'Selfie preview', 'Certificates'].map((doc, index) => (
-                <LinearGradient key={doc} colors={index === 0 ? ['#172554', '#1D4ED8'] : index === 1 ? ['#312E81', '#7C3AED'] : ['#064E3B', '#0F766E']} style={styles.documentPreview}>
+                <LinearGradient key={doc} colors={index === 0 ? ['#172554', '#1D4ED8'] : index === 1 ? ['#312E81', '#6D5DFB'] : ['#064E3B', '#0F766E']} style={styles.documentPreview}>
                   <Text style={styles.documentIcon}>{index === 0 ? 'ID' : index === 1 ? 'SF' : 'CT'}</Text>
                   <Text style={styles.docText}>{doc}</Text>
                 </LinearGradient>
@@ -1379,7 +1379,7 @@ function VerificationPanel({
       </GlassCard>
       <Modal transparent animationType="fade" visible={Boolean(rejecting)} onRequestClose={() => setRejecting(null)}>
         <View style={styles.modalOverlay}>
-          <LinearGradient colors={['rgba(9,14,34,0.98)', 'rgba(30,10,32,0.98)']} style={styles.rejectModal}>
+          <LinearGradient colors={['#FFFFFF', '#F8F0FF']} style={styles.rejectModal}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.modalTitle}>Reject verification</Text>
@@ -1465,7 +1465,7 @@ function OrderCard({ order, index, onDetails, onStatus }: { order: OrderRecord; 
   const flow: OrderRecord['status'][] = ['pending', 'accepted', 'master_on_way', 'in_progress', 'completed'];
   const activeIndex = Math.max(0, flow.indexOf(order.status));
   return (
-    <LinearGradient colors={['rgba(15,23,42,0.98)', 'rgba(30,64,175,0.2)']} style={styles.orderCard}>
+    <LinearGradient colors={['#FFFFFF', 'rgba(45,124,255,0.08)']} style={styles.orderCard}>
       <View style={styles.sectionHeader}>
         <View>
           <Text style={styles.cardTitle}>{order.id}</Text>
@@ -1682,7 +1682,7 @@ function MarketingPanel({
 function MarketingCampaignCard({ banner, index, onEdit, onToggle, onDelete }: { banner: MarketingBanner; index: number; onEdit: () => void; onToggle: () => void; onDelete: () => void }) {
   const target = marketingTargetParts(banner.target);
   return (
-    <LinearGradient colors={index % 2 === 0 ? ['rgba(88,28,135,0.92)', 'rgba(30,64,175,0.48)'] : ['rgba(15,23,42,0.98)', 'rgba(20,184,166,0.22)']} style={styles.marketingCard}>
+    <LinearGradient colors={index % 2 === 0 ? ['#FFFFFF', 'rgba(214,91,255,0.1)'] : ['#FFFFFF', 'rgba(34,197,94,0.08)']} style={styles.marketingCard}>
       <View style={styles.sectionHeader}>
         <View style={styles.campaignPreview}>
           <Text style={styles.campaignPreviewText}>{banner.image || 'AD'}</Text>
@@ -1755,7 +1755,7 @@ function SupportPanel({ tickets, query, onStatus, onAssign }: { tickets: Support
       </View>
       <View style={styles.growthGrid}>
         {filtered.slice(0, 4).map((ticket) => (
-          <LinearGradient key={ticket.id} colors={['rgba(15,23,42,0.98)', 'rgba(49,46,129,0.38)']} style={styles.supportCard}>
+          <LinearGradient key={ticket.id} colors={['#FFFFFF', 'rgba(109,93,251,0.08)']} style={styles.supportCard}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.cardTitle}>{ticket.id}</Text>
@@ -1792,7 +1792,7 @@ function SupportPanel({ tickets, query, onStatus, onAssign }: { tickets: Support
       </GlassCard>
       <Modal transparent animationType="fade" visible={Boolean(replying)} onRequestClose={() => setReplying(null)}>
         <View style={styles.modalOverlay}>
-          <LinearGradient colors={['rgba(9,14,34,0.98)', 'rgba(12,9,31,0.98)']} style={styles.rejectModal}>
+          <LinearGradient colors={['#FFFFFF', '#F8F0FF']} style={styles.rejectModal}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.modalTitle}>Support response</Text>
@@ -1907,7 +1907,7 @@ function AppSettingsPanel({ settings, onChange, onSave }: { settings: AppSetting
   );
 }
 
-const roleColorPresets = ['#157BFF', '#7C3AED', '#06B6D4', '#41E6A4', '#FF5D7A', '#F97316', '#EC4899', '#F9D77E'];
+const roleColorPresets = ['#2D7CFF', '#6D5DFB', '#06B6D4', '#22C55E', '#EF4444', '#F97316', '#EC4899', '#F59E0B'];
 
 function RoleRegistrationCustomizationPanel({
   settings,
@@ -2069,7 +2069,7 @@ function ColorPresetRow({ onPick }: { onPick: (color: string) => void }) {
 function RoleCustomizationPreview({ card, previewMode }: { card: RoleCardSettings; previewMode: RolePreviewMode }) {
   const light = previewMode === 'light';
   return (
-    <LinearGradient colors={light ? ['#F8FBFF', '#EEF4FF', '#FFFFFF'] : ['#050816', '#07111F', '#09071D']} style={styles.previewCanvas}>
+    <LinearGradient colors={light ? ['#F8FBFF', '#EEF4FF', '#111827'] : ['#F7F8FC', '#EEF4FF', '#F8F0FF']} style={styles.previewCanvas}>
       <View style={[styles.previewRoleCard, { borderColor: card.design.selectedBorder, shadowColor: card.design.glowColor, shadowOpacity: card.design.shadowIntensity / 100 }]}>
         <LinearGradient colors={card.design.gradientColors} style={styles.previewVisual}>
           {card.visual.image ? (
@@ -2131,7 +2131,7 @@ function AdminModal({
     name_hy: '',
     slug: '',
     icon: 'FX',
-    color: '#157BFF',
+    color: '#2D7CFF',
     isActive: true,
     sortOrder: 1,
     parentCategoryId: '',
@@ -2210,7 +2210,7 @@ function AdminModal({
   return (
     <Modal transparent animationType="fade" visible onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <LinearGradient colors={['rgba(9,14,34,0.98)', 'rgba(12,9,31,0.98)']} style={styles.modalCard}>
+        <LinearGradient colors={['#FFFFFF', '#F8F0FF']} style={styles.modalCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.modalTitle}>{modalTitle(modal)}</Text>
             <Pressable onPress={onClose}><Text style={styles.closeText}>Close</Text></Pressable>
@@ -2423,7 +2423,7 @@ function ActionButton({ label, variant = 'primary', onPress }: { label: string; 
   return (
     <Pressable onPress={onPress} style={[styles.actionButton, variant === 'secondary' && styles.secondaryButton, variant === 'danger' && styles.dangerButton]}>
       {variant === 'primary' ? (
-        <LinearGradient colors={['#7C3AED', '#5B5BFF']} style={styles.actionButtonGradient}>
+        <LinearGradient colors={['#6D5DFB', '#5B5BFF']} style={styles.actionButtonGradient}>
           <Text style={styles.actionButtonText}>{label}</Text>
         </LinearGradient>
       ) : (
@@ -2462,7 +2462,7 @@ function FilterPills({ label, options, active, onChange }: { label: string; opti
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <LinearGradient colors={['rgba(15,23,42,0.96)', 'rgba(30,41,59,0.72)']} style={styles.miniStat}>
+    <LinearGradient colors={['#FFFFFF', '#F9FAFB']} style={styles.miniStat}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
     </LinearGradient>
@@ -2480,7 +2480,7 @@ function InlineTranslationInput({ value, onChange }: { value: string; onChange: 
 function UserIdentity({ user }: { user: AdminUser }) {
   return (
     <View style={styles.userIdentity}>
-      <LinearGradient colors={['#7C3AED', '#2563EB']} style={styles.userAvatar}><Text style={styles.userAvatarText}>{user.name.slice(0, 2).toUpperCase()}</Text></LinearGradient>
+      <LinearGradient colors={['#6D5DFB', '#2563EB']} style={styles.userAvatar}><Text style={styles.userAvatarText}>{user.name.slice(0, 2).toUpperCase()}</Text></LinearGradient>
       <View style={styles.flex}>
         <Text style={styles.tableText}>{user.name}</Text>
         <Text style={styles.tableSubText}>{user.id}</Text>
@@ -2707,220 +2707,221 @@ function mapOrderFromDb(row: TableRow<'orders'>): OrderRecord {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#030611' },
-  adminAurora: { position: 'absolute', top: -190, right: -170, width: 520, height: 520, borderRadius: 260, backgroundColor: '#23B8FF', opacity: 0.15 },
-  adminGoldGlow: { position: 'absolute', bottom: -240, left: 260, width: 520, height: 520, borderRadius: 260, backgroundColor: '#F7D47A', opacity: 0.07 },
+  root: { flex: 1, backgroundColor: '#F7F8FC' },
+  adminAurora: { position: 'absolute', top: -190, right: -170, width: 520, height: 520, borderRadius: 260, backgroundColor: '#2D7CFF', opacity: 0.15 },
+  adminGoldGlow: { position: 'absolute', bottom: -240, left: 260, width: 520, height: 520, borderRadius: 260, backgroundColor: '#F59E0B', opacity: 0.07 },
   flex: { flex: 1 },
   shell: { flex: 1, flexDirection: 'row' },
   shellCompact: { flexDirection: 'row' },
-  sidebar: { width: 286, padding: 16, borderRightWidth: 1, borderRightColor: 'rgba(220,232,255,0.14)', backgroundColor: 'rgba(3,6,17,0.9)' },
+  sidebar: { width: 286, padding: 16, borderRightWidth: 1, borderRightColor: '#E5E7EB', backgroundColor: 'rgba(255,255,255,0.96)' },
   sidebarCompact: { width: 78, paddingHorizontal: 10 },
   brandRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
-  brandMark: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#23B8FF', shadowOpacity: 0.28, shadowRadius: 18 },
+  brandMark: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#2D7CFF', shadowOpacity: 0.28, shadowRadius: 18 },
   brandMarkText: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
-  brandTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
+  brandTitle: { color: '#111827', fontSize: 18, fontWeight: '900' },
   brandSubtitle: { marginTop: 2, color: '#A78BFA', fontSize: 11, fontWeight: '900' },
   navGroup: { marginTop: 18, gap: 7 },
-  navGroupText: { color: '#64748B', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  navGroupText: { color: '#9CA3AF', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
   navItem: { minHeight: 44, borderRadius: 12, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  navItemActive: { backgroundColor: 'rgba(35,184,255,0.18)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.28)', shadowColor: '#23B8FF', shadowOpacity: 0.28, shadowRadius: 16, shadowOffset: { width: 0, height: 10 } },
-  navIcon: { width: 22, color: '#CBD5E1', fontSize: 14, fontWeight: '900', textAlign: 'center' },
-  navText: { flex: 1, color: '#CBD5E1', fontSize: 13, fontWeight: '800' },
-  navTextActive: { color: '#FFFFFF' },
-  navChevron: { color: '#FFFFFF', fontSize: 19, fontWeight: '900' },
-  adminProfileCard: { minHeight: 60, marginTop: 14, padding: 10, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.075)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
+  navItemActive: { backgroundColor: 'rgba(109,93,251,0.1)', borderWidth: 1, borderColor: 'rgba(109,93,251,0.22)', shadowColor: '#6D5DFB', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 10 } },
+  navIcon: { width: 22, color: '#374151', fontSize: 14, fontWeight: '900', textAlign: 'center' },
+  navText: { flex: 1, color: '#374151', fontSize: 13, fontWeight: '800' },
+  navTextActive: { color: '#111827' },
+  navChevron: { color: '#111827', fontSize: 19, fontWeight: '900' },
+  adminProfileCard: { minHeight: 60, marginTop: 14, padding: 10, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
   adminProfileAvatar: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' },
   adminProfileAvatarText: { color: '#111827', fontSize: 11, fontWeight: '900' },
-  adminProfileName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  adminProfileEmail: { marginTop: 2, color: '#94A3B8', fontSize: 10, fontWeight: '700' },
-  adminProfileChevron: { color: '#94A3B8', fontSize: 18, fontWeight: '900' },
-  exitButton: { minHeight: 42, marginTop: 12, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.14)' },
-  exitText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
+  adminProfileName: { color: '#111827', fontSize: 12, fontWeight: '900' },
+  adminProfileEmail: { marginTop: 2, color: '#6B7280', fontSize: 10, fontWeight: '700' },
+  adminProfileChevron: { color: '#6B7280', fontSize: 18, fontWeight: '900' },
+  exitButton: { minHeight: 42, marginTop: 12, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  exitText: { color: '#111827', fontSize: 12, fontWeight: '900' },
   main: { flex: 1 },
-  topbar: { minHeight: 88, paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(220,232,255,0.13)', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16, backgroundColor: 'rgba(3,6,17,0.6)' },
+  topbar: { minHeight: 88, paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#E5E7EB', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16, backgroundColor: 'rgba(255,255,255,0.84)' },
   topTitleBlock: { minWidth: 220 },
   topKicker: { color: '#A78BFA', fontSize: 11, fontWeight: '900' },
-  topTitle: { marginTop: 4, color: '#FFFFFF', fontSize: 25, fontWeight: '900' },
-  topSubtitle: { marginTop: 3, color: '#94A3B8', fontSize: 11, fontWeight: '700' },
+  topTitle: { marginTop: 4, color: '#111827', fontSize: 25, fontWeight: '900' },
+  topSubtitle: { marginTop: 3, color: '#6B7280', fontSize: 11, fontWeight: '700' },
   topActions: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 9 },
-  searchInput: { flex: 1, minHeight: 44, minWidth: 220, maxWidth: 420, paddingHorizontal: 15, borderRadius: 12, color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.075)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.17)', fontWeight: '800' },
+  searchInput: { flex: 1, minHeight: 44, minWidth: 220, maxWidth: 420, paddingHorizontal: 15, borderRadius: 12, color: '#111827', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', fontWeight: '800' },
   liveBadge: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: 'rgba(53,230,166,0.1)', borderWidth: 1, borderColor: 'rgba(53,230,166,0.3)' },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#34D399' },
   liveText: { color: '#D1FAE5', fontSize: 11, fontWeight: '900' },
-  bell: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.075)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
-  bellText: { color: '#E2E8F0', fontSize: 12, fontWeight: '900' },
-  dateRange: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.15)' },
-  dateRangeText: { color: '#CBD5E1', fontSize: 11, fontWeight: '800' },
+  bell: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  bellText: { color: '#111827', fontSize: 12, fontWeight: '900' },
+  dateRange: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  dateRangeText: { color: '#374151', fontSize: 11, fontWeight: '800' },
   adminAvatar: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(124,58,237,0.3)', borderWidth: 1, borderColor: 'rgba(168,85,247,0.5)' },
-  adminAvatarText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
+  adminAvatarText: { color: '#111827', fontSize: 12, fontWeight: '900' },
   content: { padding: 20, paddingBottom: 76 },
   adminSaveRow: { marginBottom: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'flex-end' },
   dashboardHeader: { marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  dashboardTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  dashboardSubtitle: { marginTop: 4, color: '#94A3B8', fontSize: 12, fontWeight: '700' },
+  dashboardTitle: { color: '#111827', fontSize: 20, fontWeight: '900' },
+  dashboardSubtitle: { marginTop: 4, color: '#6B7280', fontSize: 12, fontWeight: '700' },
   metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  metricCard: { flexGrow: 1, flexBasis: 220, minHeight: 150, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)', overflow: 'hidden', shadowColor: '#23B8FF', shadowOpacity: 0.14, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } },
+  metricCard: { flexGrow: 1, flexBasis: 220, minHeight: 150, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden', shadowColor: '#6D5DFB', shadowOpacity: 0.08, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } },
   metricTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   metricIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   metricIconText: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
-  metricLabel: { color: '#CBD5E1', fontSize: 12, fontWeight: '800' },
-  metricValue: { marginTop: 8, color: '#FFFFFF', fontSize: 26, lineHeight: 32, fontWeight: '900' },
+  metricLabel: { color: '#374151', fontSize: 12, fontWeight: '800' },
+  metricValue: { marginTop: 8, color: '#111827', fontSize: 26, lineHeight: 32, fontWeight: '900' },
   metricTrend: { marginTop: 4, color: '#34D399', fontSize: 11, fontWeight: '800' },
   sparkline: { position: 'absolute', right: 14, bottom: 12, width: 96, height: 48, flexDirection: 'row', alignItems: 'flex-end', gap: 4, opacity: 0.8 },
   sparkSegment: { flex: 1, borderRadius: 6, backgroundColor: '#9B5CFF' },
   dashboardGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'stretch' },
-  marketHeader: { marginBottom: 14, padding: 18, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.14)' },
-  marketToolbar: { marginBottom: 14, borderRadius: 18, flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', backgroundColor: 'rgba(255,255,255,0.065)' },
+  marketHeader: { marginBottom: 14, padding: 18, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  marketToolbar: { marginBottom: 14, borderRadius: 18, flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', backgroundColor: '#FFFFFF' },
   filterBlock: { flexGrow: 1, flexBasis: 220, marginTop: 8 },
   filterPillRow: { gap: 8, paddingRight: 10 },
-  filterPill: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.14)' },
-  filterPillActive: { backgroundColor: '#23B8FF', borderColor: 'rgba(220,232,255,0.5)' },
-  filterPillText: { color: '#CBD5E1', fontSize: 11, fontWeight: '900', textTransform: 'capitalize' },
-  filterPillTextActive: { color: '#FFFFFF' },
+  filterPill: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  filterPillActive: { backgroundColor: '#2D7CFF', borderColor: 'rgba(220,232,255,0.5)' },
+  filterPillText: { color: '#374151', fontSize: 11, fontWeight: '900', textTransform: 'capitalize' },
+  filterPillTextActive: { color: '#111827' },
   marketStats: { marginBottom: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   miniStat: { flexGrow: 1, flexBasis: 180, minHeight: 84, padding: 14, borderRadius: 15, borderWidth: 1, borderColor: 'rgba(148,163,184,0.14)' },
   chartGrid: { marginTop: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  chartCard: { flexGrow: 1, flexBasis: 320, minHeight: 240, borderRadius: 16, backgroundColor: 'rgba(15,23,42,0.78)' },
+  chartCard: { flexGrow: 1, flexBasis: 320, minHeight: 240, borderRadius: 16, backgroundColor: '#FFFFFF' },
   chartCardLarge: { flexBasis: 460, minHeight: 270 },
   chartBars: { flex: 1, marginTop: 18, minHeight: 150, flexDirection: 'row', alignItems: 'flex-end', gap: 18, borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.12)' },
   chartBar: { flex: 1, maxWidth: 34, borderRadius: 8 },
   lineChart: { flex: 1, marginTop: 14, minHeight: 150, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.12)' },
   linePoint: { flex: 1, marginHorizontal: 3, borderTopWidth: 3, borderTopColor: '#8B5CF6', backgroundColor: 'rgba(124,58,237,0.22)', borderRadius: 8 },
-  activityCard: { flexGrow: 1, flexBasis: 320, minHeight: 230, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.065)' },
+  activityCard: { flexGrow: 1, flexBasis: 320, minHeight: 230, borderRadius: 18, backgroundColor: '#FFFFFF' },
   activityList: { gap: 12 },
   activityRow: { minHeight: 38, flexDirection: 'row', alignItems: 'center', gap: 11 },
   activityIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   activityIconText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
-  activityTitle: { color: '#E2E8F0', fontSize: 12, fontWeight: '800' },
-  activityMeta: { marginTop: 2, color: '#64748B', fontSize: 10, fontWeight: '700' },
-  panel: { marginTop: 14, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.068)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.13)' },
+  activityTitle: { color: '#111827', fontSize: 12, fontWeight: '800' },
+  activityMeta: { marginTop: 2, color: '#9CA3AF', fontSize: 10, fontWeight: '700' },
+  panel: { marginTop: 14, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
   customizerShell: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'flex-start' },
   customizerEditor: { flexGrow: 1, flexBasis: 620, borderRadius: 20 },
   previewPanel: { flexGrow: 1, flexBasis: 340, borderRadius: 20 },
   colorPresetRow: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
   colorPreset: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: 'rgba(255,255,255,0.36)' },
-  previewDevice: { marginTop: 10, width: '100%', maxWidth: 390, minHeight: 620, alignSelf: 'center', borderRadius: 34, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)', backgroundColor: '#030611' },
+  previewDevice: { marginTop: 10, width: '100%', maxWidth: 390, minHeight: 620, alignSelf: 'center', borderRadius: 34, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F7F8FC' },
   previewTablet: { maxWidth: 560, minHeight: 520, borderRadius: 28 },
   previewDeviceLight: { backgroundColor: '#F8FBFF', borderColor: 'rgba(16,24,40,0.12)' },
   previewCanvas: { flex: 1, padding: 18, alignItems: 'center', justifyContent: 'center' },
-  previewRoleCard: { width: '100%', maxWidth: 330, minHeight: 420, padding: 14, borderRadius: 26, borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.08)', shadowRadius: 28, shadowOffset: { width: 0, height: 14 }, elevation: 16 },
+  previewRoleCard: { width: '100%', maxWidth: 330, minHeight: 420, padding: 14, borderRadius: 26, borderWidth: 1, backgroundColor: '#F9FAFB', shadowRadius: 28, shadowOffset: { width: 0, height: 14 }, elevation: 16 },
   previewVisual: { minHeight: 168, borderRadius: 22, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   previewImageLabel: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  previewIcon: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
+  previewIcon: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, backgroundColor: '#F9FAFB' },
   previewIconText: { fontSize: 17, fontWeight: '900' },
   previewTitle: { marginTop: 16, lineHeight: 27 },
   previewSubtitle: { marginTop: 7, lineHeight: 22, fontWeight: '800' },
   previewDescription: { marginTop: 8, lineHeight: 20, fontWeight: '700' },
   previewFeatures: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
-  previewFeature: { paddingHorizontal: 9, paddingVertical: 6, borderRadius: 999, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.08)', fontSize: 10, fontWeight: '900' },
+  previewFeature: { paddingHorizontal: 9, paddingVertical: 6, borderRadius: 999, overflow: 'hidden', backgroundColor: '#F9FAFB', fontSize: 10, fontWeight: '900' },
   previewButton: { marginTop: 16, minHeight: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   previewButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 },
-  sectionTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
+  sectionTitle: { color: '#111827', fontSize: 18, fontWeight: '900' },
   formGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   inputWrap: { flexGrow: 1, flexBasis: 220, marginTop: 8 },
-  inputLabel: { marginBottom: 7, color: '#AAB0C0', fontSize: 12, fontWeight: '900' },
-  input: { minHeight: 46, paddingHorizontal: 13, borderRadius: 12, color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.075)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.15)', fontWeight: '800' },
-  inlineInput: { minHeight: 40, minWidth: 124, paddingHorizontal: 11, borderRadius: 11, color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.14)', fontSize: 11, fontWeight: '800' },
+  inputLabel: { marginBottom: 7, color: '#6B7280', fontSize: 12, fontWeight: '900' },
+  input: { minHeight: 46, paddingHorizontal: 13, borderRadius: 12, color: '#111827', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', fontWeight: '800' },
+  inlineInput: { minHeight: 40, minWidth: 124, paddingHorizontal: 11, borderRadius: 11, color: '#111827', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', fontSize: 11, fontWeight: '800' },
   textArea: { minHeight: 132, paddingTop: 12, lineHeight: 18 },
   toggleGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  toggleRow: { flexGrow: 1, flexBasis: 240, minHeight: 50, paddingHorizontal: 13, borderRadius: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.062)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.13)' },
-  toggleLabel: { flex: 1, color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
-  toggle: { width: 46, height: 26, borderRadius: 13, padding: 3, backgroundColor: 'rgba(255,255,255,0.14)' },
-  toggleOn: { backgroundColor: '#23B8FF' },
+  toggleRow: { flexGrow: 1, flexBasis: 240, minHeight: 50, paddingHorizontal: 13, borderRadius: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  toggleLabel: { flex: 1, color: '#111827', fontSize: 13, fontWeight: '800' },
+  toggle: { width: 46, height: 26, borderRadius: 13, padding: 3, backgroundColor: '#E5E7EB' },
+  toggleOn: { backgroundColor: '#2D7CFF' },
   toggleKnob: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF' },
   toggleKnobOn: { transform: [{ translateX: 20 }] },
   actionRow: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' },
-  actionButton: { minHeight: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#23B8FF', overflow: 'hidden', shadowColor: '#23B8FF', shadowOpacity: 0.22, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  actionButton: { minHeight: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#2D7CFF', overflow: 'hidden', shadowColor: '#2D7CFF', shadowOpacity: 0.22, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   actionButtonGradient: { minHeight: 40, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
-  secondaryButton: { paddingHorizontal: 16, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
-  dangerButton: { backgroundColor: '#FF5D7A' },
+  secondaryButton: { paddingHorizontal: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  dangerButton: { backgroundColor: '#EF4444' },
   actionButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  tinyButton: { minHeight: 34, paddingHorizontal: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.075)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.18)' },
-  tinyButtonText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
+  tinyButton: { minHeight: 34, paddingHorizontal: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(109,93,251,0.18)' },
+  tinyButtonText: { color: '#111827', fontSize: 11, fontWeight: '900' },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 10, backgroundColor: 'rgba(35,184,255,0.14)', borderWidth: 1, borderColor: 'rgba(35,184,255,0.28)' },
   badgeGreen: { backgroundColor: 'rgba(53,230,166,0.12)', borderColor: 'rgba(53,230,166,0.28)' },
   badgeGold: { backgroundColor: 'rgba(247,212,122,0.14)', borderColor: 'rgba(247,212,122,0.3)' },
-  badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
-  table: { minWidth: 920, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(220,232,255,0.13)' },
-  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(220,232,255,0.09)', backgroundColor: 'rgba(255,255,255,0.045)' },
+  badgeText: { color: '#111827', fontSize: 10, fontWeight: '900' },
+  table: { minWidth: 920, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB' },
+  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(220,232,255,0.09)', backgroundColor: '#FFFFFF' },
   tableCell: { width: 150, minHeight: 54, justifyContent: 'center', paddingHorizontal: 13, paddingVertical: 10 },
-  tableHead: { color: '#BDEBFF', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', backgroundColor: 'rgba(255,255,255,0.08)' },
-  tableText: { color: '#E2E8F0', fontSize: 12, fontWeight: '700' },
-  tableSubText: { marginTop: 4, color: '#94A3B8', fontSize: 10, fontWeight: '700' },
+  tableHead: { color: '#BDEBFF', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', backgroundColor: '#F9FAFB' },
+  tableText: { color: '#111827', fontSize: 12, fontWeight: '700' },
+  tableSubText: { marginTop: 4, color: '#6B7280', fontSize: 10, fontWeight: '700' },
   rowActionWrap: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   previewCell: { gap: 8 },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  categoryTile: { flexGrow: 1, flexBasis: 220, minHeight: 166, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(220,232,255,0.14)' },
+  categoryTile: { flexGrow: 1, flexBasis: 220, minHeight: 166, borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#E5E7EB' },
   tileTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   tileIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   tileIconText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  tileTitle: { marginTop: 12, color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
-  tileMeta: { marginTop: 6, color: '#AAB0C0', fontSize: 12, fontWeight: '700' },
+  tileTitle: { marginTop: 12, color: '#111827', fontSize: 15, fontWeight: '900' },
+  tileMeta: { marginTop: 6, color: '#6B7280', fontSize: 12, fontWeight: '700' },
   flagPreview: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(124,58,237,0.18)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)' },
-  flagPreviewText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
+  flagPreviewText: { color: '#111827', fontSize: 13, fontWeight: '900' },
   locationTreeGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  locationTreeCard: { flexGrow: 1, flexBasis: 280, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.062)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  locationTreeCard: { flexGrow: 1, flexBasis: 280, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
   locationTreeRow: { minHeight: 38, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.1)' },
   userGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  userCard: { flexGrow: 1, flexBasis: 320, minHeight: 230, borderRadius: 18, padding: 15, borderWidth: 1, borderColor: 'rgba(220,232,255,0.14)' },
+  userCard: { flexGrow: 1, flexBasis: 320, minHeight: 230, borderRadius: 18, padding: 15, borderWidth: 1, borderColor: '#E5E7EB' },
   userIdentity: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   userAvatar: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   userAvatarText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
   profileRows: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  profileInfo: { flexGrow: 1, flexBasis: 120, minHeight: 54, padding: 10, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.1)' },
+  profileInfo: { flexGrow: 1, flexBasis: 120, minHeight: 54, padding: 10, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.1)' },
   twoColumn: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   tabs: { gap: 8, paddingBottom: 12 },
-  tab: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.07)' },
-  tabActive: { backgroundColor: '#23B8FF' },
-  tabText: { color: '#AAB0C0', fontSize: 12, fontWeight: '900' },
-  tabTextActive: { color: '#FFFFFF' },
+  tab: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
+  tabActive: { backgroundColor: '#2D7CFF' },
+  tabText: { color: '#6B7280', fontSize: 12, fontWeight: '900' },
+  tabTextActive: { color: '#111827' },
   cardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  verifyCard: { flexGrow: 1, flexBasis: 320, padding: 14, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
-  cardTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
-  cardMeta: { marginTop: 6, color: '#AAB0C0', fontSize: 12, fontWeight: '700' },
+  verifyCard: { flexGrow: 1, flexBasis: 320, padding: 14, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F3F4F6' },
+  cardTitle: { color: '#111827', fontSize: 16, fontWeight: '900' },
+  cardMeta: { marginTop: 6, color: '#6B7280', fontSize: 12, fontWeight: '700' },
   docGrid: { marginTop: 12, flexDirection: 'row', gap: 8 },
   docBox: { flex: 1, minHeight: 78, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(21,123,255,0.12)' },
   docText: { color: '#FFFFFF', fontSize: 10, lineHeight: 14, textAlign: 'center', fontWeight: '900' },
   operationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  verificationCard: { flexGrow: 1, flexBasis: 360, minHeight: 360, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
-  documentPreview: { flex: 1, minHeight: 92, borderRadius: 14, padding: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
+  verificationCard: { flexGrow: 1, flexBasis: 360, minHeight: 360, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB' },
+  documentPreview: { flex: 1, minHeight: 92, borderRadius: 14, padding: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#F3F4F6' },
   documentIcon: { marginBottom: 8, color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
-  rejectModal: { width: '100%', maxWidth: 560, alignSelf: 'center', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)' },
-  orderCard: { flexGrow: 1, flexBasis: 360, minHeight: 310, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
+  rejectModal: { width: '100%', maxWidth: 560, alignSelf: 'center', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(109,93,251,0.16)' },
+  orderCard: { flexGrow: 1, flexBasis: 360, minHeight: 310, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB' },
   orderTimeline: { marginTop: 14, gap: 8 },
   timelineStep: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   timelineDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: 'rgba(148,163,184,0.28)' },
-  timelineDotActive: { backgroundColor: '#23B8FF' },
-  timelineText: { color: '#64748B', fontSize: 11, fontWeight: '800', textTransform: 'capitalize' },
-  timelineTextActive: { color: '#E2E8F0' },
+  timelineDotActive: { backgroundColor: '#2D7CFF' },
+  timelineText: { color: '#9CA3AF', fontSize: 11, fontWeight: '800', textTransform: 'capitalize' },
+  timelineTextActive: { color: '#111827' },
   financeChartGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
   financeLedgerGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  financeLedgerCard: { flexGrow: 1, flexBasis: 360, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.062)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  financeLedgerCard: { flexGrow: 1, flexBasis: 360, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
   ledgerRow: { minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.1)' },
   growthGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  marketingCard: { flexGrow: 1, flexBasis: 320, minHeight: 260, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
-  campaignPreview: { width: 58, height: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)' },
+  marketingCard: { flexGrow: 1, flexBasis: 320, minHeight: 260, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB' },
+  campaignPreview: { width: 58, height: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: 'rgba(109,93,251,0.16)' },
   campaignPreviewText: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  growthChannelCard: { flexGrow: 1, flexBasis: 260, minHeight: 150, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.062)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
-  supportCard: { flexGrow: 1, flexBasis: 340, minHeight: 270, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
+  growthChannelCard: { flexGrow: 1, flexBasis: 260, minHeight: 150, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  supportCard: { flexGrow: 1, flexBasis: 340, minHeight: 270, padding: 15, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB' },
   settingsGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'flex-start' },
-  settingsPrimaryCard: { flexGrow: 1, flexBasis: 620, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.062)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
-  settingsSideCard: { flexGrow: 1, flexBasis: 340, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.062)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
-  sliderCard: { marginTop: 14, minHeight: 88, padding: 14, borderRadius: 15, gap: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  settingsPrimaryCard: { flexGrow: 1, flexBasis: 620, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  settingsSideCard: { flexGrow: 1, flexBasis: 340, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  sliderCard: { marginTop: 14, minHeight: 88, padding: 14, borderRadius: 15, gap: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
   sliderTrack: { width: 170, height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: 'rgba(148,163,184,0.18)' },
-  sliderFill: { height: 10, borderRadius: 5, backgroundColor: '#23B8FF' },
+  sliderFill: { height: 10, borderRadius: 5, backgroundColor: '#2D7CFF' },
   builderSummaryGrid: { marginBottom: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  builderSummaryCard: { flexGrow: 1, flexBasis: 180, minHeight: 72, padding: 12, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
+  builderSummaryCard: { flexGrow: 1, flexBasis: 180, minHeight: 72, padding: 12, borderRadius: 13, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(220,232,255,0.12)' },
   telegramChannelGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  telegramChannelCard: { flexGrow: 1, flexBasis: 520, minHeight: 430, padding: 16, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(220,232,255,0.16)' },
+  telegramChannelCard: { flexGrow: 1, flexBasis: 520, minHeight: 430, padding: 16, borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB' },
   telegramStatusRow: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  bodyText: { marginTop: 8, color: '#AAB0C0', fontSize: 13, lineHeight: 19, fontWeight: '700' },
-  warningText: { marginTop: 8, color: '#F9D77E', fontSize: 12, fontWeight: '900' },
-  toast: { position: 'absolute', right: 22, bottom: 22, minHeight: 48, paddingHorizontal: 16, borderRadius: 14, justifyContent: 'center', backgroundColor: '#23B8FF', shadowColor: '#23B8FF', shadowOpacity: 0.4, shadowRadius: 16 },
+  bodyText: { marginTop: 8, color: '#6B7280', fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  warningText: { marginTop: 8, color: '#F59E0B', fontSize: 12, fontWeight: '900' },
+  toast: { position: 'absolute', right: 22, bottom: 22, minHeight: 48, paddingHorizontal: 16, borderRadius: 14, justifyContent: 'center', backgroundColor: '#2D7CFF', shadowColor: '#2D7CFF', shadowOpacity: 0.4, shadowRadius: 16 },
   toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  modalOverlay: { flex: 1, padding: 18, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.62)' },
-  modalCard: { width: '100%', maxWidth: 920, maxHeight: '92%', alignSelf: 'center', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(220,232,255,0.18)' },
-  modalTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  closeText: { color: '#8EA7FF', fontSize: 13, fontWeight: '900' },
+  modalOverlay: { flex: 1, padding: 18, justifyContent: 'center', backgroundColor: 'rgba(17,24,39,0.36)' },
+  modalCard: { width: '100%', maxWidth: 920, maxHeight: '92%', alignSelf: 'center', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(109,93,251,0.18)' },
+  modalTitle: { color: '#111827', fontSize: 20, fontWeight: '900' },
+  closeText: { color: '#6D5DFB', fontSize: 13, fontWeight: '900' },
 });
+

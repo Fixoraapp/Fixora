@@ -32,5 +32,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     letterSpacing: 0,
     fontWeight: '700',
+    shadowColor: '#6D5DFB',
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
   },
 });

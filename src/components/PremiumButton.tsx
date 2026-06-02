@@ -49,18 +49,18 @@ export function PremiumButton({ title, onPress, variant = 'primary', style, chil
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 56,
+    minHeight: 52,
     borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     overflow: 'hidden',
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
   },
   fill: {
     flex: 1,
-    minHeight: 56,
+    minHeight: 52,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.99 }],
   },
   text: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0,
   },
