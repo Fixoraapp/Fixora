@@ -1,20 +1,22 @@
 export const colors = {
-  background: '#050815',
-  backgroundElevated: '#090E22',
-  panel: 'rgba(255,255,255,0.075)',
-  panelStrong: 'rgba(255,255,255,0.115)',
-  stroke: 'rgba(255,255,255,0.13)',
-  strokeStrong: 'rgba(255,255,255,0.24)',
-  white: '#F8FBFF',
-  text: '#EEF4FF',
-  muted: '#AAB5CC',
-  dim: '#69748F',
-  blue: '#08A8FF',
-  blueDeep: '#0A39FF',
-  purple: '#8B35FF',
-  purpleDeep: '#4011A8',
-  success: '#41E6A4',
+  background: '#030611',
+  backgroundElevated: '#09111F',
+  panel: 'rgba(255,255,255,0.082)',
+  panelStrong: 'rgba(255,255,255,0.135)',
+  stroke: 'rgba(220,232,255,0.15)',
+  strokeStrong: 'rgba(220,232,255,0.3)',
+  white: '#FAFCFF',
+  text: '#F4F8FF',
+  muted: '#B4C0D7',
+  dim: '#75839D',
+  blue: '#23B8FF',
+  blueDeep: '#1458FF',
+  purple: '#9B5CFF',
+  purpleDeep: '#4B19C9',
+  success: '#35E6A6',
   danger: '#FF5D7A',
+  gold: '#F7D47A',
+  cyan: '#2EE7F0',
 };
 
 export const spacing = {
@@ -27,10 +29,10 @@ export const spacing = {
 };
 
 export const radii = {
-  sm: 12,
-  md: 18,
-  lg: 24,
-  xl: 32,
+  sm: 10,
+  md: 16,
+  lg: 22,
+  xl: 30,
 };
 
 export const typography = {
@@ -44,8 +46,8 @@ export const typography = {
 
 export const shadow = {
   shadowColor: colors.blue,
-  shadowOpacity: 0.2,
-  shadowRadius: 24,
-  shadowOffset: { width: 0, height: 14 },
-  elevation: 12,
+  shadowOpacity: 0.28,
+  shadowRadius: 34,
+  shadowOffset: { width: 0, height: 18 },
+  elevation: 16,
 };

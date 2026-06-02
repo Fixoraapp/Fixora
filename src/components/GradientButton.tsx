@@ -21,7 +21,7 @@ export function GradientButton({ title, onPress, style, children, disabled = fal
       onPress={onPress}
       style={({ pressed }) => [
         styles.shell,
-        { shadowColor: theme.colors.glow, borderColor: theme.isDark ? 'rgba(255,255,255,0.22)' : 'rgba(21,123,255,0.2)' },
+        { shadowColor: theme.colors.glow, borderColor: theme.isDark ? 'rgba(220,232,255,0.26)' : 'rgba(35,184,255,0.24)' },
         disabled && styles.disabled,
         pressed && styles.pressed,
         style,
@@ -43,14 +43,14 @@ export function GradientButton({ title, onPress, style, children, disabled = fal
 const styles = StyleSheet.create({
   shell: {
     minHeight: 58,
-    borderRadius: 29,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.22)',
-    shadowOpacity: 0.42,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 16,
+    shadowOpacity: 0.48,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 18,
   },
   gradient: {
     flex: 1,

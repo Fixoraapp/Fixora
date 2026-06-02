@@ -28,8 +28,9 @@ const styles = StyleSheet.create({
   input: {
     minHeight: 54,
     borderRadius: radii.md,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     borderWidth: 1,
     letterSpacing: 0,
+    fontWeight: '700',
   },
 });

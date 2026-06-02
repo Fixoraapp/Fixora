@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { radii } from '../constants/theme';
 import { useTheme } from '../theme/useTheme';
 
@@ -15,7 +16,7 @@ export function PremiumButton({ title, onPress, variant = 'primary', style, chil
   const { theme } = useTheme();
   const variantStyle =
     variant === 'primary'
-      ? { backgroundColor: theme.isDark ? theme.colors.text : theme.colors.accent, borderColor: theme.isDark ? theme.colors.text : theme.colors.accent }
+      ? { backgroundColor: 'transparent', borderColor: theme.colors.strokeStrong, shadowColor: theme.colors.glow, shadowOpacity: theme.isDark ? 0.28 : 0.14 }
       : variant === 'secondary'
         ? { backgroundColor: theme.colors.surfaceStrong, borderColor: theme.colors.strokeStrong }
         : { backgroundColor: 'transparent', borderColor: theme.colors.stroke };
@@ -31,8 +32,17 @@ export function PremiumButton({ title, onPress, variant = 'primary', style, chil
         style,
       ]}
     >
-      {children}
-      <Text style={[styles.text, { color: variant === 'primary' ? theme.colors.textInverse : theme.colors.text }]}>{title}</Text>
+      {variant === 'primary' ? (
+        <LinearGradient colors={theme.gradients.primaryButton} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fill}>
+          {children}
+          <Text style={[styles.text, styles.primaryText]}>{title}</Text>
+        </LinearGradient>
+      ) : (
+        <View style={styles.fill}>
+          {children}
+          <Text style={[styles.text, { color: theme.colors.text }]}>{title}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -40,13 +50,23 @@ export function PremiumButton({ title, onPress, variant = 'primary', style, chil
 const styles = StyleSheet.create({
   button: {
     minHeight: 56,
-    borderRadius: radii.lg,
+    borderRadius: radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+  },
+  fill: {
+    flex: 1,
+    minHeight: 56,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 20,
-    borderWidth: 1,
   },
   pressed: {
     opacity: 0.86,
@@ -56,5 +76,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0,
+  },
+  primaryText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
   },
 });
