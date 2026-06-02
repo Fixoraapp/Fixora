@@ -1,13 +1,25 @@
 import { TextInput, TextInputProps, StyleSheet } from 'react-native';
-import { colors, radii } from '../constants/theme';
+import { radii } from '../constants/theme';
+import { useTheme } from '../theme/useTheme';
 
 export function TextField(props: TextInputProps) {
+  const { theme } = useTheme();
+
   return (
     <TextInput
-      placeholderTextColor={colors.dim}
-      selectionColor={colors.blue}
+      placeholderTextColor={theme.colors.dim}
+      selectionColor={theme.colors.accent}
       {...props}
-      style={[styles.input, props.style]}
+      style={[
+        styles.input,
+        {
+          color: theme.colors.text,
+          backgroundColor: theme.colors.input,
+          borderColor: theme.colors.stroke,
+          fontSize: theme.typography.body,
+        },
+        props.style,
+      ]}
     />
   );
 }
@@ -17,11 +29,7 @@ const styles = StyleSheet.create({
     minHeight: 54,
     borderRadius: radii.md,
     paddingHorizontal: 16,
-    color: colors.white,
-    backgroundColor: colors.panel,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    fontSize: 16,
     letterSpacing: 0,
   },
 });

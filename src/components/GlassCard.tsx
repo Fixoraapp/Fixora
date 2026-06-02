@@ -1,38 +1,47 @@
 import { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { colors, radii } from '../constants/theme';
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { radii } from '../constants/theme';
+import { useTheme } from '../theme/useTheme';
 
 type GlassCardProps = {
   children: ReactNode;
   onPress?: () => void;
   selected?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function GlassCard({ children, onPress, selected = false }: GlassCardProps) {
-  const style = [styles.card, selected && styles.selected];
+export function GlassCard({ children, onPress, selected = false, style }: GlassCardProps) {
+  const { theme } = useTheme();
+  const cardStyle = [
+    styles.card,
+    {
+      backgroundColor: selected ? `${theme.colors.accent}24` : theme.colors.card,
+      borderColor: selected ? theme.colors.accent : theme.colors.stroke,
+      shadowColor: theme.colors.glow,
+      shadowOpacity: theme.isDark ? 0.12 : 0.08,
+    },
+    style,
+  ];
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => [style, pressed && styles.pressed]}>
+      <Pressable onPress={onPress} style={({ pressed }) => [cardStyle, pressed && styles.pressed]}>
         {children}
       </Pressable>
     );
   }
 
-  return <View style={style}>{children}</View>;
+  return <View style={cardStyle}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
   card: {
     borderRadius: radii.lg,
     padding: 16,
-    backgroundColor: colors.panel,
     borderWidth: 1,
-    borderColor: colors.stroke,
-  },
-  selected: {
-    backgroundColor: 'rgba(8,168,255,0.16)',
-    borderColor: colors.blue,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
   pressed: {
     opacity: 0.9,
