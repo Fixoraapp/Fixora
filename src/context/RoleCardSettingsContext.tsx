@@ -26,6 +26,7 @@ export type RoleCardVisualSettings = {
   imageOverlay: string;
   imageBrightness: number;
   imageBlur: number;
+  showDecorations: boolean;
   icon: string;
   iconColor: string;
   iconSize: number;
@@ -92,6 +93,7 @@ export const defaultRoleCardSettings: RoleCardSettingsState = {
       imageOverlay: 'rgba(5,8,22,0.22)',
       imageBrightness: 100,
       imageBlur: 0,
+      showDecorations: false,
       icon: 'M',
       iconColor: '#F9D77E',
       iconSize: 42,
@@ -124,7 +126,7 @@ export const defaultRoleCardSettings: RoleCardSettingsState = {
     enabled: true,
     sortOrder: 2,
     title: 'I AM CLIENT',
-    subtitle: 'Find trusted professionals instantly',
+    subtitle: 'Book premium local services',
     description: 'Book verified masters, chat, manage orders, and pay securely with Fixora.',
     features: ['Trusted masters', 'Fast booking', 'Secure deal'],
     showFeatures: true,
@@ -138,6 +140,7 @@ export const defaultRoleCardSettings: RoleCardSettingsState = {
       imageOverlay: 'rgba(5,8,22,0.2)',
       imageBrightness: 100,
       imageBlur: 0,
+      showDecorations: false,
       icon: 'C',
       iconColor: '#41E6A4',
       iconSize: 42,

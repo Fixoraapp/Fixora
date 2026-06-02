@@ -7,10 +7,7 @@ import AuthScreen from './src/screens/AuthScreen';
 import CategoriesScreen from './src/screens/CategoriesScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import AdminScreen from './src/screens/AdminScreen';
-import LocationSelectionScreen from './src/screens/LocationSelectionScreen';
-import OnboardingScreen from './src/screens/OnboardingScreen';
 import RoleSelectionScreen from './src/screens/RoleSelectionScreen';
-import SmartLocationScreen from './src/screens/SmartLocationScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import { AdminConfigProvider } from './src/context/AdminConfigContext';
 import { LanguageSwitcher } from './src/components/LanguageSwitcher';
@@ -70,14 +67,6 @@ function AppContent() {
     setSelectedLocation(appState.selectedLocation);
     setRoleState(appState.selectedRole ?? appState.userRole ?? 'client');
 
-    if (!appState.hasSeenOnboarding) {
-      setRoute('splash');
-      return;
-    }
-    if (!appState.hasCompletedLocationSetup) {
-      setRoute('location');
-      return;
-    }
     if (appState.isAuthenticated && appState.userRole) {
       setRoute('home');
       return;
@@ -88,14 +77,7 @@ function AppContent() {
     }
 
     setRoute('role');
-  }, [appState.hasCompletedLocationSetup, appState.hasSeenOnboarding, appState.isAuthenticated, appState.loading, appState.selectedLocation, appState.selectedRole, appState.userRole, setSelectedLocation]);
-
-  const completeLocation = async (selection: LocationSelection) => {
-    setLocation(selection);
-    setSelectedLocation(selection);
-    await appState.completeLocationSetup(selection);
-    setRoute('role');
-  };
+  }, [appState.isAuthenticated, appState.loading, appState.selectedLocation, appState.selectedRole, appState.userRole, setSelectedLocation]);
 
   const selectRole = (nextRole: UserRole) => {
     setRoleState(nextRole);
@@ -115,21 +97,7 @@ function AppContent() {
       <StatusBar style="dark" translucent />
       {appState.loading ? <SplashScreen onGetStarted={() => undefined} /> : null}
       {!appState.loading && route === 'splash' ? (
-        <SplashScreen onGetStarted={() => setRoute('onboarding')} />
-      ) : null}
-      {!appState.loading && route === 'onboarding' ? (
-        <OnboardingScreen
-          onComplete={async () => {
-            await appState.completeOnboarding();
-            setRoute('location');
-          }}
-        />
-      ) : null}
-      {!appState.loading && route === 'location' ? (
-        <SmartLocationScreen onContinue={completeLocation} onManual={() => setRoute('manualLocation')} />
-      ) : null}
-      {!appState.loading && route === 'manualLocation' ? (
-        <LocationSelectionScreen onComplete={completeLocation} />
+        <SplashScreen onGetStarted={() => setRoute('role')} />
       ) : null}
       {!appState.loading && route === 'role' ? (
         <RoleSelectionScreen

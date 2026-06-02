@@ -63,16 +63,16 @@ export const translationModules = [
 ] as const;
 
 export const defaultTranslations: TranslationItem[] = [
-  item('splash.tagline', 'splash', 'Find trusted professionals instantly.', 'Найдите проверенных специалистов мгновенно.', 'Անմիջապես գտեք վստահելի մասնագետների։'),
+  item('splash.tagline', 'splash', 'Services at your fingertips.', 'Сервисы у вас под рукой.', 'Ծառայությունները ձեր մատների տակ։'),
   item('splash.start', 'splash', 'Start Fixora', 'Начать Fixora', 'Սկսել Fixora'),
-  item('onboarding.slide1.title', 'onboarding', 'Find trusted professionals instantly.', 'Найдите проверенных специалистов мгновенно.', 'Անմիջապես գտեք վստահելի մասնագետների։'),
+  item('onboarding.slide1.title', 'onboarding', 'Book premium local services.', 'Бронируйте премиальные локальные сервисы.', 'Ամրագրեք պրեմիում տեղական ծառայություններ։'),
   item('onboarding.slide1.subtitle', 'onboarding', 'Thousands of verified specialists are ready to help in your city.', 'Тысячи проверенных специалистов готовы помочь в вашем городе.', 'Հազարավոր ստուգված մասնագետներ պատրաստ են օգնել ձեր քաղաքում։'),
   item('onboarding.slide2.title', 'onboarding', 'Book services near you.', 'Заказывайте услуги рядом с вами.', 'Պատվիրեք ծառայություններ ձեր մոտակայքում։'),
   item('onboarding.slide2.subtitle', 'onboarding', 'Choose your city, compare professionals, and book safely.', 'Выберите город, сравните специалистов и бронируйте безопасно.', 'Ընտրեք քաղաքը, համեմատեք մասնագետներին և ամրագրեք անվտանգ։'),
   item('onboarding.slide3.title', 'onboarding', 'Work with verified experts.', 'Работайте с проверенными экспертами.', 'Աշխատեք ստուգված փորձագետների հետ։'),
   item('onboarding.slide3.subtitle', 'onboarding', 'Chat, call, pay securely, and track every order in real time.', 'Пишите, звоните, платите безопасно и отслеживайте каждый заказ.', 'Գրեք, զանգեք, վճարեք անվտանգ և հետևեք յուրաքանչյուր պատվերին։'),
   item('onboarding.skip', 'onboarding', 'Skip', 'Пропустить', 'Բաց թողնել'),
-  item('location.smart.title.ready', 'location', 'Real GPS location', 'Реальная GPS-локация', 'Իրական GPS տեղադրություն'),
+  item('location.smart.title.ready', 'location', 'Location detection', 'Определение локации', 'Տեղադրության որոշում'),
   item('location.smart.title.detected', 'location', 'Your location detected', 'Ваше местоположение найдено', 'Ձեր տեղադրությունը գտնվեց'),
   item('location.smart.subtitle.ready', 'location', 'Use GPS to set your local marketplace with real address details.', 'Используйте GPS, чтобы настроить локальный маркетплейс с реальным адресом.', 'Օգտագործեք GPS՝ տեղական շուկան իրական հասցեով կարգավորելու համար։'),
   item('location.smart.subtitle.detected', 'location', 'Fixora matched your local marketplace, language, currency, and exact coordinates.', 'Fixora подобрала локальный маркетплейс, язык, валюту и координаты.', 'Fixora-ն ընտրեց ձեր շուկան, լեզուն, արժույթը և կոորդինատները։'),

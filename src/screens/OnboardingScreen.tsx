@@ -19,7 +19,7 @@ import { useTranslation } from '../i18n/I18nProvider';
 
 const slides = [
   {
-    title: 'Find trusted professionals instantly.',
+    title: 'Book premium local services.',
     subtitle: 'Thousands of verified specialists are ready to help in your city.',
     cta: 'Next',
     kind: 'network',

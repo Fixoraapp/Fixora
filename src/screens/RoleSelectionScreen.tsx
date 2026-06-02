@@ -280,62 +280,67 @@ function PremiumRoleCard({
 
 function RoleIllustration({ role }: { role: RoleCardSettings }) {
   const isMaster = role.role === 'master';
+  const hasImage = Boolean(role.visual.image);
+  const showDecorations = role.visual.showDecorations;
 
   return (
     <LinearGradient colors={role.design.gradientColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.illustrationStage}>
       <View style={styles.illustrationGrid} />
-      {role.visual.image ? (
+      {hasImage ? (
         <>
           <Image
             source={{ uri: role.visual.image }}
-            resizeMode={role.visual.imagePosition === 'cover' ? 'cover' : 'contain'}
+            resizeMode="cover"
             blurRadius={role.visual.imageBlur}
             style={[
               styles.roleImage,
               {
                 opacity: Math.max(0.2, Math.min(role.visual.imageBrightness / 100, 1.4)),
-                transform: [{ scale: Math.max(0.45, role.visual.imageSize / 100) }],
               },
             ]}
           />
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: role.visual.imageOverlay }]} />
+          {role.visual.imageOverlay ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, styles.imageOverlayLayer, { backgroundColor: role.visual.imageOverlay }]} /> : null}
         </>
       ) : null}
-      <View style={[styles.illustrationGlow, { backgroundColor: role.design.glowColor }]} />
-      <View style={styles.personShadow} />
-      <View style={[styles.personBody, isMaster ? styles.masterBody : styles.clientBody]}>
-        <View style={[styles.torsoStripe, { backgroundColor: role.visual.iconColor }]} />
-      </View>
-      <View style={[styles.personNeck, { backgroundColor: isMaster ? '#CFA978' : '#D7B18B' }]} />
-      <View style={[styles.personHead, { backgroundColor: isMaster ? '#DDBB86' : '#E8C39E' }]}>
-        <View style={styles.faceLine} />
-        {!isMaster ? <View style={styles.clientSmile} /> : null}
-      </View>
-      {isMaster ? (
+      {showDecorations ? (
         <>
-          <View style={styles.helmet}>
-            <View style={styles.helmetRidge} />
+          <View style={[styles.illustrationGlow, { backgroundColor: role.design.glowColor }]} />
+          <View style={styles.personShadow} />
+          <View style={[styles.personBody, isMaster ? styles.masterBody : styles.clientBody]}>
+            <View style={[styles.torsoStripe, { backgroundColor: role.visual.iconColor }]} />
           </View>
-          <View style={styles.toolHandle} />
-          <View style={styles.toolHead} />
-          <View style={styles.wrenchCircle} />
+          <View style={[styles.personNeck, { backgroundColor: isMaster ? '#CFA978' : '#D7B18B' }]} />
+          <View style={[styles.personHead, { backgroundColor: isMaster ? '#DDBB86' : '#E8C39E' }]}>
+            <View style={styles.faceLine} />
+            {!isMaster ? <View style={styles.clientSmile} /> : null}
+          </View>
+          {isMaster ? (
+            <>
+              <View style={styles.helmet}>
+                <View style={styles.helmetRidge} />
+              </View>
+              <View style={styles.toolHandle} />
+              <View style={styles.toolHead} />
+              <View style={styles.wrenchCircle} />
+            </>
+          ) : (
+            <>
+              <View style={styles.clientHair} />
+              <View style={styles.clientLaptop}>
+                <View style={styles.laptopGlow} />
+              </View>
+              <View style={styles.trustBadge}>
+                <Text style={styles.trustBadgeText}>OK</Text>
+              </View>
+            </>
+          )}
+          <View style={[styles.roleIcon, { width: role.visual.iconSize, height: role.visual.iconSize, borderRadius: role.visual.iconSize / 2, backgroundColor: `${role.visual.iconColor}22`, borderColor: role.visual.iconColor }]}>
+            <Text style={[styles.roleIconText, { color: role.visual.iconColor, fontSize: Math.max(12, role.visual.iconSize * 0.36) }]}>{role.visual.icon}</Text>
+          </View>
+          <View style={[styles.orbitOne, { borderColor: `${role.visual.iconColor}88` }]} />
+          <View style={[styles.orbitTwo, { borderColor: `${role.design.glowColor}88` }]} />
         </>
-      ) : (
-        <>
-          <View style={styles.clientHair} />
-          <View style={styles.clientLaptop}>
-            <View style={styles.laptopGlow} />
-          </View>
-          <View style={styles.trustBadge}>
-            <Text style={styles.trustBadgeText}>OK</Text>
-          </View>
-        </>
-      )}
-      <View style={[styles.roleIcon, { width: role.visual.iconSize, height: role.visual.iconSize, borderRadius: role.visual.iconSize / 2, backgroundColor: `${role.visual.iconColor}22`, borderColor: role.visual.iconColor }]}>
-        <Text style={[styles.roleIconText, { color: role.visual.iconColor, fontSize: Math.max(12, role.visual.iconSize * 0.36) }]}>{role.visual.icon}</Text>
-      </View>
-      <View style={[styles.orbitOne, { borderColor: `${role.visual.iconColor}88` }]} />
-      <View style={[styles.orbitTwo, { borderColor: `${role.design.glowColor}88` }]} />
+      ) : null}
     </LinearGradient>
   );
 }
@@ -438,6 +443,11 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
+    borderRadius: 22,
+    zIndex: 1,
+  },
+  imageOverlayLayer: {
+    zIndex: 2,
   },
   illustrationGlow: {
     position: 'absolute',

@@ -45,7 +45,7 @@ export default function SmartLocationScreen({ onContinue, onManual }: SmartLocat
     ? t('buttons.continue', 'Continue')
     : status === 'detecting'
       ? 'Detecting...'
-      : 'Use My Current Location';
+      : 'Detect location';
 
   return (
     <LocationFlowV2

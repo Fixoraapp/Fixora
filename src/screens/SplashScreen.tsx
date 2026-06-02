@@ -353,7 +353,7 @@ export default function SplashScreen({ onGetStarted }: SplashScreenProps) {
         >
           <Text style={[styles.title, { fontSize: compact ? 58 : 72 }]}>Fixora</Text>
           <Text style={[styles.tagline, { fontSize: compact ? 16 : 18 }]}>
-            {t('splash.tagline', 'Find trusted professionals instantly.')}
+            {t('splash.tagline', 'Services at your fingertips.')}
           </Text>
         </Animated.View>
 

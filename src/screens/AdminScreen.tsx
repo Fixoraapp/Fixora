@@ -2,6 +2,8 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import {
   Modal,
+  Platform,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,6 +11,7 @@ import {
   TextInput,
   useWindowDimensions,
   View,
+  ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
@@ -36,6 +39,26 @@ type AdminModule =
   | 'telegram'
   | 'logs'
   | 'settings';
+type AdminIconName =
+  | 'LayoutDashboard'
+  | 'Grid3x3'
+  | 'MapPinned'
+  | 'Languages'
+  | 'Users'
+  | 'ShieldCheck'
+  | 'ClipboardList'
+  | 'Wallet'
+  | 'Megaphone'
+  | 'LifeBuoy'
+  | 'Palette'
+  | 'Send'
+  | 'FileText'
+  | 'Settings'
+  | 'Bell'
+  | 'Bolt'
+  | 'Search'
+  | 'Dollar'
+  | 'TrendingUp';
 type Lang = 'ru' | 'en' | 'hy';
 type Status = 'active' | 'pending' | 'blocked' | 'completed' | 'failed';
 
@@ -211,21 +234,21 @@ const modules: Array<{ id: AdminModule; label: string; group: string }> = [
   { id: 'settings', label: 'App Settings', group: 'Settings' },
 ];
 
-const moduleIcons: Record<AdminModule, string> = {
-  dashboard: 'в–¦',
-  categories: 'в–Ў',
-  locations: 'вЊ–',
-  translations: 'T',
-  users: 'в™™',
-  verification: 'в—Љ',
-  orders: 'в—‰',
-  finance: '$',
-  marketing: 'в†—',
-  support: 'вњ‰',
-  roleCustomization: 'в™ў',
-  telegram: 'вњ€',
-  logs: 'в‰Ў',
-  settings: 'вљ™',
+const moduleIcons: Record<AdminModule, AdminIconName> = {
+  dashboard: 'LayoutDashboard',
+  categories: 'Grid3x3',
+  locations: 'MapPinned',
+  translations: 'Languages',
+  users: 'Users',
+  verification: 'ShieldCheck',
+  orders: 'ClipboardList',
+  finance: 'Wallet',
+  marketing: 'Megaphone',
+  support: 'LifeBuoy',
+  roleCustomization: 'Palette',
+  telegram: 'Send',
+  logs: 'FileText',
+  settings: 'Settings',
 };
 
 const categorySeeds = [
@@ -388,6 +411,7 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
   const [modal, setModal] = useState<ModalState>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const categories = state.categories as CategoryRecord[];
   const countries = state.countries as CountryRecord[];
   const regions = state.regions as RegionRecord[];
@@ -617,11 +641,18 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
 
   return (
     <SafeAreaView style={styles.root}>
-      <LinearGradient colors={['#F7F8FC', '#071325', '#100A26', '#F7F8FC']} locations={[0, 0.44, 0.78, 1]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['#F7F8FC', '#FFFFFF', '#F5F0FF', '#EEF4FF']} locations={[0, 0.44, 0.78, 1]} style={StyleSheet.absoluteFill} />
       <View style={styles.adminAurora} />
       <View style={styles.adminGoldGlow} />
-      <View style={[styles.shell, compact && styles.shellCompact]}>
-        <Sidebar active={activeModule} compact={compact} onSelect={setActiveModule} onExit={onExit} />
+      <View style={[styles.shell, (compact || sidebarCollapsed) && styles.shellCompact]}>
+        <Sidebar
+          active={activeModule}
+          compact={compact || sidebarCollapsed}
+          onSelect={setActiveModule}
+          onExit={onExit}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
+        />
         <View style={styles.main}>
           <Topbar active={activeModule} query={query} onQuery={setQuery} />
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -684,7 +715,93 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   );
 }
 
-function Sidebar({ active, compact, onSelect, onExit }: { active: AdminModule; compact: boolean; onSelect: (module: AdminModule) => void; onExit: () => void }) {
+function normalizeIconName(icon: string): AdminIconName {
+  if (icon in moduleIcons) {
+    return moduleIcons[icon as AdminModule];
+  }
+  if (icon === '$' || icon === '%' || icon === 'P' || icon === 'OK' || icon === 'R') {
+    return 'Wallet';
+  }
+  if (icon === 'TrendingUp') return 'TrendingUp';
+  if (icon === 'ClipboardList') return 'ClipboardList';
+  if (icon === 'Users') return 'Users';
+  if (icon === 'ShieldCheck') return 'ShieldCheck';
+  if (icon === 'Wallet') return 'Wallet';
+  return 'LayoutDashboard';
+}
+
+function AdminIcon({ name, active = false, light = false, size = 18 }: { name: AdminIconName; active?: boolean; light?: boolean; size?: number }) {
+  const color = light ? '#FFFFFF' : active ? '#6D5DFB' : '#6B7280';
+  const stroke = { borderColor: color } as ViewStyle;
+  const fill = { backgroundColor: color } as ViewStyle;
+  const box = { width: size, height: size } as ViewStyle;
+
+  if (name === 'LayoutDashboard') {
+    return <View style={[styles.iconGrid, box]}><View style={[styles.iconPaneTall, stroke]} /><View style={[styles.iconPane, stroke]} /><View style={[styles.iconPane, stroke]} /></View>;
+  }
+  if (name === 'Grid3x3') {
+    return <View style={[styles.iconGrid3, box]}>{Array.from({ length: 9 }).map((_, index) => <View key={index} style={[styles.iconGridDot, stroke]} />)}</View>;
+  }
+  if (name === 'MapPinned') {
+    return <View style={[styles.iconMap, box]}><View style={[styles.iconMapFold, stroke]} /><View style={[styles.iconPin, stroke]}><View style={[styles.iconPinCore, fill]} /></View></View>;
+  }
+  if (name === 'Languages') {
+    return <View style={[styles.iconLanguage, box]}><Text style={[styles.iconGlyph, { color, fontSize: size * 0.52 }]}>A</Text><Text style={[styles.iconGlyphSmall, { color }]}>文</Text></View>;
+  }
+  if (name === 'Users') {
+    return <View style={[styles.iconUsers, box]}><View style={[styles.iconUserHead, stroke]} /><View style={[styles.iconUserBody, stroke]} /><View style={[styles.iconUserHeadSmall, stroke]} /></View>;
+  }
+  if (name === 'ShieldCheck') {
+    return <View style={[styles.iconShield, box, stroke]}><View style={[styles.iconCheckA, fill]} /><View style={[styles.iconCheckB, fill]} /></View>;
+  }
+  if (name === 'ClipboardList' || name === 'FileText') {
+    return <View style={[styles.iconFile, box, stroke]}><View style={[styles.iconClip, stroke]} />{[0, 1, 2].map((item) => <View key={item} style={[styles.iconLine, fill, { top: 6 + item * 4 }]} />)}</View>;
+  }
+  if (name === 'Wallet') {
+    return <View style={[styles.iconWallet, box, stroke]}><View style={[styles.iconWalletPocket, stroke]} /><View style={[styles.iconWalletDot, fill]} /></View>;
+  }
+  if (name === 'Megaphone') {
+    return <View style={[styles.iconMegaphone, box]}><View style={[styles.iconHorn, stroke]} /><View style={[styles.iconHandle, fill]} /><View style={[styles.iconSound, stroke]} /></View>;
+  }
+  if (name === 'LifeBuoy') {
+    return <View style={[styles.iconBuoy, box, stroke]}><View style={[styles.iconBuoyCore, stroke]} /></View>;
+  }
+  if (name === 'Palette') {
+    return <View style={[styles.iconPalette, box, stroke]}>{[0, 1, 2].map((item) => <View key={item} style={[styles.iconPaletteDot, fill, { left: 4 + item * 5 }]} />)}</View>;
+  }
+  if (name === 'Send') {
+    return <View style={[styles.iconSend, box]}><View style={[styles.iconSendWing, stroke]} /><View style={[styles.iconSendLine, fill]} /></View>;
+  }
+  if (name === 'Settings') {
+    return <View style={[styles.iconGear, box, stroke]}>{[0, 1, 2, 3].map((item) => <View key={item} style={[styles.iconGearTooth, fill, { transform: [{ rotate: `${item * 45}deg` }] }]} />)}<View style={[styles.iconGearCore, stroke]} /></View>;
+  }
+  if (name === 'Bell') {
+    return <View style={[styles.iconBell, box, stroke]}><View style={[styles.iconBellBase, fill]} /></View>;
+  }
+  if (name === 'Bolt') {
+    return <View style={[styles.iconBolt, box]}><View style={[styles.iconBoltTop, fill]} /><View style={[styles.iconBoltBottom, fill]} /></View>;
+  }
+  if (name === 'Search') {
+    return <View style={[styles.iconSearch, box, stroke]}><View style={[styles.iconSearchHandle, fill]} /></View>;
+  }
+  return <View style={[styles.iconTrend, box]}><View style={[styles.iconTrendLine, fill]} /><View style={[styles.iconTrendArrow, stroke]} /></View>;
+}
+
+function Sidebar({
+  active,
+  compact,
+  collapsed,
+  onSelect,
+  onExit,
+  onToggleCollapse,
+}: {
+  active: AdminModule;
+  compact: boolean;
+  collapsed: boolean;
+  onSelect: (module: AdminModule) => void;
+  onExit: () => void;
+  onToggleCollapse: () => void;
+}) {
   const { t } = useTranslation();
   const grouped = modules.reduce<Record<string, typeof modules>>((acc, item) => {
     acc[item.group] = [...(acc[item.group] ?? []), item];
@@ -694,9 +811,19 @@ function Sidebar({ active, compact, onSelect, onExit }: { active: AdminModule; c
   return (
     <View style={[styles.sidebar, compact && styles.sidebarCompact]}>
       <View style={styles.brandRow}>
-        <LinearGradient colors={['#6D5DFB', '#2563EB']} style={styles.brandMark}><Text style={styles.brandMarkText}>в—‡</Text></LinearGradient>
+        <LinearGradient colors={['#D65BFF', '#6D5DFB', '#2D7CFF']} style={styles.brandMark}><AdminIcon name="LayoutDashboard" light size={22} /></LinearGradient>
         {!compact ? <View><Text style={styles.brandTitle}>Fixora Pro</Text><Text style={styles.brandSubtitle}>Super Admin</Text></View> : null}
+        {!compact ? (
+          <Pressable accessibilityRole="button" onPress={onToggleCollapse} style={styles.collapseButton}>
+            <Text style={styles.collapseText}>{collapsed ? '>' : '<'}</Text>
+          </Pressable>
+        ) : null}
       </View>
+      {compact ? (
+        <Pressable accessibilityRole="button" onPress={onToggleCollapse} style={styles.expandButton}>
+          <Text style={styles.collapseText}>{'>'}</Text>
+        </Pressable>
+      ) : null}
       <ScrollView showsVerticalScrollIndicator={false}>
         {Object.entries(grouped).map(([group, items]) => (
           <View key={group} style={styles.navGroup}>
@@ -705,7 +832,9 @@ function Sidebar({ active, compact, onSelect, onExit }: { active: AdminModule; c
               const selected = active === item.id;
               return (
                 <Pressable key={item.id} onPress={() => onSelect(item.id)} style={[styles.navItem, selected && styles.navItemActive]}>
-                  <Text style={[styles.navIcon, selected && styles.navTextActive]}>{moduleIcons[item.id]}</Text>
+                  <View style={[styles.navIconBox, selected && styles.navIconBoxActive]}>
+                    <AdminIcon name={moduleIcons[item.id]} active={selected} size={18} />
+                  </View>
                   {!compact ? <Text style={[styles.navText, selected && styles.navTextActive]}>{t(adminModuleKey(item.id), item.label)}</Text> : null}
                   {!compact && selected ? <Text style={styles.navChevron}>вЂє</Text> : null}
                 </Pressable>
@@ -741,11 +870,14 @@ function Topbar({ active, query, onQuery }: { active: AdminModule; query: string
         <Text style={styles.topSubtitle}>Welcome back. Here is what is happening across Fixora today.</Text>
       </View>
       <View style={styles.topActions}>
-        <TextInput value={query} onChangeText={onQuery} placeholder={t('placeholders.searchAdmin', 'Search admin data...')} placeholderTextColor="#69748F" style={styles.searchInput} />
+        <View style={styles.searchShell}>
+          <AdminIcon name="Search" size={16} />
+          <TextInput value={query} onChangeText={onQuery} placeholder={t('placeholders.searchAdmin', 'Search admin data...')} placeholderTextColor="#9CA3AF" style={styles.searchInput} />
+        </View>
         <View style={styles.liveBadge}><View style={styles.liveDot} /><Text style={styles.liveText}>Live</Text></View>
         <LanguageSwitcher compact />
-        <View style={styles.bell}><Text style={styles.bellText}>в–Ў</Text></View>
-        <View style={styles.bell}><Text style={styles.bellText}>в—Њ</Text></View>
+        <View style={styles.bell}><AdminIcon name="Bell" size={17} /></View>
+        <View style={styles.bell}><AdminIcon name="Bolt" size={17} /></View>
         <ActionButton label="+ Quick Action" onPress={() => undefined} />
         <View style={styles.dateRange}><Text style={styles.dateRangeText}>May 23, 2025 - May 30, 2025</Text></View>
         <View style={styles.adminAvatar}><Text style={styles.adminAvatarText}>SA</Text></View>
@@ -756,11 +888,11 @@ function Topbar({ active, query, onQuery }: { active: AdminModule; query: string
 
 function Dashboard({ dashboard }: { dashboard: Record<string, number> }) {
   const metrics = [
-    ['Total Revenue', dashboard.revenue, '+12.5%', '$'],
-    ['Total Orders', dashboard.activeOrders + dashboard.completedOrders, '+8.3%', 'в–Ў'],
-    ['Total Users', dashboard.totalClients + dashboard.totalMasters, '+15.2%', 'в™™'],
-    ['Active Masters', dashboard.totalMasters, '+7.1%', 'в™•'],
-    ['Conversion Rate', '8.24%', '+3.6%', 'в†—'],
+    ['Total Revenue', dashboard.revenue, '+12.5%', 'Wallet'],
+    ['Total Orders', dashboard.activeOrders + dashboard.completedOrders, '+8.3%', 'ClipboardList'],
+    ['Total Users', dashboard.totalClients + dashboard.totalMasters, '+15.2%', 'Users'],
+    ['Active Masters', dashboard.totalMasters, '+7.1%', 'ShieldCheck'],
+    ['Conversion Rate', '8.24%', '+3.6%', 'TrendingUp'],
   ];
   return (
     <>
@@ -788,33 +920,36 @@ function Dashboard({ dashboard }: { dashboard: Record<string, number> }) {
   );
 }
 
-function MetricCard({ label, value, trend = '+4.8%', icon = 'в–¦' }: { label: string; value: string; trend?: string; icon?: string }) {
+function MetricCard({ label, value, trend = '+4.8%', icon = 'LayoutDashboard' }: { label: string; value: string; trend?: string; icon?: string }) {
+  const iconName = normalizeIconName(icon);
+
   return (
-    <LinearGradient colors={['rgba(17,24,48,0.98)', 'rgba(25,36,78,0.76)', 'rgba(91,33,182,0.18)']} style={styles.metricCard}>
+    <LinearGradient colors={['#FFFFFF', '#F7F8FC', 'rgba(109,93,251,0.12)']} style={styles.metricCard}>
+      <View style={styles.metricSheen} />
       <View style={styles.metricTop}>
         <Text style={styles.metricLabel}>{label}</Text>
-        <LinearGradient colors={['rgba(124,58,237,0.72)', 'rgba(37,99,235,0.55)']} style={styles.metricIcon}><Text style={styles.metricIconText}>{icon}</Text></LinearGradient>
+        <LinearGradient colors={['#D65BFF', '#6D5DFB', '#2D7CFF']} style={styles.metricIcon}><AdminIcon name={iconName} active light size={20} /></LinearGradient>
       </View>
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricTrend}>{trend} vs last 7 days</Text>
-      <View style={styles.sparkline}>{[12, 18, 24, 20, 29, 36, 42].map((height, index) => <View key={index} style={[styles.sparkSegment, { height }]} />)}</View>
+      <View style={styles.sparkline}>{[12, 18, 24, 20, 29, 36, 42].map((height, index) => <LinearGradient key={index} colors={['#B75CFF', '#2D7CFF']} style={[styles.sparkSegment, { height }]} />)}</View>
     </LinearGradient>
   );
 }
 
 function ChartPlaceholder({ title, variant = 'bar', large = false }: { title: string; variant?: 'bar' | 'line'; large?: boolean }) {
   return (
-    <GlassCard style={[styles.chartCard, large && styles.chartCardLarge]}>
+    <LinearGradient colors={['rgba(17,24,39,0.98)', 'rgba(31,41,55,0.96)', 'rgba(109,93,251,0.24)']} style={[styles.chartCard, large && styles.chartCardLarge]}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={styles.chartTitle}>{title}</Text>
         <Badge label="Last 7 days" tone="blue" />
       </View>
       <View style={variant === 'line' ? styles.lineChart : styles.chartBars}>
         {variant === 'line'
           ? [30, 44, 58, 52, 72, 66, 92].map((height, index) => <View key={index} style={[styles.linePoint, { height, marginTop: 104 - height }]} />)
-          : [86, 74, 92, 128, 110, 82, 96].map((height, index) => <LinearGradient key={index} colors={['#60A5FA', '#2563EB']} style={[styles.chartBar, { height }]} />)}
+          : [86, 74, 92, 128, 110, 82, 96].map((height, index) => <LinearGradient key={index} colors={['#D65BFF', '#6D5DFB', '#2D7CFF']} style={[styles.chartBar, { height }]} />)}
       </View>
-    </GlassCard>
+    </LinearGradient>
   );
 }
 
@@ -1027,7 +1162,7 @@ function CategoriesPanel({ categories, query, onAdd, onEdit, onDelete, onToggle 
 
 function CategoryTile({ category, onEdit, onToggle }: { category: CategoryRecord; onEdit: () => void; onToggle: () => void }) {
   return (
-    <LinearGradient colors={['rgba(17,24,48,0.98)', 'rgba(91,33,182,0.2)']} style={styles.categoryTile}>
+    <LinearGradient colors={['#FFFFFF', 'rgba(109,93,251,0.08)']} style={styles.categoryTile}>
       <View style={styles.tileTopRow}>
         <View style={[styles.tileIcon, { backgroundColor: category.color }]}><Text style={styles.tileIconText}>{category.icon}</Text></View>
         <AdminStatusBadge active={category.isActive} />
@@ -1990,6 +2125,9 @@ function RoleRegistrationCustomizationPanel({
             <AdminInput label="Brightness %" value={String(card.visual.imageBrightness)} onChange={(value) => patchVisual({ imageBrightness: clampNumber(value, 20, 140) })} />
             <AdminInput label="Blur" value={String(card.visual.imageBlur)} onChange={(value) => patchVisual({ imageBlur: clampNumber(value, 0, 18) })} />
           </View>
+          <View style={styles.toggleGrid}>
+            <ToggleRow label="Show decorative overlay" value={card.visual.showDecorations} onChange={() => patchVisual({ showDecorations: !card.visual.showDecorations })} />
+          </View>
           <View style={styles.rowActionWrap}>
             <ActionButton label="Upload placeholder" variant="secondary" onPress={() => patchVisual({ image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=900&q=80' })} />
             <ActionButton label="Crop placeholder" variant="secondary" onPress={() => undefined} />
@@ -2073,7 +2211,19 @@ function RoleCustomizationPreview({ card, previewMode }: { card: RoleCardSetting
       <View style={[styles.previewRoleCard, { borderColor: card.design.selectedBorder, shadowColor: card.design.glowColor, shadowOpacity: card.design.shadowIntensity / 100 }]}>
         <LinearGradient colors={card.design.gradientColors} style={styles.previewVisual}>
           {card.visual.image ? (
-            <Text style={styles.previewImageLabel}>IMAGE</Text>
+            <>
+              <Image
+                source={{ uri: card.visual.image }}
+                resizeMode="cover"
+                blurRadius={card.visual.imageBlur}
+                style={[
+                  styles.previewImage,
+                  { opacity: Math.max(0.2, Math.min(card.visual.imageBrightness / 100, 1.4)) },
+                ]}
+              />
+              {card.visual.imageOverlay ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: card.visual.imageOverlay }]} /> : null}
+              {card.visual.showDecorations ? <Text style={styles.previewImageLabel}>DECOR</Text> : null}
+            </>
           ) : (
             <View style={[styles.previewIcon, { width: card.visual.iconSize, height: card.visual.iconSize, borderRadius: card.visual.iconSize / 2, borderColor: card.visual.iconColor }]}>
               <Text style={[styles.previewIconText, { color: card.visual.iconColor }]}>{card.visual.icon}</Text>
@@ -2369,18 +2519,24 @@ function SectionTitle({ title, action, onAction }: { title: string; action?: str
 
 function DataTable({ columns, rows }: { columns: string[]; rows: Array<Array<React.ReactNode>> }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View style={styles.table}>
-        <View style={styles.tableRow}>
-          {columns.map((column) => <Text key={column} style={[styles.tableCell, styles.tableHead]}>{column}</Text>)}
-        </View>
-        {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.tableRow}>
-            {row.map((cell, cellIndex) => <View key={cellIndex} style={styles.tableCell}>{typeof cell === 'string' ? <Text style={styles.tableText}>{cell}</Text> : cell}</View>)}
-          </View>
-        ))}
+    <View style={styles.tableShell}>
+      <View style={styles.tableToolbar}>
+        <View style={styles.tableSearchHint}><AdminIcon name="Search" size={14} /><Text style={styles.tableToolbarText}>Filter rows, badges, and actions</Text></View>
+        <View style={styles.tablePager}><Text style={styles.tablePagerText}>1-{Math.min(rows.length, 10)} of {rows.length}</Text></View>
       </View>
-    </ScrollView>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.table}>
+          <View style={styles.tableRowHead}>
+            {columns.map((column) => <Text key={column} style={[styles.tableCell, styles.tableHead]}>{column}</Text>)}
+          </View>
+          {rows.map((row, rowIndex) => (
+          <View key={rowIndex} style={[styles.tableRow, rowIndex % 2 === 1 && styles.tableRowAlt]}>
+              {row.map((cell, cellIndex) => <View key={cellIndex} style={styles.tableCell}>{typeof cell === 'string' ? <Text style={styles.tableText}>{cell}</Text> : cell}</View>)}
+          </View>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -2491,7 +2647,7 @@ function UserIdentity({ user }: { user: AdminUser }) {
 
 function UserCard({ user, onEdit, onToggle, onPremium, onActivate }: { user: AdminUser; onEdit: () => void; onToggle: () => void; onPremium: () => void; onActivate: () => void }) {
   return (
-    <LinearGradient colors={['rgba(17,24,48,0.98)', 'rgba(37,99,235,0.12)']} style={styles.userCard}>
+    <LinearGradient colors={['#FFFFFF', 'rgba(45,124,255,0.08)']} style={styles.userCard}>
       <View style={styles.sectionHeader}>
         <UserIdentity user={user} />
         <Badge label={user.role} tone={user.role === 'Master' ? 'blue' : user.role === 'Admin' ? 'gold' : 'green'} />
@@ -2708,22 +2864,48 @@ function mapOrderFromDb(row: TableRow<'orders'>): OrderRecord {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F7F8FC' },
-  adminAurora: { position: 'absolute', top: -190, right: -170, width: 520, height: 520, borderRadius: 260, backgroundColor: '#2D7CFF', opacity: 0.15 },
-  adminGoldGlow: { position: 'absolute', bottom: -240, left: 260, width: 520, height: 520, borderRadius: 260, backgroundColor: '#F59E0B', opacity: 0.07 },
+  adminAurora: { position: 'absolute', top: -190, right: -170, width: 560, height: 560, borderRadius: 280, backgroundColor: '#2D7CFF', opacity: 0.11 },
+  adminGoldGlow: { position: 'absolute', bottom: -240, left: 260, width: 560, height: 560, borderRadius: 280, backgroundColor: '#B75CFF', opacity: 0.08 },
   flex: { flex: 1 },
   shell: { flex: 1, flexDirection: 'row' },
   shellCompact: { flexDirection: 'row' },
-  sidebar: { width: 286, padding: 16, borderRightWidth: 1, borderRightColor: '#E5E7EB', backgroundColor: 'rgba(255,255,255,0.96)' },
+  sidebar: {
+    width: 292,
+    padding: 16,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(109,93,251,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.84)',
+    shadowColor: '#6D5DFB',
+    shadowOpacity: 0.1,
+    shadowRadius: 28,
+    shadowOffset: { width: 12, height: 0 },
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(26px)', transitionDuration: '220ms' } as ViewStyle : null),
+  },
   sidebarCompact: { width: 78, paddingHorizontal: 10 },
   brandRow: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
-  brandMark: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#2D7CFF', shadowOpacity: 0.28, shadowRadius: 18 },
+  brandMark: { width: 46, height: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: '#6D5DFB', shadowOpacity: 0.3, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
   brandMarkText: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
   brandTitle: { color: '#111827', fontSize: 18, fontWeight: '900' },
   brandSubtitle: { marginTop: 2, color: '#A78BFA', fontSize: 11, fontWeight: '900' },
+  collapseButton: { marginLeft: 'auto', width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  expandButton: { width: 36, height: 36, marginBottom: 8, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  collapseText: { color: '#6D5DFB', fontSize: 14, fontWeight: '900' },
   navGroup: { marginTop: 18, gap: 7 },
   navGroupText: { color: '#9CA3AF', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  navItem: { minHeight: 44, borderRadius: 12, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  navItemActive: { backgroundColor: 'rgba(109,93,251,0.1)', borderWidth: 1, borderColor: 'rgba(109,93,251,0.22)', shadowColor: '#6D5DFB', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 10 } },
+  navItem: {
+    minHeight: 46,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    ...(Platform.OS === 'web' ? { transitionDuration: '180ms' } as ViewStyle : null),
+  },
+  navItemActive: { backgroundColor: 'rgba(109,93,251,0.1)', borderColor: 'rgba(109,93,251,0.22)', shadowColor: '#6D5DFB', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 12 } },
+  navIconBox: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#EEF2FF' },
+  navIconBoxActive: { backgroundColor: '#FFFFFF', borderColor: 'rgba(109,93,251,0.24)', transform: [{ scale: 1.03 }] },
   navIcon: { width: 22, color: '#374151', fontSize: 14, fontWeight: '900', textAlign: 'center' },
   navText: { flex: 1, color: '#374151', fontSize: 13, fontWeight: '800' },
   navTextActive: { color: '#111827' },
@@ -2737,17 +2919,30 @@ const styles = StyleSheet.create({
   exitButton: { minHeight: 42, marginTop: 12, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
   exitText: { color: '#111827', fontSize: 12, fontWeight: '900' },
   main: { flex: 1 },
-  topbar: { minHeight: 88, paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#E5E7EB', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16, backgroundColor: 'rgba(255,255,255,0.84)' },
+  topbar: {
+    minHeight: 92,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(229,231,235,0.8)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    backgroundColor: 'rgba(255,255,255,0.78)',
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(22px)' } as ViewStyle : null),
+  },
   topTitleBlock: { minWidth: 220 },
   topKicker: { color: '#A78BFA', fontSize: 11, fontWeight: '900' },
   topTitle: { marginTop: 4, color: '#111827', fontSize: 25, fontWeight: '900' },
   topSubtitle: { marginTop: 3, color: '#6B7280', fontSize: 11, fontWeight: '700' },
   topActions: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 9 },
-  searchInput: { flex: 1, minHeight: 44, minWidth: 220, maxWidth: 420, paddingHorizontal: 15, borderRadius: 12, color: '#111827', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', fontWeight: '800' },
-  liveBadge: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: 'rgba(53,230,166,0.1)', borderWidth: 1, borderColor: 'rgba(53,230,166,0.3)' },
+  searchShell: { flex: 1, minHeight: 44, minWidth: 240, maxWidth: 440, paddingHorizontal: 13, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#6D5DFB', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  searchInput: { flex: 1, minHeight: 42, color: '#111827', fontWeight: '800' },
+  liveBadge: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: 'rgba(34,197,94,0.1)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.24)' },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#34D399' },
-  liveText: { color: '#D1FAE5', fontSize: 11, fontWeight: '900' },
-  bell: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  liveText: { color: '#15803D', fontSize: 11, fontWeight: '900' },
+  bell: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#6D5DFB', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 8 } },
   bellText: { color: '#111827', fontSize: 12, fontWeight: '900' },
   dateRange: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
   dateRangeText: { color: '#374151', fontSize: 11, fontWeight: '800' },
@@ -2759,7 +2954,23 @@ const styles = StyleSheet.create({
   dashboardTitle: { color: '#111827', fontSize: 20, fontWeight: '900' },
   dashboardSubtitle: { marginTop: 4, color: '#6B7280', fontSize: 12, fontWeight: '700' },
   metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  metricCard: { flexGrow: 1, flexBasis: 220, minHeight: 150, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden', shadowColor: '#6D5DFB', shadowOpacity: 0.08, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } },
+  metricCard: {
+    flexGrow: 1,
+    flexBasis: 220,
+    minHeight: 162,
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(109,93,251,0.16)',
+    overflow: 'hidden',
+    shadowColor: '#6D5DFB',
+    shadowOpacity: 0.14,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 8,
+    ...(Platform.OS === 'web' ? { transitionDuration: '180ms' } as ViewStyle : null),
+  },
+  metricSheen: { position: 'absolute', top: -52, right: -42, width: 148, height: 148, borderRadius: 74, backgroundColor: 'rgba(109,93,251,0.1)' },
   metricTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   metricIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   metricIconText: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
@@ -2767,7 +2978,7 @@ const styles = StyleSheet.create({
   metricValue: { marginTop: 8, color: '#111827', fontSize: 26, lineHeight: 32, fontWeight: '900' },
   metricTrend: { marginTop: 4, color: '#34D399', fontSize: 11, fontWeight: '800' },
   sparkline: { position: 'absolute', right: 14, bottom: 12, width: 96, height: 48, flexDirection: 'row', alignItems: 'flex-end', gap: 4, opacity: 0.8 },
-  sparkSegment: { flex: 1, borderRadius: 6, backgroundColor: '#9B5CFF' },
+  sparkSegment: { flex: 1, borderRadius: 6 },
   dashboardGrid: { marginTop: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'stretch' },
   marketHeader: { marginBottom: 14, padding: 18, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
   marketToolbar: { marginBottom: 14, borderRadius: 18, flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', backgroundColor: '#FFFFFF' },
@@ -2780,12 +2991,13 @@ const styles = StyleSheet.create({
   marketStats: { marginBottom: 14, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   miniStat: { flexGrow: 1, flexBasis: 180, minHeight: 84, padding: 14, borderRadius: 15, borderWidth: 1, borderColor: 'rgba(148,163,184,0.14)' },
   chartGrid: { marginTop: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  chartCard: { flexGrow: 1, flexBasis: 320, minHeight: 240, borderRadius: 16, backgroundColor: '#FFFFFF' },
+  chartCard: { flexGrow: 1, flexBasis: 320, minHeight: 240, borderRadius: 20, padding: 18, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', shadowColor: '#111827', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 14 } },
   chartCardLarge: { flexBasis: 460, minHeight: 270 },
-  chartBars: { flex: 1, marginTop: 18, minHeight: 150, flexDirection: 'row', alignItems: 'flex-end', gap: 18, borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.12)' },
+  chartTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
+  chartBars: { flex: 1, marginTop: 18, minHeight: 150, flexDirection: 'row', alignItems: 'flex-end', gap: 18, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.12)' },
   chartBar: { flex: 1, maxWidth: 34, borderRadius: 8 },
-  lineChart: { flex: 1, marginTop: 14, minHeight: 150, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(148,163,184,0.12)' },
-  linePoint: { flex: 1, marginHorizontal: 3, borderTopWidth: 3, borderTopColor: '#8B5CF6', backgroundColor: 'rgba(124,58,237,0.22)', borderRadius: 8 },
+  lineChart: { flex: 1, marginTop: 14, minHeight: 150, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.12)' },
+  linePoint: { flex: 1, marginHorizontal: 3, borderTopWidth: 3, borderTopColor: '#D65BFF', backgroundColor: 'rgba(109,93,251,0.34)', borderRadius: 8 },
   activityCard: { flexGrow: 1, flexBasis: 320, minHeight: 230, borderRadius: 18, backgroundColor: '#FFFFFF' },
   activityList: { gap: 12 },
   activityRow: { minHeight: 38, flexDirection: 'row', alignItems: 'center', gap: 11 },
@@ -2805,6 +3017,7 @@ const styles = StyleSheet.create({
   previewCanvas: { flex: 1, padding: 18, alignItems: 'center', justifyContent: 'center' },
   previewRoleCard: { width: '100%', maxWidth: 330, minHeight: 420, padding: 14, borderRadius: 26, borderWidth: 1, backgroundColor: '#F9FAFB', shadowRadius: 28, shadowOffset: { width: 0, height: 14 }, elevation: 16 },
   previewVisual: { minHeight: 168, borderRadius: 22, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  previewImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', borderRadius: 22 },
   previewImageLabel: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
   previewIcon: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, backgroundColor: '#F9FAFB' },
   previewIconText: { fontSize: 17, fontWeight: '900' },
@@ -2842,10 +3055,18 @@ const styles = StyleSheet.create({
   badgeGreen: { backgroundColor: 'rgba(53,230,166,0.12)', borderColor: 'rgba(53,230,166,0.28)' },
   badgeGold: { backgroundColor: 'rgba(247,212,122,0.14)', borderColor: 'rgba(247,212,122,0.3)' },
   badgeText: { color: '#111827', fontSize: 10, fontWeight: '900' },
-  table: { minWidth: 920, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB' },
-  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(220,232,255,0.09)', backgroundColor: '#FFFFFF' },
+  tableShell: { borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#FFFFFF', shadowColor: '#6D5DFB', shadowOpacity: 0.06, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  tableToolbar: { minHeight: 54, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#EEF2F7' },
+  tableSearchHint: { minHeight: 34, paddingHorizontal: 10, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB' },
+  tableToolbarText: { color: '#6B7280', fontSize: 11, fontWeight: '800' },
+  tablePager: { minHeight: 32, paddingHorizontal: 10, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(109,93,251,0.08)', borderWidth: 1, borderColor: 'rgba(109,93,251,0.14)' },
+  tablePagerText: { color: '#6D5DFB', fontSize: 11, fontWeight: '900' },
+  table: { minWidth: 920 },
+  tableRowHead: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E5E7EB', backgroundColor: '#F9FAFB' },
+  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#EEF2F7', backgroundColor: '#FFFFFF', ...(Platform.OS === 'web' ? { transitionDuration: '160ms' } as ViewStyle : null) },
+  tableRowAlt: { backgroundColor: '#FBFCFF' },
   tableCell: { width: 150, minHeight: 54, justifyContent: 'center', paddingHorizontal: 13, paddingVertical: 10 },
-  tableHead: { color: '#BDEBFF', fontSize: 11, fontWeight: '900', textTransform: 'uppercase', backgroundColor: '#F9FAFB' },
+  tableHead: { color: '#6B7280', fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
   tableText: { color: '#111827', fontSize: 12, fontWeight: '700' },
   tableSubText: { marginTop: 4, color: '#6B7280', fontSize: 10, fontWeight: '700' },
   rowActionWrap: { flexDirection: 'row', gap: 8, alignItems: 'center' },
@@ -2923,5 +3144,54 @@ const styles = StyleSheet.create({
   modalCard: { width: '100%', maxWidth: 920, maxHeight: '92%', alignSelf: 'center', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(109,93,251,0.18)' },
   modalTitle: { color: '#111827', fontSize: 20, fontWeight: '900' },
   closeText: { color: '#6D5DFB', fontSize: 13, fontWeight: '900' },
+  iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 2 },
+  iconPaneTall: { width: '42%', height: '100%', borderWidth: 2, borderRadius: 4 },
+  iconPane: { width: '46%', height: '46%', borderWidth: 2, borderRadius: 4 },
+  iconGrid3: { flexDirection: 'row', flexWrap: 'wrap', gap: 2 },
+  iconGridDot: { width: 4, height: 4, borderRadius: 2, borderWidth: 1.5 },
+  iconMap: { justifyContent: 'center' },
+  iconMapFold: { position: 'absolute', left: 1, right: 1, top: 4, bottom: 4, borderWidth: 2, borderRadius: 4, transform: [{ rotate: '-7deg' }] },
+  iconPin: { alignSelf: 'center', width: 10, height: 10, borderRadius: 5, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  iconPinCore: { width: 3, height: 3, borderRadius: 2 },
+  iconLanguage: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  iconGlyph: { fontWeight: '900' },
+  iconGlyphSmall: { marginLeft: -1, fontSize: 9, fontWeight: '900' },
+  iconUsers: { alignItems: 'center', justifyContent: 'center' },
+  iconUserHead: { width: 8, height: 8, borderRadius: 4, borderWidth: 2 },
+  iconUserBody: { width: 15, height: 8, marginTop: 1, borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2, borderTopLeftRadius: 8, borderTopRightRadius: 8 },
+  iconUserHeadSmall: { position: 'absolute', right: 1, top: 4, width: 6, height: 6, borderRadius: 3, borderWidth: 1.6 },
+  iconShield: { borderWidth: 2, borderRadius: 6, borderBottomLeftRadius: 10, borderBottomRightRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  iconCheckA: { position: 'absolute', width: 6, height: 2, borderRadius: 2, transform: [{ translateX: -3 }, { rotate: '38deg' }] },
+  iconCheckB: { position: 'absolute', width: 10, height: 2, borderRadius: 2, transform: [{ translateX: 3 }, { rotate: '-45deg' }] },
+  iconFile: { borderWidth: 2, borderRadius: 4 },
+  iconClip: { position: 'absolute', top: -3, left: 5, width: 8, height: 5, borderWidth: 1.5, borderRadius: 3, backgroundColor: '#FFFFFF' },
+  iconLine: { position: 'absolute', left: 4, width: 10, height: 2, borderRadius: 2 },
+  iconWallet: { borderWidth: 2, borderRadius: 5, justifyContent: 'center' },
+  iconWalletPocket: { position: 'absolute', right: -1, width: 9, height: 8, borderWidth: 2, borderRadius: 4 },
+  iconWalletDot: { position: 'absolute', right: 4, width: 3, height: 3, borderRadius: 2 },
+  iconMegaphone: { justifyContent: 'center' },
+  iconHorn: { width: 15, height: 11, borderWidth: 2, borderRadius: 3, transform: [{ skewX: '-12deg' }] },
+  iconHandle: { width: 4, height: 8, marginLeft: 4, marginTop: -1, borderRadius: 2 },
+  iconSound: { position: 'absolute', right: 0, width: 5, height: 12, borderRightWidth: 2, borderRadius: 8 },
+  iconBuoy: { borderWidth: 2, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  iconBuoyCore: { width: '42%', height: '42%', borderWidth: 2, borderRadius: 999 },
+  iconPalette: { borderWidth: 2, borderRadius: 999 },
+  iconPaletteDot: { position: 'absolute', top: 5, width: 3, height: 3, borderRadius: 2 },
+  iconSend: { justifyContent: 'center' },
+  iconSendWing: { width: 16, height: 16, borderTopWidth: 2, borderRightWidth: 2, transform: [{ rotate: '45deg' }] },
+  iconSendLine: { position: 'absolute', left: 4, width: 11, height: 2, borderRadius: 2, transform: [{ rotate: '-18deg' }] },
+  iconGear: { borderWidth: 2, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  iconGearTooth: { position: 'absolute', width: 3, height: 20, borderRadius: 2 },
+  iconGearCore: { width: 7, height: 7, borderWidth: 2, borderRadius: 4, backgroundColor: '#FFFFFF' },
+  iconBell: { borderWidth: 2, borderTopLeftRadius: 9, borderTopRightRadius: 9, borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
+  iconBellBase: { position: 'absolute', bottom: -3, alignSelf: 'center', width: 7, height: 2, borderRadius: 2 },
+  iconBolt: { justifyContent: 'center', alignItems: 'center' },
+  iconBoltTop: { width: 7, height: 10, borderRadius: 2, transform: [{ skewX: '-22deg' }, { translateY: 2 }] },
+  iconBoltBottom: { width: 7, height: 10, borderRadius: 2, transform: [{ skewX: '-22deg' }, { translateY: -2 }, { translateX: 4 }] },
+  iconSearch: { borderWidth: 2, borderRadius: 999 },
+  iconSearchHandle: { position: 'absolute', right: -3, bottom: -2, width: 7, height: 2, borderRadius: 2, transform: [{ rotate: '45deg' }] },
+  iconTrend: { justifyContent: 'center' },
+  iconTrendLine: { width: 16, height: 2, borderRadius: 2, transform: [{ rotate: '-28deg' }] },
+  iconTrendArrow: { position: 'absolute', right: 0, top: 3, width: 6, height: 6, borderTopWidth: 2, borderRightWidth: 2, transform: [{ rotate: '18deg' }] },
 });
 
