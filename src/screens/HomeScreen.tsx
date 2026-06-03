@@ -2,12 +2,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { RegisteredUser } from '../services/authStorage';
 import { LocationSelection, UserRole } from '../types/navigation';
 
 type HomeScreenProps = {
   location: LocationSelection;
   role: UserRole;
+  currentUser: RegisteredUser | null;
   onOpenCategories: () => void;
+  onOpenAdmin: () => void;
   onLogout: () => void;
 };
 
@@ -65,9 +68,10 @@ const offers = [
 
 const companies = ['Derakshan', 'Aram Shin', 'USAcars Armenia', 'Fixora Care', 'Urban Home'];
 
-export default function HomeScreen({ location, role, onOpenCategories, onLogout }: HomeScreenProps) {
+export default function HomeScreen({ location, role, currentUser, onOpenCategories, onOpenAdmin, onLogout }: HomeScreenProps) {
   const [tab, setTab] = useState('home');
   const roleLabel = role[0].toUpperCase() + role.slice(1);
+  const isAdminUser = currentUser?.email.toLowerCase() === 'admin@gmail.com';
 
   if (Platform.OS === 'web') {
     return (
@@ -90,10 +94,15 @@ export default function HomeScreen({ location, role, onOpenCategories, onLogout 
             <Pressable accessibilityRole="button" onPress={onLogout} style={styles.webProfile}>
               <View style={styles.webAvatar}><Text style={styles.webAvatarText}>ИИ</Text></View>
               <View>
-                <Text style={styles.webProfileName}>Иван Иванов</Text>
+                <Text style={styles.webProfileName}>{isAdminUser ? 'Super Admin' : 'Иван Иванов'}</Text>
                 <Text style={styles.webProfileSub}>Личный кабинет⌄</Text>
               </View>
             </Pressable>
+            {isAdminUser ? (
+              <Pressable accessibilityRole="button" onPress={onOpenAdmin} style={styles.webAdminButton}>
+                <Text style={styles.webAdminButtonText}>Admin Panel</Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
 
@@ -320,6 +329,8 @@ const styles = StyleSheet.create({
   webAvatarText: { color: '#07153C', fontSize: 12, fontWeight: '900' },
   webProfileName: { color: '#07153C', fontSize: 15, fontWeight: '900' },
   webProfileSub: { color: '#68748D', fontSize: 12, fontWeight: '700' },
+  webAdminButton: { minHeight: 42, paddingHorizontal: 22, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6F45E8', shadowColor: '#6F45E8', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  webAdminButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
   webMain: { flex: 1, flexDirection: 'row', padding: 20, gap: 28 },
   webSidebar: { width: 244, paddingVertical: 2, borderRadius: 8, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F2', shadowColor: '#6D7BA8', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   webSideItem: { minHeight: 39, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },

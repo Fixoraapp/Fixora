@@ -121,7 +121,9 @@ function AppContent() {
         <HomeScreen
           location={location}
           role={role}
+          currentUser={user}
           onOpenCategories={() => setRoute('categories')}
+          onOpenAdmin={() => setRoute('admin')}
           onLogout={logout}
         />
       ) : null}
