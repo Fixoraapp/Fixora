@@ -3,7 +3,6 @@ import * as NativeSplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
-import AuthScreen from './src/screens/AuthScreen';
 import CategoriesScreen from './src/screens/CategoriesScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import AdminScreen from './src/screens/AdminScreen';
@@ -14,7 +13,6 @@ import { LanguageSwitcher } from './src/components/LanguageSwitcher';
 import { AppStateProvider, useAppStateContext } from './src/context/AppStateContext';
 import { LocationProvider, defaultLocation, useLocationContext } from './src/context/LocationContext';
 import { MarketplaceProvider } from './src/context/MarketplaceContext';
-import { RoleCardSettingsProvider } from './src/context/RoleCardSettingsContext';
 import { ThemeProvider } from './src/theme/ThemeProvider';
 import { I18nProvider } from './src/i18n/I18nProvider';
 import { AppRoute, LocationSelection, UserRole } from './src/types/navigation';
@@ -34,9 +32,7 @@ export default function App() {
             <MarketplaceProvider>
               <AdminConfigProvider>
                 <I18nProvider>
-                  <RoleCardSettingsProvider>
-                    <AppContent />
-                  </RoleCardSettingsProvider>
+                  <AppContent />
                 </I18nProvider>
               </AdminConfigProvider>
             </MarketplaceProvider>
@@ -72,7 +68,7 @@ function AppContent() {
       return;
     }
     if (appState.selectedRole) {
-      setRoute('auth');
+      setRoute('home');
       return;
     }
 
@@ -103,18 +99,9 @@ function AppContent() {
         <RoleSelectionScreen
           selectedRole={role}
           onSelectRole={selectRole}
-          onContinue={() => setRoute('auth')}
+          onContinue={() => setRoute('home')}
           onOpenAdmin={() => setRoute('admin')}
           onResetAppState={resetAppForDev}
-        />
-      ) : null}
-      {!appState.loading && route === 'auth' ? (
-        <AuthScreen
-          role={role}
-          onAuthenticated={async () => {
-            await appState.authenticate(role);
-            setRoute('home');
-          }}
         />
       ) : null}
       {!appState.loading && route === 'home' ? (

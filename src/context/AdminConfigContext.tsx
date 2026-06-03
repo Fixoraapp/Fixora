@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultTranslations } from '../i18n/defaultTranslations';
+import { UserRole } from '../types/navigation';
 import { storage, subscribeStorage } from '../utils/storage';
 
 type Status = 'active' | 'pending' | 'blocked' | 'completed' | 'failed';
@@ -127,15 +128,11 @@ export type TelegramChannelConfig = {
 export type TelegramSettings = {
   enabled: boolean;
   botToken: string;
-  clientRegistrationChatId: string;
-  masterRegistrationChatId: string;
   orderNotificationChatId: string;
   supportChatId: string;
   paymentAlertChatId: string;
   systemLogsChatId: string;
   siteChangeLogsChatId: string;
-  newClientRegistration: boolean;
-  newMasterRegistration: boolean;
   newOrder: boolean;
   payment: boolean;
   supportTicket: boolean;
@@ -152,9 +149,6 @@ export type AppSettings = {
   defaultCurrency: string;
   defaultLanguage: string;
   commissionPercent: string;
-  guestLogin: boolean;
-  masterRegistration: boolean;
-  clientRegistration: boolean;
   payments: boolean;
   telegramNotifications: boolean;
   aiRecommendations: boolean;
@@ -191,6 +185,21 @@ export type FinanceSettings = {
   isActive: boolean;
 };
 
+export type RegistrationFieldType = 'text' | 'email' | 'phone' | 'password' | 'select' | 'checkbox' | 'number' | 'upload';
+
+export type RegistrationFieldConfig = {
+  id: string;
+  role: UserRole;
+  label: string;
+  placeholder: string;
+  type: RegistrationFieldType;
+  required: boolean;
+  sortOrder: number;
+  options?: string[];
+};
+
+export type RegistrationFieldsState = Record<UserRole, RegistrationFieldConfig[]>;
+
 export type AdminConfigState = {
   categories: CategoryRecord[];
   countries: CountryRecord[];
@@ -202,6 +211,7 @@ export type AdminConfigState = {
   financeSettings: FinanceSettings;
   marketingBanners: MarketingBanner[];
   supportTickets: SupportTicket[];
+  registrationFields: RegistrationFieldsState;
   telegram: TelegramSettings;
   appSettings: AppSettings;
   logs: AdminLog[];
@@ -240,6 +250,24 @@ const categorySeeds = [
   'Premium & VIP',
 ];
 
+export const defaultRegistrationFields: RegistrationFieldsState = {
+  client: [
+    { id: 'client-address', role: 'client', label: 'Address', placeholder: 'Street, building, apartment', type: 'text', required: false, sortOrder: 1 },
+    { id: 'client-city', role: 'client', label: 'City', placeholder: 'Your city', type: 'text', required: true, sortOrder: 2 },
+    { id: 'client-notes', role: 'client', label: 'Service interests', placeholder: 'Cleaning, repair, delivery...', type: 'text', required: false, sortOrder: 3 },
+  ],
+  master: [
+    { id: 'master-profession', role: 'master', label: 'Profession', placeholder: 'Electrician, cleaner, designer...', type: 'text', required: true, sortOrder: 1 },
+    { id: 'master-experience', role: 'master', label: 'Experience years', placeholder: '5', type: 'number', required: true, sortOrder: 2 },
+    { id: 'master-category', role: 'master', label: 'Main category', placeholder: 'Select category', type: 'select', required: true, sortOrder: 3, options: ['Repair', 'Cleaning', 'Auto', 'Beauty', 'IT'] },
+  ],
+  company: [
+    { id: 'company-name', role: 'company', label: 'Company name', placeholder: 'Fixora Services LLC', type: 'text', required: true, sortOrder: 1 },
+    { id: 'company-tax', role: 'company', label: 'Registration number', placeholder: 'Company registration ID', type: 'text', required: true, sortOrder: 2 },
+    { id: 'company-size', role: 'company', label: 'Team size', placeholder: '12', type: 'number', required: false, sortOrder: 3 },
+  ],
+};
+
 export const defaultTelegramChannels: TelegramChannelConfig[] = [
   {
     id: 'code-change-logs',
@@ -250,26 +278,6 @@ export const defaultTelegramChannels: TelegramChannelConfig[] = [
     chatId: '',
     notificationTitle: 'Fixora code/site change',
     messageTemplate: 'Admin: {{adminName}}\nModule: {{module}}\nAction: {{action}}\nOld: {{oldValue}}\nNew: {{newValue}}\nDate: {{createdAt}}\nStatus: {{status}}',
-  },
-  {
-    id: 'client-registration',
-    name: 'Client Registration Alerts',
-    description: 'Client identity, location, contacts, avatar, IP placeholder, and registration date.',
-    enabled: true,
-    botToken: '',
-    chatId: '',
-    notificationTitle: 'New client registered',
-    messageTemplate: 'Client: {{firstName}} {{lastName}}\nCountry/Region/City: {{country}} / {{region}} / {{city}}\nAddress: {{location}}\nPhone: {{phone}}\nEmail: {{email}}\nAvatar: {{avatar}}\nIP: {{ip}}\nRegistered: {{createdAt}}',
-  },
-  {
-    id: 'master-registration',
-    name: 'Master Registration Alerts',
-    description: 'Master identity, profession, experience, location, contacts, avatar, IP, and registration date.',
-    enabled: true,
-    botToken: '',
-    chatId: '',
-    notificationTitle: 'New master registered',
-    messageTemplate: 'Master: {{firstName}} {{lastName}}\nProfession: {{profession}}\nExperience: {{experience}}\nLocation: {{country}} / {{region}} / {{city}}\nPhone: {{phone}}\nEmail: {{email}}\nAvatar: {{avatar}}\nIP: {{ip}}\nRegistered: {{createdAt}}',
   },
   {
     id: 'client-order-created',
@@ -373,18 +381,15 @@ export const defaultAdminConfig: AdminConfigState = {
     { id: 'SUP-1002', type: 'User message', assigned: 'Operator B', status: 'in progress', orderId: '-', message: 'General support request.' },
     { id: 'SUP-1003', type: 'Order dispute', assigned: 'Operator A', status: 'review', orderId: 'ord-1003', message: 'Secure deal review.' },
   ],
+  registrationFields: defaultRegistrationFields,
   telegram: {
     enabled: true,
     botToken: '',
-    clientRegistrationChatId: '',
-    masterRegistrationChatId: '',
     orderNotificationChatId: '',
     supportChatId: '',
     paymentAlertChatId: '',
     systemLogsChatId: '',
     siteChangeLogsChatId: '',
-    newClientRegistration: true,
-    newMasterRegistration: true,
     newOrder: true,
     payment: true,
     supportTicket: true,
@@ -400,9 +405,6 @@ export const defaultAdminConfig: AdminConfigState = {
     defaultCurrency: 'AMD',
     defaultLanguage: 'en',
     commissionPercent: '12',
-    guestLogin: true,
-    masterRegistration: true,
-    clientRegistration: true,
     payments: true,
     telegramNotifications: true,
     aiRecommendations: true,
@@ -435,6 +437,11 @@ function mergeState(stored: Partial<AdminConfigState> | null): AdminConfigState 
     ...stored,
     translations: [...mergedTranslations, ...customTranslations],
     financeSettings: { ...defaultAdminConfig.financeSettings, ...stored?.financeSettings },
+    registrationFields: {
+      client: stored?.registrationFields?.client ?? defaultRegistrationFields.client,
+      master: stored?.registrationFields?.master ?? defaultRegistrationFields.master,
+      company: stored?.registrationFields?.company ?? defaultRegistrationFields.company,
+    },
     telegram: { ...defaultAdminConfig.telegram, ...storedTelegram, channels: [...mergedTelegramChannels, ...customTelegramChannels] },
     appSettings: { ...defaultAdminConfig.appSettings, ...stored?.appSettings },
   };

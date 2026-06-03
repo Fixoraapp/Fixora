@@ -1,15 +1,16 @@
 export type AppRoute =
-  | 'splash'
+  | 'start'
+  | 'welcome'
   | 'onboarding'
   | 'location'
   | 'manualLocation'
-  | 'role'
-  | 'auth'
+  | 'login'
+  | 'register'
   | 'home'
   | 'categories'
   | 'admin';
 
-export type UserRole = 'client' | 'master';
+export type UserRole = 'client' | 'master' | 'company';
 
 export type AuthMethod = 'phone' | 'email' | 'google' | 'apple' | 'guest';
 

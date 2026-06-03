@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import {
   Modal,
   Platform,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,12 +16,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
 import { colors } from '../constants/theme';
 import { defaultTelegramChannels, FinanceSettings, MarketingBanner, SupportTicket, TelegramChannelConfig, useAdminConfig } from '../context/AdminConfigContext';
-import { RoleCardSettings, RolePreviewMode, useRoleCardSettings } from '../context/RoleCardSettingsContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useTranslation } from '../i18n/I18nProvider';
 import { translationModules } from '../i18n/defaultTranslations';
 import { TableRow } from '../lib/database.types';
-import { UserRole } from '../types/navigation';
 
 type AdminModule =
   | 'dashboard'
@@ -35,7 +32,6 @@ type AdminModule =
   | 'finance'
   | 'marketing'
   | 'support'
-  | 'roleCustomization'
   | 'telegram'
   | 'logs'
   | 'settings';
@@ -50,7 +46,6 @@ type AdminIconName =
   | 'Wallet'
   | 'Megaphone'
   | 'LifeBuoy'
-  | 'Palette'
   | 'Send'
   | 'FileText'
   | 'Settings'
@@ -171,15 +166,11 @@ type OrderRecord = {
 type TelegramSettings = {
   enabled: boolean;
   botToken: string;
-  clientRegistrationChatId: string;
-  masterRegistrationChatId: string;
   orderNotificationChatId: string;
   supportChatId: string;
   paymentAlertChatId: string;
   systemLogsChatId: string;
   siteChangeLogsChatId: string;
-  newClientRegistration: boolean;
-  newMasterRegistration: boolean;
   newOrder: boolean;
   payment: boolean;
   supportTicket: boolean;
@@ -196,9 +187,6 @@ type AppSettings = {
   defaultCurrency: string;
   defaultLanguage: string;
   commissionPercent: string;
-  guestLogin: boolean;
-  masterRegistration: boolean;
-  clientRegistration: boolean;
   payments: boolean;
   telegramNotifications: boolean;
   aiRecommendations: boolean;
@@ -228,7 +216,6 @@ const modules: Array<{ id: AdminModule; label: string; group: string }> = [
   { id: 'finance', label: 'Finance', group: 'Operations' },
   { id: 'marketing', label: 'Marketing', group: 'Growth' },
   { id: 'support', label: 'Support', group: 'Growth' },
-  { id: 'roleCustomization', label: 'Role Customization', group: 'Settings' },
   { id: 'telegram', label: 'Telegram', group: 'Settings' },
   { id: 'logs', label: 'Logs', group: 'Settings' },
   { id: 'settings', label: 'App Settings', group: 'Settings' },
@@ -245,7 +232,6 @@ const moduleIcons: Record<AdminModule, AdminIconName> = {
   finance: 'Wallet',
   marketing: 'Megaphone',
   support: 'LifeBuoy',
-  roleCustomization: 'Palette',
   telegram: 'Send',
   logs: 'FileText',
   settings: 'Settings',
@@ -366,15 +352,11 @@ const initialLogs: AdminLog[] = [
 const initialTelegram: TelegramSettings = {
   enabled: true,
   botToken: '',
-  clientRegistrationChatId: '',
-  masterRegistrationChatId: '',
   orderNotificationChatId: '',
   supportChatId: '',
   paymentAlertChatId: '',
   systemLogsChatId: '',
   siteChangeLogsChatId: '',
-  newClientRegistration: true,
-  newMasterRegistration: true,
   newOrder: true,
   payment: true,
   supportTicket: true,
@@ -391,9 +373,6 @@ const initialAppSettings: AppSettings = {
   defaultCurrency: 'AMD',
   defaultLanguage: 'en',
   commissionPercent: '12',
-  guestLogin: true,
-  masterRegistration: true,
-  clientRegistration: true,
   payments: true,
   telegramNotifications: true,
   aiRecommendations: true,
@@ -404,7 +383,6 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const { width } = useWindowDimensions();
   const { t } = useTranslation();
   const compact = width < 900;
-  const roleCards = useRoleCardSettings();
   const adminConfig = useAdminConfig();
   const { state } = adminConfig;
   const [activeModule, setActiveModule] = useState<AdminModule>('dashboard');
@@ -463,12 +441,6 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
     settings: 'appSettings',
   };
   const saveActiveModule = async () => {
-    if (activeModule === 'roleCustomization') {
-      addLog('saved role registration customization', 'Role Customization', 'Saved role card configuration locally.');
-      notify(t('toasts.saved', 'Saved successfully'));
-      return;
-    }
-
     const section = storageSectionByModule[activeModule];
     if (section) {
       await adminConfig.saveSection(section, modules.find((item) => item.id === activeModule)?.label ?? activeModule, 'saved section');
@@ -476,13 +448,6 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
     notify(t('toasts.saved', 'Saved successfully'));
   };
   const resetActiveModule = async () => {
-    if (activeModule === 'roleCustomization') {
-      await roleCards.resetRoleCards();
-      addLog('reset role registration customization', 'Role Customization', 'Reset role cards to defaults.');
-      notify(t('toasts.saved', 'Saved successfully'));
-      return;
-    }
-
     const section = storageSectionByModule[activeModule];
     if (section) {
       await adminConfig.resetSection(section, modules.find((item) => item.id === activeModule)?.label ?? activeModule);
@@ -619,23 +584,6 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
     if (activeModule === 'support') {
       return <SupportPanel tickets={supportTickets} query={query} onStatus={(id, status) => { setSupportTickets((items) => items.map((item) => item.id === id ? { ...item, status } : item)); addLog('changed support ticket status', 'Support', `Changed ticket ${id} to ${status}.`); }} onAssign={(id, assigned) => { setSupportTickets((items) => items.map((item) => item.id === id ? { ...item, assigned } : item)); addLog('assigned support ticket', 'Support', `Assigned ticket ${id} to ${assigned}.`); }} />;
     }
-    if (activeModule === 'roleCustomization') {
-      return (
-        <RoleRegistrationCustomizationPanel
-          settings={roleCards.settings}
-          onReplace={roleCards.replaceRoleCard}
-          onReset={async () => {
-            await roleCards.resetRoleCards();
-            addLog('changed role registration customization', 'App Customization', 'Reset role cards to default configuration.');
-            notify('Role cards reset');
-          }}
-          onSave={() => {
-            addLog('changed role registration customization', 'App Customization', 'Saved role card visual configuration locally.');
-            notify('Role registration customization saved');
-          }}
-        />
-      );
-    }
     return <AppSettingsPanel settings={appSettings} onChange={setAppSettings} onSave={() => { addLog('changed app settings', 'Settings', 'Saved app settings locally.'); notify('App settings saved'); }} />;
   })();
 
@@ -765,9 +713,6 @@ function AdminIcon({ name, active = false, light = false, size = 18 }: { name: A
   }
   if (name === 'LifeBuoy') {
     return <View style={[styles.iconBuoy, box, stroke]}><View style={[styles.iconBuoyCore, stroke]} /></View>;
-  }
-  if (name === 'Palette') {
-    return <View style={[styles.iconPalette, box, stroke]}>{[0, 1, 2].map((item) => <View key={item} style={[styles.iconPaletteDot, fill, { left: 4 + item * 5 }]} />)}</View>;
   }
   if (name === 'Send') {
     return <View style={[styles.iconSend, box]}><View style={[styles.iconSendWing, stroke]} /><View style={[styles.iconSendLine, fill]} /></View>;
@@ -913,7 +858,7 @@ function Dashboard({ dashboard }: { dashboard: Record<string, number> }) {
       </View>
       <View style={styles.dashboardGrid}>
         <ActivityFeed title="Recent Registrations" items={['John Smith', 'Sarah Johnson', 'Mike Wilson', 'Emily Davis', 'David Brown']} />
-        <ActivityFeed title="Pending Verification" items={['Alex Thompson / Master Registration', 'Lisa Anderson / Master Registration', 'Robert Garcia / Master Registration', 'Maria Rodriguez / Master Registration']} />
+        <ActivityFeed title="Pending Verification" items={['Alex Thompson / Verification Review', 'Lisa Anderson / Verification Review', 'Robert Garcia / Verification Review', 'Maria Rodriguez / Verification Review']} />
         <ActivityFeed title="Support Tickets" items={['#T1234 Payment not received', '#T1235 Account verification', '#T1236 Feature request', '#T1237 Bug report']} />
       </View>
     </>
@@ -1737,7 +1682,6 @@ function adminModuleKey(module: AdminModule) {
     finance: 'adminFinance.title',
     marketing: 'adminMarketing.title',
     support: 'adminSupport.title',
-    roleCustomization: 'adminRoleCustomization.title',
     telegram: 'adminTelegram.title',
     logs: 'adminLogs.title',
     settings: 'settings.title',
@@ -1973,9 +1917,6 @@ function supportLastMessage(ticket: SupportTicket) {
 function AppSettingsPanel({ settings, onChange, onSave }: { settings: AppSettings; onChange: (settings: AppSettings) => void; onSave: () => void }) {
   const toggles: Array<[keyof AppSettings, string]> = [
     ['maintenanceMode', 'Maintenance mode'],
-    ['guestLogin', 'Enable guest login'],
-    ['masterRegistration', 'Enable master registration'],
-    ['clientRegistration', 'Enable client registration'],
     ['payments', 'Enable payments'],
     ['telegramNotifications', 'Enable Telegram notifications'],
     ['aiRecommendations', 'Enable AI recommendations'],
@@ -1987,7 +1928,7 @@ function AppSettingsPanel({ settings, onChange, onSave }: { settings: AppSetting
     <>
       <MarketplaceHeader
         title="Settings Center"
-        description="Control app runtime behavior, registration gates, payments, Telegram, maps, AI recommendations, language, currency, and release versions."
+        description="Control app runtime behavior, payments, Telegram, maps, AI recommendations, language, currency, and release versions."
         action="Save Settings"
         onAction={onSave}
       />
@@ -2030,213 +1971,12 @@ function AppSettingsPanel({ settings, onChange, onSave }: { settings: AppSetting
       <GlassCard style={styles.panel}>
         <SectionTitle title="Runtime Preview" action={settings.maintenanceMode ? 'Maintenance enabled' : 'Production ready'} />
         <DataTable columns={['Setting', 'Value', 'Impact']} rows={[
-          ['Guest login', settings.guestLogin ? 'enabled' : 'disabled', 'Client auth entry'],
-          ['Master registration', settings.masterRegistration ? 'enabled' : 'disabled', 'Master onboarding'],
-          ['Client registration', settings.clientRegistration ? 'enabled' : 'disabled', 'Client onboarding'],
           ['Payments', settings.payments ? 'enabled' : 'disabled', 'Secure deal flow'],
           ['Map system', settings.mapSystem ? 'enabled' : 'disabled', 'Location services'],
           ['AI recommendations', settings.aiRecommendations ? 'enabled' : 'disabled', 'Smart matching'],
         ]} />
       </GlassCard>
     </>
-  );
-}
-
-const roleColorPresets = ['#2D7CFF', '#6D5DFB', '#06B6D4', '#22C55E', '#EF4444', '#F97316', '#EC4899', '#F59E0B'];
-
-function RoleRegistrationCustomizationPanel({
-  settings,
-  onReplace,
-  onReset,
-  onSave,
-}: {
-  settings: Record<UserRole, RoleCardSettings>;
-  onReplace: (role: UserRole, next: RoleCardSettings) => Promise<void>;
-  onReset: () => Promise<void>;
-  onSave: () => void;
-}) {
-  const [activeRole, setActiveRole] = useState<UserRole>('master');
-  const [previewMode, setPreviewMode] = useState<RolePreviewMode>('dark');
-  const card = settings[activeRole];
-
-  const replace = (next: RoleCardSettings) => {
-    onReplace(activeRole, next).catch(() => undefined);
-  };
-
-  const patch = (patchValue: Partial<RoleCardSettings>) => replace({ ...card, ...patchValue });
-  const patchVisual = (patchValue: Partial<RoleCardSettings['visual']>) => replace({ ...card, visual: { ...card.visual, ...patchValue } });
-  const patchDesign = (patchValue: Partial<RoleCardSettings['design']>) => replace({ ...card, design: { ...card.design, ...patchValue } });
-  const patchTypography = (patchValue: Partial<RoleCardSettings['typography']>) => replace({ ...card, typography: { ...card.typography, ...patchValue } });
-
-  return (
-    <>
-      <MarketplaceHeader
-        title="Role Customization Builder"
-        description="Build master and client role cards with live preview, typography, images, gradients, shadows, borders, icons, layout, buttons, and animations."
-        action="Save Builder"
-        onAction={onSave}
-      />
-      <View style={styles.marketStats}>
-        <MiniStat label="Editing Role" value={activeRole} />
-        <MiniStat label="Master Card" value={settings.master.enabled ? 'Enabled' : 'Disabled'} />
-        <MiniStat label="Client Card" value={settings.client.enabled ? 'Enabled' : 'Disabled'} />
-        <MiniStat label="Preview Mode" value={previewMode} />
-      </View>
-      <View style={styles.customizerShell}>
-        <GlassCard style={styles.customizerEditor}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={styles.sectionTitle}>Live Builder Controls</Text>
-              <Text style={styles.cardMeta}>Changes write through to RoleCardSettingsProvider instantly.</Text>
-            </View>
-            <View style={styles.rowActionWrap}>
-              <ActionButton label="Save" onPress={onSave} />
-              <ActionButton label="Reset" variant="secondary" onPress={() => onReset()} />
-            </View>
-          </View>
-          <TabRow tabs={['master', 'client']} active={activeRole} onChange={(tab) => setActiveRole(tab as UserRole)} />
-          <View style={styles.builderSummaryGrid}>
-            <BuilderSummaryCard label="Typography" value={`${card.typography.titleSize}/${card.typography.subtitleSize}/${card.typography.fontWeight}`} />
-            <BuilderSummaryCard label="Gradient" value={card.design.gradientColors.join(' -> ')} />
-            <BuilderSummaryCard label="Shadow" value={`${card.design.shadowIntensity}% / ${card.design.glowColor}`} />
-            <BuilderSummaryCard label="Layout" value={`${card.layout} / ${card.animation}`} />
-          </View>
-
-          <Text style={styles.cardTitle}>Content</Text>
-          <View style={styles.formGrid}>
-            <AdminInput label="Role title" value={card.title} onChange={(value) => patch({ title: value })} />
-            <AdminInput label="Subtitle" value={card.subtitle} onChange={(value) => patch({ subtitle: value })} />
-            <AdminInput label="Button text" value={card.buttonText} onChange={(value) => patch({ buttonText: value })} />
-            <AdminInput label="Description" value={card.description} onChange={(value) => patch({ description: value })} />
-            <AdminInput label="Feature list" value={card.features.join(', ')} onChange={(value) => patch({ features: splitCsv(value) })} />
-            <AdminInput label="Sort order" value={String(card.sortOrder)} onChange={(value) => patch({ sortOrder: Number(value) || 1 })} />
-          </View>
-          <View style={styles.toggleGrid}>
-            <ToggleRow label="Role enabled" value={card.enabled} onChange={() => patch({ enabled: !card.enabled })} />
-            <ToggleRow label="Show features" value={card.showFeatures} onChange={() => patch({ showFeatures: !card.showFeatures })} />
-          </View>
-
-          <Text style={styles.cardTitle}>Image management</Text>
-          <View style={styles.formGrid}>
-            <AdminInput label="Image URL / storage path" value={card.visual.image} onChange={(value) => patchVisual({ image: value })} />
-            <AdminInput label="Image position" value={card.visual.imagePosition} onChange={(value) => patchVisual({ imagePosition: value as RoleCardSettings['visual']['imagePosition'] })} />
-            <AdminInput label="Image size %" value={String(card.visual.imageSize)} onChange={(value) => patchVisual({ imageSize: clampNumber(value, 45, 160) })} />
-            <AdminInput label="Image overlay" value={card.visual.imageOverlay} onChange={(value) => patchVisual({ imageOverlay: value })} />
-            <AdminInput label="Brightness %" value={String(card.visual.imageBrightness)} onChange={(value) => patchVisual({ imageBrightness: clampNumber(value, 20, 140) })} />
-            <AdminInput label="Blur" value={String(card.visual.imageBlur)} onChange={(value) => patchVisual({ imageBlur: clampNumber(value, 0, 18) })} />
-          </View>
-          <View style={styles.toggleGrid}>
-            <ToggleRow label="Show decorative overlay" value={card.visual.showDecorations} onChange={() => patchVisual({ showDecorations: !card.visual.showDecorations })} />
-          </View>
-          <View style={styles.rowActionWrap}>
-            <ActionButton label="Upload placeholder" variant="secondary" onPress={() => patchVisual({ image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=900&q=80' })} />
-            <ActionButton label="Crop placeholder" variant="secondary" onPress={() => undefined} />
-            <ActionButton label="Delete image" variant="danger" onPress={() => patchVisual({ image: '' })} />
-          </View>
-
-          <Text style={styles.cardTitle}>Design</Text>
-          <View style={styles.formGrid}>
-            <AdminInput label="Card background" value={card.design.background} onChange={(value) => patchDesign({ background: value })} />
-            <AdminInput label="Gradient color 1" value={card.design.gradientColors[0]} onChange={(value) => patchDesign({ gradientColors: [value, card.design.gradientColors[1], card.design.gradientColors[2]] })} />
-            <AdminInput label="Gradient color 2" value={card.design.gradientColors[1]} onChange={(value) => patchDesign({ gradientColors: [card.design.gradientColors[0], value, card.design.gradientColors[2]] })} />
-            <AdminInput label="Gradient color 3" value={card.design.gradientColors[2]} onChange={(value) => patchDesign({ gradientColors: [card.design.gradientColors[0], card.design.gradientColors[1], value] })} />
-            <AdminInput label="Border color" value={card.design.borderColor} onChange={(value) => patchDesign({ borderColor: value })} />
-            <AdminInput label="Glow color" value={card.design.glowColor} onChange={(value) => patchDesign({ glowColor: value })} />
-            <AdminInput label="Shadow intensity" value={String(card.design.shadowIntensity)} onChange={(value) => patchDesign({ shadowIntensity: clampNumber(value, 0, 100) })} />
-            <AdminInput label="Selected glow" value={card.design.selectedGlow} onChange={(value) => patchDesign({ selectedGlow: value })} />
-            <AdminInput label="Selected border" value={card.design.selectedBorder} onChange={(value) => patchDesign({ selectedBorder: value })} />
-            <AdminInput label="Check icon style" value={card.design.checkIconStyle} onChange={(value) => patchDesign({ checkIconStyle: value as RoleCardSettings['design']['checkIconStyle'] })} />
-          </View>
-          <ColorPresetRow onPick={(value) => patchDesign({ glowColor: value, selectedGlow: value, gradientColors: [card.design.gradientColors[0], value, card.design.gradientColors[2]] })} />
-
-          <Text style={styles.cardTitle}>Typography and icon</Text>
-          <View style={styles.formGrid}>
-            <AdminInput label="Font family" value={card.typography.fontFamily} onChange={(value) => patchTypography({ fontFamily: value })} />
-            <AdminInput label="Title size" value={String(card.typography.titleSize)} onChange={(value) => patchTypography({ titleSize: clampNumber(value, 14, 36) })} />
-            <AdminInput label="Subtitle size" value={String(card.typography.subtitleSize)} onChange={(value) => patchTypography({ subtitleSize: clampNumber(value, 12, 28) })} />
-            <AdminInput label="Description size" value={String(card.typography.descriptionSize)} onChange={(value) => patchTypography({ descriptionSize: clampNumber(value, 10, 22) })} />
-            <AdminInput label="Font weight" value={card.typography.fontWeight} onChange={(value) => patchTypography({ fontWeight: value as RoleCardSettings['typography']['fontWeight'] })} />
-            <AdminInput label="Line height multiplier" value={String(card.typography.lineHeight)} onChange={(value) => patchTypography({ lineHeight: clampNumber(value, 1, 1.8) })} />
-            <AdminInput label="Letter spacing" value={String(card.typography.letterSpacing)} onChange={(value) => patchTypography({ letterSpacing: clampNumber(value, -1, 4) })} />
-            <AdminInput label="Text color" value={card.typography.textColor} onChange={(value) => patchTypography({ textColor: value })} />
-            <AdminInput label="Muted color" value={card.typography.mutedColor} onChange={(value) => patchTypography({ mutedColor: value })} />
-            <AdminInput label="Icon" value={card.visual.icon} onChange={(value) => patchVisual({ icon: value.slice(0, 3).toUpperCase() })} />
-            <AdminInput label="Icon color" value={card.visual.iconColor} onChange={(value) => patchVisual({ iconColor: value })} />
-            <AdminInput label="Icon size" value={String(card.visual.iconSize)} onChange={(value) => patchVisual({ iconSize: clampNumber(value, 24, 72) })} />
-          </View>
-
-          <Text style={styles.cardTitle}>Extra settings</Text>
-          <View style={styles.formGrid}>
-            <AdminInput label="Animation type" value={card.animation} onChange={(value) => patch({ animation: value as RoleCardSettings['animation'] })} />
-            <AdminInput label="Card layout" value={card.layout} onChange={(value) => patch({ layout: value as RoleCardSettings['layout'] })} />
-          </View>
-        </GlassCard>
-
-        <GlassCard style={styles.previewPanel}>
-          <SectionTitle title="Real live preview" action="Instant update" />
-          <TabRow tabs={['dark', 'light', 'mobile', 'tablet']} active={previewMode} onChange={(tab) => setPreviewMode(tab as RolePreviewMode)} />
-          <View style={[styles.previewDevice, previewMode === 'tablet' && styles.previewTablet, previewMode === 'light' && styles.previewDeviceLight]}>
-            <RoleCustomizationPreview card={card} previewMode={previewMode} />
-          </View>
-          <Text style={styles.bodyText}>Storage: role_card_settings config. Supabase-ready fields: role, title, subtitle, description, features, image, colors, gradients, typography, glow, borders, buttonText, updatedAt.</Text>
-        </GlassCard>
-      </View>
-    </>
-  );
-}
-
-function BuilderSummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.builderSummaryCard}>
-      <Text style={styles.tableSubText}>{label}</Text>
-      <Text style={styles.tableText}>{value}</Text>
-    </View>
-  );
-}
-
-function ColorPresetRow({ onPick }: { onPick: (color: string) => void }) {
-  return (
-    <View style={styles.colorPresetRow}>
-      {roleColorPresets.map((item) => (
-        <Pressable key={item} onPress={() => onPick(item)} style={[styles.colorPreset, { backgroundColor: item }]} />
-      ))}
-    </View>
-  );
-}
-
-function RoleCustomizationPreview({ card, previewMode }: { card: RoleCardSettings; previewMode: RolePreviewMode }) {
-  const light = previewMode === 'light';
-  return (
-    <LinearGradient colors={light ? ['#F8FBFF', '#EEF4FF', '#111827'] : ['#F7F8FC', '#EEF4FF', '#F8F0FF']} style={styles.previewCanvas}>
-      <View style={[styles.previewRoleCard, { borderColor: card.design.selectedBorder, shadowColor: card.design.glowColor, shadowOpacity: card.design.shadowIntensity / 100 }]}>
-        <LinearGradient colors={card.design.gradientColors} style={styles.previewVisual}>
-          {card.visual.image ? (
-            <>
-              <Image
-                source={{ uri: card.visual.image }}
-                resizeMode="cover"
-                blurRadius={card.visual.imageBlur}
-                style={[
-                  styles.previewImage,
-                  { opacity: Math.max(0.2, Math.min(card.visual.imageBrightness / 100, 1.4)) },
-                ]}
-              />
-              {card.visual.imageOverlay ? <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: card.visual.imageOverlay }]} /> : null}
-              {card.visual.showDecorations ? <Text style={styles.previewImageLabel}>DECOR</Text> : null}
-            </>
-          ) : (
-            <View style={[styles.previewIcon, { width: card.visual.iconSize, height: card.visual.iconSize, borderRadius: card.visual.iconSize / 2, borderColor: card.visual.iconColor }]}>
-              <Text style={[styles.previewIconText, { color: card.visual.iconColor }]}>{card.visual.icon}</Text>
-            </View>
-          )}
-        </LinearGradient>
-        <Text style={[styles.previewTitle, { color: card.typography.textColor, fontSize: card.typography.titleSize, fontWeight: card.typography.fontWeight }]}>{card.title}</Text>
-        <Text style={[styles.previewSubtitle, { color: card.typography.textColor, fontSize: card.typography.subtitleSize }]}>{card.subtitle}</Text>
-        <Text style={[styles.previewDescription, { color: card.typography.mutedColor, fontSize: card.typography.descriptionSize }]}>{card.description}</Text>
-        {card.showFeatures ? <View style={styles.previewFeatures}>{card.features.map((feature) => <Text key={feature} style={[styles.previewFeature, { color: card.visual.iconColor }]}>{feature}</Text>)}</View> : null}
-        <View style={[styles.previewButton, { backgroundColor: card.design.selectedGlow }]}><Text style={styles.previewButtonText}>{card.buttonText}</Text></View>
-      </View>
-    </LinearGradient>
   );
 }
 
@@ -2749,8 +2489,6 @@ function telegramMockPayload(channelId: string): Record<string, unknown> {
   const createdAt = new Date().toISOString();
   const payloads: Record<string, Record<string, unknown>> = {
     'code-change-logs': { adminName: 'Super Admin', module: 'Telegram', action: 'test notification', oldValue: 'disabled', newValue: 'enabled', createdAt, status: 'completed' },
-    'client-registration': { firstName: 'Mariam', lastName: 'Karapetyan', country: 'Armenia', region: 'Yerevan', city: 'Yerevan', location: 'Kentron', ip: '127.0.0.1', avatar: 'avatar-placeholder.png', phone: '+37400000000', email: 'client@example.com', createdAt },
-    'master-registration': { firstName: 'Arman', lastName: 'Master', country: 'Armenia', region: 'Yerevan', city: 'Yerevan', profession: 'Repair specialist', experience: '7 years', phone: '+37411111111', email: 'master@example.com', avatar: 'avatar-placeholder.png', ip: '127.0.0.1', createdAt },
     'client-order-created': { orderId: 'ord-test', clientName: 'Mariam K.', clientPhone: '+37400000000', clientEmail: 'client@example.com', category: 'Cleaning', description: 'Apartment cleaning', address: 'Yerevan, Kentron', country: 'Armenia', region: 'Yerevan', city: 'Yerevan', budget: '18000 AMD', photo: 'order-photo-placeholder.png', createdAt },
     'master-accepted-order': { orderId: 'ord-test', orderTitle: 'Apartment cleaning', masterName: 'Arman Master', masterPhone: '+37411111111', masterEmail: 'master@example.com', profession: 'Cleaning', amount: '18000 AMD', platformCommission: '2160 AMD', masterPayout: '15840 AMD', city: 'Yerevan', createdAt },
     'finance-logs': { transactionId: 'trx-test', userName: 'Mariam K.', userRole: 'Client', phone: '+37400000000', email: 'client@example.com', amount: 18000, currency: 'AMD', paymentMethod: 'Idram', balanceBefore: 2000, balanceAfter: 20000, status: 'completed', createdAt },
@@ -3006,28 +2744,6 @@ const styles = StyleSheet.create({
   activityTitle: { color: '#111827', fontSize: 12, fontWeight: '800' },
   activityMeta: { marginTop: 2, color: '#9CA3AF', fontSize: 10, fontWeight: '700' },
   panel: { marginTop: 14, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
-  customizerShell: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'flex-start' },
-  customizerEditor: { flexGrow: 1, flexBasis: 620, borderRadius: 20 },
-  previewPanel: { flexGrow: 1, flexBasis: 340, borderRadius: 20 },
-  colorPresetRow: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
-  colorPreset: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: 'rgba(255,255,255,0.36)' },
-  previewDevice: { marginTop: 10, width: '100%', maxWidth: 390, minHeight: 620, alignSelf: 'center', borderRadius: 34, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F7F8FC' },
-  previewTablet: { maxWidth: 560, minHeight: 520, borderRadius: 28 },
-  previewDeviceLight: { backgroundColor: '#F8FBFF', borderColor: 'rgba(16,24,40,0.12)' },
-  previewCanvas: { flex: 1, padding: 18, alignItems: 'center', justifyContent: 'center' },
-  previewRoleCard: { width: '100%', maxWidth: 330, minHeight: 420, padding: 14, borderRadius: 26, borderWidth: 1, backgroundColor: '#F9FAFB', shadowRadius: 28, shadowOffset: { width: 0, height: 14 }, elevation: 16 },
-  previewVisual: { minHeight: 168, borderRadius: 22, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  previewImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%', borderRadius: 22 },
-  previewImageLabel: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  previewIcon: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, backgroundColor: '#F9FAFB' },
-  previewIconText: { fontSize: 17, fontWeight: '900' },
-  previewTitle: { marginTop: 16, lineHeight: 27 },
-  previewSubtitle: { marginTop: 7, lineHeight: 22, fontWeight: '800' },
-  previewDescription: { marginTop: 8, lineHeight: 20, fontWeight: '700' },
-  previewFeatures: { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
-  previewFeature: { paddingHorizontal: 9, paddingVertical: 6, borderRadius: 999, overflow: 'hidden', backgroundColor: '#F9FAFB', fontSize: 10, fontWeight: '900' },
-  previewButton: { marginTop: 16, minHeight: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  previewButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 },
   sectionTitle: { color: '#111827', fontSize: 18, fontWeight: '900' },
   formGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
