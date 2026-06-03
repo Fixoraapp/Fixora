@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '../components/GlassCard';
 import { colors } from '../constants/theme';
-import { defaultTelegramChannels, FinanceSettings, MarketingBanner, SupportTicket, TelegramChannelConfig, useAdminConfig } from '../context/AdminConfigContext';
+import { defaultRegistrationFields, defaultTelegramChannels, FinanceSettings, MarketingBanner, RegistrationFieldConfig, RegistrationFieldsState, RegistrationFieldType, SupportTicket, TelegramChannelConfig, useAdminConfig } from '../context/AdminConfigContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useTranslation } from '../i18n/I18nProvider';
 import { translationModules } from '../i18n/defaultTranslations';
@@ -32,6 +32,7 @@ type AdminModule =
   | 'finance'
   | 'marketing'
   | 'support'
+  | 'registration'
   | 'telegram'
   | 'logs'
   | 'settings';
@@ -46,6 +47,7 @@ type AdminIconName =
   | 'Wallet'
   | 'Megaphone'
   | 'LifeBuoy'
+  | 'Palette'
   | 'Send'
   | 'FileText'
   | 'Settings'
@@ -216,6 +218,7 @@ const modules: Array<{ id: AdminModule; label: string; group: string }> = [
   { id: 'finance', label: 'Finance', group: 'Operations' },
   { id: 'marketing', label: 'Marketing', group: 'Growth' },
   { id: 'support', label: 'Support', group: 'Growth' },
+  { id: 'registration', label: 'Registration Management', group: 'Settings' },
   { id: 'telegram', label: 'Telegram', group: 'Settings' },
   { id: 'logs', label: 'Logs', group: 'Settings' },
   { id: 'settings', label: 'App Settings', group: 'Settings' },
@@ -232,6 +235,7 @@ const moduleIcons: Record<AdminModule, AdminIconName> = {
   finance: 'Wallet',
   marketing: 'Megaphone',
   support: 'LifeBuoy',
+  registration: 'Palette',
   telegram: 'Send',
   logs: 'FileText',
   settings: 'Settings',
@@ -403,6 +407,7 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const financeSettings = state.financeSettings;
   const marketingBanners = state.marketingBanners;
   const supportTickets = state.supportTickets;
+  const registrationFields = state.registrationFields as RegistrationFieldsState;
   const setSection = <T,>(section: keyof typeof state, current: T, next: SetStateAction<T>) => {
     adminConfig.updateSection(section, typeof next === 'function' ? (next as (value: T) => T)(current) as never : next as never);
   };
@@ -418,6 +423,7 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const setFinanceSettings: Dispatch<SetStateAction<FinanceSettings>> = (next) => setSection('financeSettings', financeSettings, next);
   const setMarketingBanners: Dispatch<SetStateAction<MarketingBanner[]>> = (next) => setSection('marketingBanners', marketingBanners, next);
   const setSupportTickets: Dispatch<SetStateAction<SupportTicket[]>> = (next) => setSection('supportTickets', supportTickets, next);
+  const setRegistrationFields: Dispatch<SetStateAction<RegistrationFieldsState>> = (next) => setSection('registrationFields', registrationFields, next);
 
   const addLog = (action: string, moduleName: string, details: string, oldValue?: unknown, newValue?: unknown) => {
     adminConfig.addLog(action, moduleName, details, oldValue, newValue).catch(() => undefined);
@@ -436,6 +442,7 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
     finance: 'financeSettings',
     marketing: 'marketingBanners',
     support: 'supportTickets',
+    registration: 'registrationFields',
     telegram: 'telegram',
     logs: 'logs',
     settings: 'appSettings',
@@ -584,6 +591,16 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
     if (activeModule === 'support') {
       return <SupportPanel tickets={supportTickets} query={query} onStatus={(id, status) => { setSupportTickets((items) => items.map((item) => item.id === id ? { ...item, status } : item)); addLog('changed support ticket status', 'Support', `Changed ticket ${id} to ${status}.`); }} onAssign={(id, assigned) => { setSupportTickets((items) => items.map((item) => item.id === id ? { ...item, assigned } : item)); addLog('assigned support ticket', 'Support', `Assigned ticket ${id} to ${assigned}.`); }} />;
     }
+    if (activeModule === 'registration') {
+      return (
+        <RegistrationManagementPanel
+          fields={registrationFields}
+          onChange={setRegistrationFields}
+          onSave={() => { addLog('changed registration fields', 'Registration Management', 'Saved registration field configuration.'); notify('Registration fields saved'); }}
+          onReset={() => { setRegistrationFields(defaultRegistrationFields); addLog('reset registration fields', 'Registration Management', 'Reset registration fields to defaults.'); notify('Registration fields reset'); }}
+        />
+      );
+    }
     return <AppSettingsPanel settings={appSettings} onChange={setAppSettings} onSave={() => { addLog('changed app settings', 'Settings', 'Saved app settings locally.'); notify('App settings saved'); }} />;
   })();
 
@@ -713,6 +730,9 @@ function AdminIcon({ name, active = false, light = false, size = 18 }: { name: A
   }
   if (name === 'LifeBuoy') {
     return <View style={[styles.iconBuoy, box, stroke]}><View style={[styles.iconBuoyCore, stroke]} /></View>;
+  }
+  if (name === 'Palette') {
+    return <View style={[styles.iconPalette, box, stroke]}>{[0, 1, 2].map((item) => <View key={item} style={[styles.iconPaletteDot, fill, { left: 4 + item * 5 }]} />)}</View>;
   }
   if (name === 'Send') {
     return <View style={[styles.iconSend, box]}><View style={[styles.iconSendWing, stroke]} /><View style={[styles.iconSendLine, fill]} /></View>;
@@ -1682,6 +1702,7 @@ function adminModuleKey(module: AdminModule) {
     finance: 'adminFinance.title',
     marketing: 'adminMarketing.title',
     support: 'adminSupport.title',
+    registration: 'adminRegistration.title',
     telegram: 'adminTelegram.title',
     logs: 'adminLogs.title',
     settings: 'settings.title',
@@ -1975,6 +1996,105 @@ function AppSettingsPanel({ settings, onChange, onSave }: { settings: AppSetting
           ['Map system', settings.mapSystem ? 'enabled' : 'disabled', 'Location services'],
           ['AI recommendations', settings.aiRecommendations ? 'enabled' : 'disabled', 'Smart matching'],
         ]} />
+      </GlassCard>
+    </>
+  );
+}
+
+function RegistrationManagementPanel({
+  fields,
+  onChange,
+  onSave,
+  onReset,
+}: {
+  fields: RegistrationFieldsState;
+  onChange: (next: RegistrationFieldsState) => void;
+  onSave: () => void;
+  onReset: () => void;
+}) {
+  const [activeRole, setActiveRole] = useState<keyof RegistrationFieldsState>('client');
+  const activeFields = [...fields[activeRole]].sort((a, b) => a.sortOrder - b.sortOrder);
+  const fieldTypes: RegistrationFieldType[] = ['text', 'email', 'phone', 'password', 'select', 'checkbox', 'number', 'upload'];
+
+  const replaceRoleFields = (nextFields: RegistrationFieldConfig[]) => {
+    onChange({ ...fields, [activeRole]: nextFields.map((field, index) => ({ ...field, sortOrder: index + 1 })) });
+  };
+
+  const patchField = (id: string, patch: Partial<RegistrationFieldConfig>) => {
+    replaceRoleFields(activeFields.map((field) => field.id === id ? { ...field, ...patch } : field));
+  };
+
+  const addField = () => {
+    replaceRoleFields([
+      ...activeFields,
+      {
+        id: `${activeRole}-field-${Date.now()}`,
+        role: activeRole,
+        label: 'New field',
+        placeholder: 'Enter value',
+        type: 'text',
+        required: false,
+        sortOrder: activeFields.length + 1,
+      },
+    ]);
+  };
+
+  const moveField = (id: string, direction: -1 | 1) => {
+    const index = activeFields.findIndex((field) => field.id === id);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= activeFields.length) return;
+    const nextFields = [...activeFields];
+    const [item] = nextFields.splice(index, 1);
+    nextFields.splice(nextIndex, 0, item);
+    replaceRoleFields(nextFields);
+  };
+
+  return (
+    <>
+      <MarketplaceHeader
+        title="Registration Management"
+        description="Manage configurable registration fields for Client, Master, and Company accounts. Register screen reads this AdminStore config live."
+        action="Save"
+        onAction={onSave}
+      />
+      <View style={styles.actionRow}>
+        <ActionButton label="Add field" onPress={addField} />
+        <ActionButton label="Reset" variant="secondary" onPress={onReset} />
+      </View>
+      <GlassCard style={styles.panel}>
+        <TabRow tabs={['client', 'master', 'company']} active={activeRole} onChange={(tab) => setActiveRole(tab as keyof RegistrationFieldsState)} />
+        <View style={styles.registrationList}>
+          {activeFields.map((field) => (
+            <View key={field.id} style={styles.registrationFieldCard}>
+              <View style={styles.sectionHeader}>
+                <View>
+                  <Text style={styles.cardTitle}>{field.label}</Text>
+                  <Text style={styles.cardMeta}>{field.type} / order {field.sortOrder}</Text>
+                </View>
+                <View style={styles.rowActionWrap}>
+                  <TinyButton label="Up" onPress={() => moveField(field.id, -1)} />
+                  <TinyButton label="Down" onPress={() => moveField(field.id, 1)} />
+                  <TinyButton label="Delete" onPress={() => replaceRoleFields(activeFields.filter((item) => item.id !== field.id))} />
+                </View>
+              </View>
+              <View style={styles.formGrid}>
+                <AdminInput label="Label" value={field.label} onChange={(value) => patchField(field.id, { label: value })} />
+                <AdminInput label="Placeholder" value={field.placeholder} onChange={(value) => patchField(field.id, { placeholder: value })} />
+                <AdminInput label="Options CSV" value={(field.options ?? []).join(', ')} onChange={(value) => patchField(field.id, { options: splitCsv(value) })} />
+              </View>
+              <View style={styles.actionRow}>
+                <ToggleRow label="Required" value={field.required} onChange={() => patchField(field.id, { required: !field.required })} />
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterPillRow}>
+                {fieldTypes.map((type) => (
+                  <Pressable key={type} onPress={() => patchField(field.id, { type })} style={[styles.filterPill, field.type === type && styles.filterPillActive]}>
+                    <Text style={[styles.filterPillText, field.type === type && styles.filterPillTextActive]}>{type}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          ))}
+        </View>
       </GlassCard>
     </>
   );
@@ -2744,6 +2864,8 @@ const styles = StyleSheet.create({
   activityTitle: { color: '#111827', fontSize: 12, fontWeight: '800' },
   activityMeta: { marginTop: 2, color: '#9CA3AF', fontSize: 10, fontWeight: '700' },
   panel: { marginTop: 14, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB' },
+  registrationList: { marginTop: 12, gap: 12 },
+  registrationFieldCard: { padding: 14, borderRadius: 18, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 },
   sectionTitle: { color: '#111827', fontSize: 18, fontWeight: '900' },
   formGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
