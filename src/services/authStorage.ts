@@ -24,9 +24,30 @@ const SESSION_KEY = 'fixora.auth.session.v1';
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
+const defaultUsers: RegisteredUser[] = [
+  {
+    id: 'usr-default-admin',
+    firstName: 'Admin',
+    lastName: 'Fixora',
+    email: 'admin@gmail.com',
+    phone: '+37400000000',
+    password: '638650',
+    role: 'company',
+    fields: { seeded: true },
+    createdAt: '2026-06-03T00:00:00.000Z',
+  },
+];
+
+const withDefaultUsers = (users: RegisteredUser[]) => {
+  const existingEmails = new Set(users.map((user) => normalizeEmail(user.email)));
+  const missingDefaults = defaultUsers.filter((user) => !existingEmails.has(normalizeEmail(user.email)));
+  return [...missingDefaults, ...users];
+};
+
 export const authStorage = {
   async users() {
-    return getJson<RegisteredUser[]>(USERS_KEY, []);
+    const users = await getJson<RegisteredUser[]>(USERS_KEY, []);
+    return withDefaultUsers(users);
   },
 
   async session() {
