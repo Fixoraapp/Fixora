@@ -16,22 +16,6 @@ type HomeScreenProps = {
   onLogout: () => void;
 };
 
-const webCategories = [
-  ['☰', 'Все категории'],
-  ['⚒', 'Строительство и ремонт'],
-  ['♟', 'Уборка и клининг'],
-  ['⚡', 'Электрика'],
-  ['♒', 'Сантехника'],
-  ['▣', 'Грузоперевозки'],
-  ['▧', 'Ремонт техники'],
-  ['▵', 'Автоуслуги'],
-  ['✂', 'Красота и здоровье'],
-  ['▥', 'Репетиторы и обучение'],
-  ['▭', 'IT и компьютеры'],
-  ['✎', 'Дизайн и творчество'],
-  ['⌂', 'Все для дома'],
-  ['♙', 'Бизнес и финансы'],
-];
 
 const webCategoryCards = [
   ['🏗', 'Строительство', '#FFF3E5'],
@@ -91,9 +75,6 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
           <View style={styles.webToolbar}>
             <LanguageSwitcher compact />
             <Pressable accessibilityRole="button" style={styles.webSelect}><Text style={styles.webSelectText}>USD⌄</Text></Pressable>
-            {['♢', '☏', '♡'].map((icon) => (
-              <Pressable key={icon} accessibilityRole="button" style={styles.webIconButton}><Text style={styles.webIconText}>{icon}</Text></Pressable>
-            ))}
             <Pressable accessibilityRole="button" onPress={onLogout} style={styles.webProfile}>
               <View style={styles.webAvatar}><Text style={styles.webAvatarText}>ИИ</Text></View>
               <View>
@@ -110,18 +91,6 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
         </View>
 
         <View style={styles.webMain}>
-          <View style={styles.webSidebar}>
-            {webCategories.map(([icon, label], index) => (
-              <Pressable key={label} accessibilityRole="button" onPress={index === 0 ? onOpenCategories : undefined} style={[styles.webSideItem, index === 0 && styles.webSideActive]}>
-                <Text style={[styles.webSideIcon, index === 0 && styles.webSideTextActive]}>{icon}</Text>
-                <Text style={[styles.webSideText, index === 0 && styles.webSideTextActive]}>{label}</Text>
-                {index > 0 ? <Text style={styles.webSideArrow}>›</Text> : null}
-              </Pressable>
-            ))}
-            <Pressable accessibilityRole="button" onPress={onOpenCategories} style={styles.webShowAll}>
-              <Text style={styles.webShowAllText}>{t('home.categories.showAll', 'Show all categories')}⌄</Text>
-            </Pressable>
-          </View>
 
           <ScrollView contentContainerStyle={styles.webContent} showsVerticalScrollIndicator={false}>
             <LinearGradient colors={['#7A3FF3', '#4F8BFF', '#C8D7FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.webHero}>
@@ -325,8 +294,6 @@ const styles = StyleSheet.create({
   webToolbar: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   webSelect: { minHeight: 40, paddingHorizontal: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E2F0' },
   webSelectText: { color: '#07153C', fontSize: 14, fontWeight: '900' },
-  webIconButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  webIconText: { color: '#07153C', fontSize: 20, fontWeight: '900' },
   webProfile: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   webAvatar: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E9EEF8' },
   webAvatarText: { color: '#07153C', fontSize: 12, fontWeight: '900' },
@@ -334,17 +301,8 @@ const styles = StyleSheet.create({
   webProfileSub: { color: '#68748D', fontSize: 12, fontWeight: '700' },
   webAdminButton: { minHeight: 42, paddingHorizontal: 22, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6F45E8', shadowColor: '#6F45E8', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   webAdminButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  webMain: { flex: 1, flexDirection: 'row', padding: 20, gap: 28 },
-  webSidebar: { width: 244, paddingVertical: 2, borderRadius: 8, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F2', shadowColor: '#6D7BA8', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
-  webSideItem: { minHeight: 39, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  webSideActive: { margin: 4, borderRadius: 6, backgroundColor: '#6F45E8' },
-  webSideIcon: { width: 20, color: '#5D55E8', fontSize: 15, fontWeight: '900' },
-  webSideText: { flex: 1, color: '#07153C', fontSize: 14, fontWeight: '700' },
-  webSideTextActive: { color: '#FFFFFF' },
-  webSideArrow: { color: '#70809C', fontSize: 22, fontWeight: '900' },
-  webShowAll: { minHeight: 44, paddingHorizontal: 16, justifyContent: 'center' },
-  webShowAllText: { color: '#5B35E8', fontSize: 14, fontWeight: '900' },
-  webContent: { paddingBottom: 40 },
+  webMain: { flex: 1, padding: 20 },
+  webContent: { flexGrow: 1, paddingBottom: 40 },
   webHero: { minHeight: 338, borderRadius: 9, padding: 48, flexDirection: 'row', overflow: 'hidden' },
   webHeroText: { flex: 1 },
   webHeroTitle: { color: '#FFFFFF', fontSize: 38, lineHeight: 50, fontWeight: '900' },
