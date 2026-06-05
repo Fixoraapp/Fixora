@@ -6,7 +6,7 @@ export type TranslationItem = {
   ru: string;
   en: string;
   hy: string;
-  status: 'complete' | 'missing';
+  status: 'complete' | 'missing' | 'partial' | 'outdated';
   updatedAt: string;
 };
 

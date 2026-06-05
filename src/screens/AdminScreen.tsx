@@ -3,6 +3,7 @@ import { ReactNode, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import {
   AdminConfigState,
   CategoryRecord,
@@ -12,6 +13,7 @@ import {
   RegistrationFieldsState,
   useAdminConfig,
 } from '../context/AdminConfigContext';
+import { useTranslation } from '../i18n/I18nProvider';
 import { UserRole } from '../types/navigation';
 
 type AdminModule =
@@ -108,10 +110,12 @@ const sectionKeyByModule: Partial<Record<AdminModule, keyof AdminConfigState>> =
 };
 
 const spark = [18, 32, 24, 36, 28, 42, 34, 54];
+const autoKey = (scope: string, text: string) => `${scope}.${text.toLowerCase().replace(/[^a-z0-9]+/gi, '.').replace(/^\.+|\.+$/g, '').slice(0, 70) || 'text'}`;
 const dateRange = '23 мая 2025 - 30 мая 2025';
 
 export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const admin = useAdminConfig();
+  const { t } = useTranslation();
   const { state } = admin;
   const [active, setActive] = useState<AdminModule>('dashboard');
   const [query, setQuery] = useState('');
@@ -119,7 +123,12 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const [regRole, setRegRole] = useState<UserRole>('client');
   const [collapsed, setCollapsed] = useState(false);
 
-  const meta = moduleMeta[active];
+  const meta = {
+    title: t(`admin.${active}.title`, moduleMeta[active].title),
+    subtitle: t(`admin.${active}.subtitle`, moduleMeta[active].subtitle),
+    search: t(`admin.${active}.search`, moduleMeta[active].search),
+    action: t(`admin.${active}.action`, moduleMeta[active].action),
+  };
 
   const notify = (message: string) => {
     setToast(message);
@@ -259,6 +268,7 @@ function AdminSidebar({ active, collapsed, setCollapsed, onChange, onExit }: {
   onChange: (module: AdminModule) => void;
   onExit: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.sidebar, collapsed && styles.sidebarCollapsed]}>
       <View style={styles.brandRow}>
@@ -267,12 +277,12 @@ function AdminSidebar({ active, collapsed, setCollapsed, onChange, onExit }: {
           <Text style={styles.collapseText}>{collapsed ? '›' : '‹'}</Text>
         </Pressable>
       </View>
-      {!collapsed ? <Text style={styles.superLabel}>Super Admin</Text> : null}
+      {!collapsed ? <Text style={styles.superLabel}>{t('admin.sidebar.superAdmin', 'Super Admin')}</Text> : null}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarScroll}>
         {moduleGroups.map((group) => (
           <View key={group.group} style={styles.navGroup}>
-            {!collapsed ? <Text style={styles.navGroupTitle}>{group.group}</Text> : null}
+            {!collapsed ? <Text style={styles.navGroupTitle}>{t(`admin.nav.group.${group.group.toLowerCase()}`, group.group)}</Text> : null}
             {group.items.map((item) => {
               const selected = active === item.id;
               return (
@@ -280,7 +290,7 @@ function AdminSidebar({ active, collapsed, setCollapsed, onChange, onExit }: {
                   <View style={[styles.navIcon, selected && styles.navIconActive]}>
                     <Text style={[styles.navIconText, selected && styles.navIconTextActive]}>{item.icon}</Text>
                   </View>
-                  {!collapsed ? <Text style={[styles.navLabel, selected && styles.navLabelActive]}>{item.label}</Text> : null}
+                  {!collapsed ? <Text style={[styles.navLabel, selected && styles.navLabelActive]}>{t(`admin.nav.${item.id}`, item.label)}</Text> : null}
                 </Pressable>
               );
             })}
@@ -292,14 +302,14 @@ function AdminSidebar({ active, collapsed, setCollapsed, onChange, onExit }: {
         <View style={styles.adminAvatar}><Text style={styles.adminAvatarText}>SA</Text></View>
         {!collapsed ? (
           <View style={{ flex: 1 }}>
-            <Text style={styles.adminName}>Super Admin</Text>
+            <Text style={styles.adminName}>{t('admin.sidebar.superAdmin', 'Super Admin')}</Text>
             <Text style={styles.adminEmail}>admin@fixora.pro</Text>
-            <Text style={styles.online}>● Онлайн</Text>
+            <Text style={styles.online}>{t('admin.sidebar.online', '● Online')}</Text>
           </View>
         ) : null}
       </View>
       <Pressable accessibilityRole="button" onPress={onExit} style={styles.exitButton}>
-        <Text style={styles.exitText}>{collapsed ? '↩' : 'Выйти из админки'}</Text>
+        <Text style={styles.exitText}>{collapsed ? '↩' : t('admin.sidebar.exit', 'Exit admin')}</Text>
       </Pressable>
     </View>
   );
@@ -326,7 +336,7 @@ function AdminTopbar({ meta, query, setQuery, onQuickAction, onReset }: {
           <Text style={styles.shortcut}>Ctrl + K</Text>
         </View>
         <Badge label="● Live" tone="green" />
-        <Segmented options={['RU', 'HY', 'EN']} active="RU" />
+        <LanguageSwitcher compact />
         <IconButton label="♢" badge="8" />
         <IconButton label="◐" />
         <AdminButton title={meta.action} onPress={onQuickAction} />
@@ -466,36 +476,282 @@ function LocationsSection({ state, setSection }: {
 }
 
 function TranslationsSection({ state }: { state: AdminConfigState }) {
-  const rows = state.translations.slice(0, 9);
+  const admin = useAdminConfig();
+  const [search, setSearch] = useState('');
+  const [languageFilter, setLanguageFilter] = useState('all');
+  const [moduleFilter, setModuleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [missingOnly, setMissingOnly] = useState(false);
+  const [exportJson, setExportJson] = useState('');
+  const [importJson, setImportJson] = useState('');
+  const [newLanguage, setNewLanguage] = useState({ name: '', nativeName: '', code: '', flag: '🏳️', direction: 'ltr' as 'ltr' | 'rtl', isActive: true, isDefault: false });
+  const activeLanguages = state.languages.filter((item) => item.isActive);
+  const modules = Array.from(new Set(state.translations.map((item) => item.module))).sort();
+
+  const completionFor = (code: string) => {
+    if (!state.translations.length) {
+      return 100;
+    }
+    const complete = state.translations.filter((item) => {
+      const values: Record<string, string> = { ru: item.ru, en: item.en, hy: item.hy, ...(item.values ?? {}) };
+      return Boolean(values[code]);
+    }).length;
+    return Math.round((complete / state.translations.length) * 100);
+  };
+
+  const normalizeRow = (row: AdminConfigState['translations'][number]) => {
+    const values: Record<string, string> = { ru: row.ru, en: row.en, hy: row.hy, ...(row.values ?? {}) };
+    const missing = activeLanguages.some((language) => !values[language.code]?.trim());
+    const partial = activeLanguages.some((language) => values[language.code]?.trim()) && missing;
+    return { ...row, values, status: missing ? (partial ? 'partial' as const : 'missing' as const) : 'complete' as const };
+  };
+
+  const rows = state.translations
+    .map(normalizeRow)
+    .filter((item) => {
+      const haystack = [item.key, item.module, item.screen, item.description, ...Object.values(item.values ?? {})].join(' ').toLowerCase();
+      const matchesSearch = !search.trim() || haystack.includes(search.trim().toLowerCase());
+      const matchesLanguage = languageFilter === 'all' || Boolean(item.values?.[languageFilter]);
+      const matchesModule = moduleFilter === 'all' || item.module === moduleFilter;
+      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+      const matchesMissing = !missingOnly || item.status !== 'complete';
+      return matchesSearch && matchesLanguage && matchesModule && matchesStatus && matchesMissing;
+    });
+
+  const updateTranslations = (next: AdminConfigState['translations']) => {
+    admin.updateSection('translations', next);
+  };
+
+  const updateRow = (id: string, patch: Partial<AdminConfigState['translations'][number]>) => {
+    updateTranslations(state.translations.map((item) => {
+      if (item.id !== id) {
+        return item;
+      }
+      const next = { ...item, ...patch, updatedAt: new Date().toISOString() };
+      const values: Record<string, string> = { ru: next.ru, en: next.en, hy: next.hy, ...(next.values ?? {}) };
+      return { ...next, values, status: activeLanguages.every((language) => values[language.code]?.trim()) ? 'complete' : 'partial' };
+    }));
+  };
+
+  const updateValue = (id: string, code: string, value: string) => {
+    const row = state.translations.find((item) => item.id === id);
+    if (!row) {
+      return;
+    }
+    updateRow(id, {
+      ru: code === 'ru' ? value : row.ru,
+      en: code === 'en' ? value : row.en,
+      hy: code === 'hy' ? value : row.hy,
+      values: { ru: row.ru, en: row.en, hy: row.hy, ...row.values, [code]: value },
+    });
+  };
+
+  const addTranslationKey = () => {
+    const key = `custom.key.${Date.now()}`;
+    const values = Object.fromEntries(state.languages.map((language) => [language.code, '']));
+    updateTranslations([
+      {
+        id: `tr-${Date.now()}`,
+        key,
+        module: 'custom',
+        screen: 'custom',
+        description: 'New admin-created translation key.',
+        ru: '',
+        en: '',
+        hy: '',
+        values,
+        status: 'missing',
+        updatedAt: new Date().toISOString(),
+      },
+      ...state.translations,
+    ]);
+  };
+
+  const addLanguage = () => {
+    const code = newLanguage.code.trim().toLowerCase();
+    if (!code || state.languages.some((item) => item.code === code)) {
+      return;
+    }
+    const language = {
+      id: `lang-${code}-${Date.now()}`,
+      name: newLanguage.name || code.toUpperCase(),
+      nativeName: newLanguage.nativeName || newLanguage.name || code.toUpperCase(),
+      code,
+      flag: newLanguage.flag || '🏳️',
+      direction: newLanguage.direction,
+      isActive: newLanguage.isActive,
+      isDefault: newLanguage.isDefault,
+    };
+    const languages = newLanguage.isDefault
+      ? state.languages.map((item) => ({ ...item, isDefault: false }))
+      : state.languages;
+    admin.updateSection('languages', [language, ...languages]);
+    updateTranslations(state.translations.map((item) => ({ ...item, values: { ru: item.ru, en: item.en, hy: item.hy, ...item.values, [code]: '' }, status: 'partial' })));
+    admin.addLog('added language', 'Translations', `Added language ${code}`, undefined, language).catch(() => undefined);
+    setNewLanguage({ name: '', nativeName: '', code: '', flag: '🏳️', direction: 'ltr', isActive: true, isDefault: false });
+  };
+
+  const updateLanguage = (id: string, patch: Partial<AdminConfigState['languages'][number]>) => {
+    admin.updateSection('languages', state.languages.map((item) => {
+      if (item.id !== id) {
+        return patch.isDefault ? { ...item, isDefault: false } : item;
+      }
+      return { ...item, ...patch };
+    }));
+  };
+
+  const deleteLanguage = (id: string) => {
+    const language = state.languages.find((item) => item.id === id);
+    if (!language || ['ru', 'en', 'hy'].includes(language.code)) {
+      updateLanguage(id, { isActive: false });
+      return;
+    }
+    admin.updateSection('languages', state.languages.filter((item) => item.id !== id));
+  };
+
+  const saveAll = async () => {
+    await admin.saveSection('translations', 'Translations', 'updated translations');
+    await admin.saveSection('languages', 'Translations', 'updated languages');
+  };
+
+  const resetTranslations = async () => {
+    await admin.resetSection('translations', 'Translations');
+  };
+
+  const exportAll = () => {
+    setExportJson(JSON.stringify({ languages: state.languages, translations: state.translations }, null, 2));
+  };
+
+  const importAll = () => {
+    try {
+      const parsed = JSON.parse(importJson) as Partial<AdminConfigState>;
+      if (Array.isArray(parsed.languages)) {
+        admin.updateSection('languages', parsed.languages);
+      }
+      if (Array.isArray(parsed.translations)) {
+        const existingByKey = new Map(state.translations.map((item) => [item.key, item]));
+        parsed.translations.forEach((item) => existingByKey.set(item.key, { ...existingByKey.get(item.key), ...item } as AdminConfigState['translations'][number]));
+        updateTranslations(Array.from(existingByKey.values()));
+      }
+      admin.addLog('imported translations json', 'Translations', 'Imported translation JSON', undefined, parsed).catch(() => undefined);
+    } catch {
+      admin.addLog('failed translations import', 'Translations', 'Invalid translation JSON').catch(() => undefined);
+    }
+  };
+
+  const completed = state.translations.filter((item) => normalizeRow(item).status === 'complete').length;
+  const missing = state.translations.length - completed;
+  const lastUpdated = state.translations.map((item) => item.updatedAt).sort().reverse()[0] ?? 'Never';
+
   return (
     <View style={styles.stack}>
-      <Panel title="Управление переводами" description="Создавайте и редактируйте переводы для всех языков. Поддерживается контекст и модульная структура." actionNode={<AdminButton title="+ Добавить перевод" />}>
-        <FilterBar fields={['Поиск по переводам...', 'Язык: Все языки', 'Модуль: Все модули', 'Статус: Все статусы']} />
+      <Panel
+        title="Translation Center"
+        description="Manage all Fixora texts across mobile app, web app, and admin panel."
+        actionNode={<AdminButton title="Save All" onPress={saveAll} />}
+      >
+        <View style={styles.rowActions}>
+          <AdminButton title="Add Language" tone="light" onPress={addLanguage} />
+          <AdminButton title="Add Translation Key" tone="light" onPress={addTranslationKey} />
+          <AdminButton title="Export JSON" tone="blue" onPress={exportAll} />
+          <AdminButton title="Import JSON" tone="green" onPress={importAll} />
+          <AdminButton title="Reset" tone="red" onPress={resetTranslations} />
+        </View>
         <View style={styles.kpiRowSmall}>
-          <StatCard title="Всего переводов" value={String(state.translations.length)} icon="∞" tone="purple" compact />
-          <StatCard title="Завершено" value={String(state.translations.filter((item) => item.status === 'complete').length)} icon="▣" tone="blue" compact />
-          <StatCard title="Модули" value="10" icon="▦" tone="green" compact />
-          <StatCard title="Языки" value="4" icon="◎" tone="orange" compact />
-          <StatCard title="Последнее обновление" value="2 ч назад" icon="+" tone="pink" compact />
+          <StatCard title="Total translation keys" value={String(state.translations.length)} icon="∞" tone="purple" compact />
+          <StatCard title="Active languages" value={String(activeLanguages.length)} icon="◎" tone="blue" compact />
+          <StatCard title="Completed translations" value={String(completed)} icon="✓" tone="green" compact />
+          <StatCard title="Missing translations" value={String(missing)} icon="!" tone={missing ? 'orange' : 'green'} compact />
+          <StatCard title="Last updated" value={lastUpdated.slice(0, 10)} icon="+" tone="pink" compact />
+        </View>
+        <View style={styles.kpiRowSmall}>
+          {state.languages.map((language) => (
+            <ProgressCard key={language.id} label={`${language.flag} ${language.name}`} value={completionFor(language.code)} />
+          ))}
         </View>
       </Panel>
-      <Panel title="">
-        <Tabs tabs={['Все языки', 'Русский', 'English', 'Հայերեն', 'Español']} active="Все языки" />
-        <AdminTable headers={['Ключ перевода', 'Модуль', 'Русский', 'English', 'Հայերեն', 'Español', 'Статус', 'Действия']}>
-          {rows.map((item) => (
+
+      <Panel title="Languages" description="Languages are stored in AdminStore and drive every language switcher.">
+        <View style={styles.formGrid}>
+          <AdminInput label="Language name" value={newLanguage.name} onChangeText={(value) => setNewLanguage((current) => ({ ...current, name: value }))} />
+          <AdminInput label="Native name" value={newLanguage.nativeName} onChangeText={(value) => setNewLanguage((current) => ({ ...current, nativeName: value }))} />
+          <AdminInput label="Code" value={newLanguage.code} onChangeText={(value) => setNewLanguage((current) => ({ ...current, code: value }))} />
+          <AdminInput label="Flag" value={newLanguage.flag} onChangeText={(value) => setNewLanguage((current) => ({ ...current, flag: value }))} />
+          <ToggleRow label="Active" value={newLanguage.isActive} onChange={() => setNewLanguage((current) => ({ ...current, isActive: !current.isActive }))} />
+          <ToggleRow label="Default" value={newLanguage.isDefault} onChange={() => setNewLanguage((current) => ({ ...current, isDefault: !current.isDefault }))} />
+        </View>
+        <View style={styles.kpiRowSmall}>
+          {state.languages.map((language) => (
+            <View key={language.id} style={styles.levelCard}>
+              <Text style={styles.levelIcon}>{language.flag}</Text>
+              <Text style={styles.levelTitle}>{language.name} / {language.nativeName}</Text>
+              <Text style={styles.levelLine}>Code: {language.code.toUpperCase()} · {language.direction}</Text>
+              <Text style={styles.levelLine}>Completion: {completionFor(language.code)}%</Text>
+              <View style={styles.rowActions}>
+                <AdminButton title={language.isActive ? 'Disable' : 'Enable'} tone={language.isActive ? 'red' : 'green'} onPress={() => updateLanguage(language.id, { isActive: !language.isActive })} />
+                <AdminButton title="Set Default" tone="light" onPress={() => updateLanguage(language.id, { isDefault: true })} />
+                <AdminButton title="Delete" tone="red" onPress={() => deleteLanguage(language.id)} />
+              </View>
+            </View>
+          ))}
+        </View>
+      </Panel>
+
+      <Panel title="Translation Keys" description="Inline edits update the live TranslationProvider immediately; Save All persists to localStorage.">
+        <View style={styles.formGrid}>
+          <AdminInput label="Search key, text, module, screen" value={search} onChangeText={setSearch} />
+          <AdminInput label="Language filter" value={languageFilter} onChangeText={setLanguageFilter} />
+          <AdminInput label="Module filter" value={moduleFilter} onChangeText={setModuleFilter} />
+          <AdminInput label="Status filter" value={statusFilter} onChangeText={setStatusFilter} />
+        </View>
+        <View style={styles.rowActions}>
+          <AdminButton title={missingOnly ? 'Showing Missing' : 'Show Missing'} tone={missingOnly ? 'blue' : 'light'} onPress={() => setMissingOnly((current) => !current)} />
+          <AdminButton title="Show All Languages" tone="light" onPress={() => setLanguageFilter('all')} />
+          <AdminButton title="Reset Filters" tone="light" onPress={() => { setSearch(''); setLanguageFilter('all'); setModuleFilter('all'); setStatusFilter('all'); setMissingOnly(false); }} />
+          {modules.slice(0, 6).map((module) => <AdminButton key={module} title={module} tone="ghost" onPress={() => setModuleFilter(module)} />)}
+        </View>
+        <AdminTable headers={['Key', 'Module / screen', ...activeLanguages.map((item) => item.code.toUpperCase()), 'Status', 'Actions']}>
+          {rows.slice(0, 40).map((item) => (
             <TableRow key={item.id}>
-              <Cell><Text style={styles.tableText}>{item.key}</Text><Text style={styles.tableMuted}>{item.module.toUpperCase()}</Text></Cell>
-              <Cell><Text style={styles.tableText}>{item.module}</Text></Cell>
-              <Cell><Text style={styles.tableText}>{item.ru}</Text></Cell>
-              <Cell><Text style={styles.tableText}>{item.en}</Text></Cell>
-              <Cell><Text style={styles.tableText}>{item.hy || '—'}</Text></Cell>
-              <Cell><Text style={styles.tableText}>Registro</Text></Cell>
-              <Cell><Badge label={item.status === 'complete' ? 'Завершено' : 'Missing'} tone={item.status === 'complete' ? 'green' : 'orange'} /></Cell>
-              <Cell><ActionIcons /></Cell>
+              <Cell wide>
+                <TextInput value={item.key} onChangeText={(value) => updateRow(item.id, { key: value })} style={styles.input} />
+                <Text style={styles.tableMuted}>{item.description ?? 'Editable from Admin Translations'}</Text>
+              </Cell>
+              <Cell>
+                <TextInput value={item.module} onChangeText={(value) => updateRow(item.id, { module: value })} style={styles.input} />
+                <Text style={styles.tableMuted}>{item.screen ?? item.module}</Text>
+              </Cell>
+              {activeLanguages.map((language) => (
+                <Cell key={`${item.id}-${language.code}`} wide>
+                  <TextInput
+                    value={item.values?.[language.code] ?? ''}
+                    onChangeText={(value) => updateValue(item.id, language.code, value)}
+                    multiline
+                    style={[styles.input, { minHeight: 70 }]}
+                  />
+                </Cell>
+              ))}
+              <Cell><Badge label={item.status} tone={item.status === 'complete' ? 'green' : item.status === 'missing' ? 'red' : 'orange'} /></Cell>
+              <Cell>
+                <View style={styles.rowActions}>
+                  <AdminButton title="Save Row" tone="green" onPress={saveAll} />
+                  <AdminButton title="Duplicate" tone="light" onPress={() => updateTranslations([{ ...item, id: `tr-copy-${Date.now()}`, key: `${item.key}.copy` }, ...state.translations])} />
+                  <AdminButton title="Delete" tone="red" onPress={() => updateTranslations(state.translations.filter((row) => row.id !== item.id))} />
+                </View>
+              </Cell>
             </TableRow>
           ))}
         </AdminTable>
       </Panel>
+
+      <View style={styles.twoCards}>
+        <Panel title="Export JSON" description="Copy or inspect the generated translation payload.">
+          <TextInput value={exportJson} onChangeText={setExportJson} multiline style={[styles.input, { minHeight: 160 }]} />
+        </Panel>
+        <Panel title="Import JSON" description="Paste JSON with languages/translations and press Import JSON. Existing keys are merged.">
+          <TextInput value={importJson} onChangeText={setImportJson} multiline style={[styles.input, { minHeight: 160 }]} />
+        </Panel>
+      </View>
     </View>
   );
 }
@@ -963,6 +1219,7 @@ function SimpleDataTable({ title, rows }: { title: string; rows: string[][] }) {
 }
 
 function StatCard({ title, value, icon, tone, change = '+12.5%', compact = false }: { title: string; value: string; icon: string; tone: StatusTone; change?: string; compact?: boolean }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.statCard, compact && styles.statCardCompact]}>
       <View style={styles.statTop}>
@@ -971,7 +1228,7 @@ function StatCard({ title, value, icon, tone, change = '+12.5%', compact = false
         </View>
         {!compact ? <MiniSpark tone={tone} /> : null}
       </View>
-      <Text style={styles.statTitle}>{title}</Text>
+      <Text style={styles.statTitle}>{t(autoKey('admin.stat', title), title)}</Text>
       <Text style={[styles.statValue, compact && styles.statValueCompact]}>{value}</Text>
       <Text style={[styles.statChange, change.startsWith('-') && styles.negative]}>{change} <Text style={styles.statPeriod}>за неделю</Text></Text>
       {compact ? null : <MiniLine tone={tone} />}
@@ -979,14 +1236,29 @@ function StatCard({ title, value, icon, tone, change = '+12.5%', compact = false
   );
 }
 
+function ProgressCard({ label, value }: { label: string; value: number }) {
+  const { t } = useTranslation();
+  const tone: StatusTone = value >= 100 ? 'green' : value >= 70 ? 'orange' : 'red';
+  return (
+    <View style={styles.levelCard}>
+      <Text style={styles.levelTitle}>{t(autoKey('admin.progress', label), label)}</Text>
+      <Text style={[styles.bigMetric, { marginTop: 8, fontSize: 30 }]}>{value}%</Text>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, toneStyle(tone).solid, { width: `${Math.max(4, Math.min(100, value))}%` }]} />
+      </View>
+    </View>
+  );
+}
+
 function Panel({ title, description, action, actionNode, children, style }: { title: string; description?: string; action?: string; actionNode?: ReactNode; children: ReactNode; style?: object }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.panel, style]}>
       {(title || description || action || actionNode) ? (
         <View style={styles.panelHeader}>
           <View>
-            {title ? <Text style={styles.panelTitle}>{title}</Text> : null}
-            {description ? <Text style={styles.panelDescription}>{description}</Text> : null}
+            {title ? <Text style={styles.panelTitle}>{t(autoKey('admin.panel.title', title), title)}</Text> : null}
+            {description ? <Text style={styles.panelDescription}>{t(autoKey('admin.panel.description', description), description)}</Text> : null}
           </View>
           {actionNode ?? (action ? <Badge label={action} tone="purple" /> : null)}
         </View>
@@ -1018,36 +1290,40 @@ function Cell({ children, wide = false }: { children: ReactNode; wide?: boolean 
 }
 
 function AdminButton({ title, onPress, tone = 'primary' }: { title: string; onPress?: () => void; tone?: 'primary' | 'light' | 'ghost' | 'blue' | 'green' | 'red' }) {
+  const { t } = useTranslation();
+  const translatedTitle = t(autoKey('admin.button', title), title);
   const isPrimary = tone === 'primary' || tone === 'blue';
   if (isPrimary) {
     return (
       <Pressable accessibilityRole="button" onPress={onPress} style={styles.buttonShadow}>
         <LinearGradient colors={tone === 'blue' ? ['#2F80ED', '#6D5DFB'] : ['#6D5DFB', '#3B82F6']} style={styles.button}>
-          <Text style={styles.buttonText}>{title}</Text>
+          <Text style={styles.buttonText}>{translatedTitle}</Text>
         </LinearGradient>
       </Pressable>
     );
   }
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={[styles.plainButton, tone === 'green' && styles.greenButton, tone === 'red' && styles.redButton, tone === 'ghost' && styles.ghostButton]}>
-      <Text style={[styles.plainButtonText, tone === 'green' && styles.greenText, tone === 'red' && styles.redText]}>{title}</Text>
+      <Text style={[styles.plainButtonText, tone === 'green' && styles.greenText, tone === 'red' && styles.redText]}>{translatedTitle}</Text>
     </Pressable>
   );
 }
 
 function AdminInput({ label, value, onChangeText }: { label: string; value: string; onChangeText: (value: string) => void }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.inputWrap}>
-      <Text style={styles.inputLabel}>{label}</Text>
+      <Text style={styles.inputLabel}>{t(autoKey('admin.input', label), label)}</Text>
       <TextInput value={value} onChangeText={onChangeText} placeholderTextColor="#98A2B3" style={styles.input} />
     </View>
   );
 }
 
 function Badge({ label, tone }: { label: string; tone: StatusTone }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.badge, toneStyle(tone).soft]}>
-      <Text style={[styles.badgeText, toneStyle(tone).text]}>{label}</Text>
+      <Text style={[styles.badgeText, toneStyle(tone).text]}>{t(autoKey('admin.badge', label), label)}</Text>
     </View>
   );
 }

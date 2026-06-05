@@ -2,6 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { useTranslation } from '../i18n/I18nProvider';
 import { RegisteredUser } from '../services/authStorage';
 import { LocationSelection, UserRole } from '../types/navigation';
 
@@ -69,6 +71,7 @@ const offers = [
 const companies = ['Derakshan', 'Aram Shin', 'USAcars Armenia', 'Fixora Care', 'Urban Home'];
 
 export default function HomeScreen({ location, role, currentUser, onOpenCategories, onOpenAdmin, onLogout }: HomeScreenProps) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState('home');
   const roleLabel = role[0].toUpperCase() + role.slice(1);
   const isAdminUser = currentUser?.email.toLowerCase() === 'admin@gmail.com';
@@ -80,13 +83,13 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
           <FixoraLogo size={50} wordmark />
           <View style={styles.webSearch}>
             <Text style={styles.webSearchIcon}>⌕</Text>
-            <TextInput placeholder="Поиск услуг, специалистов, компаний..." placeholderTextColor="#7E8AA3" style={styles.webSearchInput} />
+            <TextInput placeholder={t('home.search.placeholder', 'Search services, specialists, companies...')} placeholderTextColor="#7E8AA3" style={styles.webSearchInput} />
             <Pressable accessibilityRole="button" style={styles.webSearchButton}>
-              <Text style={styles.webSearchButtonText}>Найти</Text>
+              <Text style={styles.webSearchButtonText}>{t('buttons.search', 'Search')}</Text>
             </Pressable>
           </View>
           <View style={styles.webToolbar}>
-            <Pressable accessibilityRole="button" style={styles.webSelect}><Text style={styles.webSelectText}>◎ Русский⌄</Text></Pressable>
+            <LanguageSwitcher compact />
             <Pressable accessibilityRole="button" style={styles.webSelect}><Text style={styles.webSelectText}>USD⌄</Text></Pressable>
             {['♢', '☏', '♡'].map((icon) => (
               <Pressable key={icon} accessibilityRole="button" style={styles.webIconButton}><Text style={styles.webIconText}>{icon}</Text></Pressable>
@@ -95,12 +98,12 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
               <View style={styles.webAvatar}><Text style={styles.webAvatarText}>ИИ</Text></View>
               <View>
                 <Text style={styles.webProfileName}>{isAdminUser ? 'Super Admin' : 'Иван Иванов'}</Text>
-                <Text style={styles.webProfileSub}>Личный кабинет⌄</Text>
+                <Text style={styles.webProfileSub}>{t('home.profile.account', 'Account')}⌄</Text>
               </View>
             </Pressable>
             {isAdminUser ? (
               <Pressable accessibilityRole="button" onPress={onOpenAdmin} style={styles.webAdminButton}>
-                <Text style={styles.webAdminButtonText}>Admin Panel</Text>
+                <Text style={styles.webAdminButtonText}>{t('admin.panel', 'Admin Panel')}</Text>
               </Pressable>
             ) : null}
           </View>
@@ -116,18 +119,18 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
               </Pressable>
             ))}
             <Pressable accessibilityRole="button" onPress={onOpenCategories} style={styles.webShowAll}>
-              <Text style={styles.webShowAllText}>Показать все категории⌄</Text>
+              <Text style={styles.webShowAllText}>{t('home.categories.showAll', 'Show all categories')}⌄</Text>
             </Pressable>
           </View>
 
           <ScrollView contentContainerStyle={styles.webContent} showsVerticalScrollIndicator={false}>
             <LinearGradient colors={['#7A3FF3', '#4F8BFF', '#C8D7FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.webHero}>
               <View style={styles.webHeroText}>
-                <Text style={styles.webHeroTitle}>Найдите лучших специалистов{'\n'}для любых задач</Text>
-                <Text style={styles.webHeroSubtitle}>Быстрый поиск, проверенные специалисты, надежные услуги для вас и вашего бизнеса</Text>
+                <Text style={styles.webHeroTitle}>{t('home.web.hero.title', 'Find the best specialists')}{'\n'}{t('home.web.hero.title2', 'for any task')}</Text>
+                <Text style={styles.webHeroSubtitle}>{t('home.web.hero.subtitle', 'Fast search, verified specialists, reliable services for you and your business')}</Text>
                 <View style={styles.webHeroActions}>
-                  <Pressable accessibilityRole="button" style={styles.webHeroPrimary}><Text style={styles.webHeroPrimaryText}>Найти специалиста</Text></Pressable>
-                  <Pressable accessibilityRole="button" style={styles.webHeroSecondary}><Text style={styles.webHeroSecondaryText}>Разместить заказ</Text></Pressable>
+                  <Pressable accessibilityRole="button" style={styles.webHeroPrimary}><Text style={styles.webHeroPrimaryText}>{t('home.hero.findSpecialist', 'Find specialist')}</Text></Pressable>
+                  <Pressable accessibilityRole="button" style={styles.webHeroSecondary}><Text style={styles.webHeroSecondaryText}>{t('home.hero.postOrder', 'Post order')}</Text></Pressable>
                 </View>
               </View>
               <View style={styles.masterFigure}>
@@ -165,8 +168,8 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
 
             <View style={styles.webListingsHeader}>
               <View style={styles.webTitleRow}>
-                <Text style={styles.webSectionTitle}>Популярные объявления</Text>
-                <Text style={styles.webNewBadge}>248 новых</Text>
+                <Text style={styles.webSectionTitle}>{t('home.popular.title', 'Popular listings')}</Text>
+                <Text style={styles.webNewBadge}>{t('home.popular.newBadge', '248 new')}</Text>
               </View>
               <View style={styles.webFilters}>
                 {['Все объявления', 'Рядом со мной⌄', 'Сначала новые⌄', 'Все объявления'].map((filter, index) => (
@@ -222,26 +225,26 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
         <View style={styles.header}>
           <FixoraLogo size={48} wordmark />
           <Pressable accessibilityRole="button" onPress={onLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Logout</Text>
+            <Text style={styles.logoutText}>{t('auth.logout', 'Logout')}</Text>
           </Pressable>
         </View>
 
         <View style={styles.searchWrap}>
           <Text style={styles.searchIcon}>⌕</Text>
-          <TextInput placeholder="Search services, companies, specialists" placeholderTextColor="#94A3B8" style={styles.searchInput} />
+          <TextInput placeholder={t('home.search.placeholder', 'Search services, companies, specialists')} placeholderTextColor="#94A3B8" style={styles.searchInput} />
           <Text style={styles.cameraIcon}>▣</Text>
         </View>
 
         <LinearGradient colors={['#7C3AED', '#2D7CFF']} style={styles.hero}>
           <View style={styles.heroText}>
             <Text style={styles.heroKicker}>{location.city || 'Local marketplace'} / {roleLabel}</Text>
-            <Text style={styles.heroTitle}>Trusted help, beautifully organized.</Text>
-            <Text style={styles.heroSubtitle}>Explore premium offers, verified companies, and local services in one clean workspace.</Text>
+            <Text style={styles.heroTitle}>{t('home.mobile.hero.title', 'Trusted help, beautifully organized.')}</Text>
+            <Text style={styles.heroSubtitle}>{t('home.mobile.hero.subtitle', 'Explore premium offers, verified companies, and local services in one clean workspace.')}</Text>
           </View>
           <View style={styles.heroBadge}><Text style={styles.heroBadgeText}>F</Text></View>
         </LinearGradient>
 
-        <SectionTitle title="Top offers" action="View all" onAction={onOpenCategories} />
+        <SectionTitle title={t('home.sections.topOffers', 'Top offers')} action={t('buttons.viewAll', 'View all')} onAction={onOpenCategories} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.offerRow}>
           {offers.map((offer) => (
             <View key={offer.title} style={styles.offerCard}>
@@ -254,7 +257,7 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
           ))}
         </ScrollView>
 
-        <SectionTitle title="Categories" action="Open" onAction={onOpenCategories} />
+        <SectionTitle title={t('categories.title', 'Categories')} action={t('buttons.open', 'Open')} onAction={onOpenCategories} />
         <View style={styles.categoryGrid}>
           {categories.map((category) => (
             <Pressable key={category.title} accessibilityRole="button" onPress={onOpenCategories} style={[styles.categoryCard, { backgroundColor: category.color }]}>

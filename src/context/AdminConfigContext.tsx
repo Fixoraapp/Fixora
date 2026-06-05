@@ -82,11 +82,25 @@ export type TranslationRecord = {
   id: string;
   key: string;
   module: string;
+  screen?: string;
+  description?: string;
   ru: string;
   en: string;
   hy: string;
-  status: 'complete' | 'missing';
+  values?: Record<string, string>;
+  status: 'complete' | 'missing' | 'partial' | 'outdated';
   updatedAt: string;
+};
+
+export type LanguageRecord = {
+  id: string;
+  name: string;
+  nativeName: string;
+  code: string;
+  flag: string;
+  direction: 'ltr' | 'rtl';
+  isActive: boolean;
+  isDefault: boolean;
 };
 
 export type AdminUser = {
@@ -201,6 +215,7 @@ export type RegistrationFieldConfig = {
 export type RegistrationFieldsState = Record<UserRole, RegistrationFieldConfig[]>;
 
 export type AdminConfigState = {
+  languages: LanguageRecord[];
   categories: CategoryRecord[];
   countries: CountryRecord[];
   regions: RegionRecord[];
@@ -248,6 +263,12 @@ const categorySeeds = [
   'Production',
   'Tourism',
   'Premium & VIP',
+];
+
+export const defaultLanguages: LanguageRecord[] = [
+  { id: 'lang-ru', name: 'Russian', nativeName: 'Русский', code: 'ru', flag: '🇷🇺', direction: 'ltr', isActive: true, isDefault: false },
+  { id: 'lang-en', name: 'English', nativeName: 'English', code: 'en', flag: '🇺🇸', direction: 'ltr', isActive: true, isDefault: true },
+  { id: 'lang-hy', name: 'Armenian', nativeName: 'Հայերեն', code: 'hy', flag: '🇦🇲', direction: 'ltr', isActive: true, isDefault: false },
 ];
 
 export const defaultRegistrationFields: RegistrationFieldsState = {
@@ -332,6 +353,7 @@ export const defaultTelegramChannels: TelegramChannelConfig[] = [
 ];
 
 export const defaultAdminConfig: AdminConfigState = {
+  languages: defaultLanguages,
   categories: categorySeeds.map((name, index) => ({
     id: `cat-${index + 1}`,
     name_ru: name,
@@ -359,7 +381,7 @@ export const defaultAdminConfig: AdminConfigState = {
     { id: 'city-yerevan', regionId: 'region-yerevan', name_ru: 'Yerevan', name_en: 'Yerevan', name_hy: 'Yerevan', isActive: true, latitude: '40.1792', longitude: '44.4991' },
     { id: 'city-la', regionId: 'region-california', name_ru: 'Los Angeles', name_en: 'Los Angeles', name_hy: 'Los Angeles', isActive: true, latitude: '34.0522', longitude: '-118.2437' },
   ],
-  translations: defaultTranslations.map((translation, index) => ({ id: `tr-${index + 1}`, ...translation })),
+  translations: defaultTranslations.map((translation, index) => ({ id: `tr-${index + 1}`, values: { ru: translation.ru, en: translation.en, hy: translation.hy }, ...translation })),
   users: [
     { id: 'u-1', name: 'Mariam K.', role: 'Client', city: 'Yerevan', status: 'active', verification: 'verified', rating: 5, completedOrders: 12, categories: 'Cleaning', premium: false },
     { id: 'u-2', name: 'Arman Master', role: 'Master', city: 'Yerevan', status: 'pending', verification: 'pending', rating: 4.9, completedOrders: 128, categories: 'Repair, IT', premium: true },
@@ -419,10 +441,11 @@ const AdminConfigContext = createContext<AdminConfigContextValue | null>(null);
 
 function mergeState(stored: Partial<AdminConfigState> | null): AdminConfigState {
   const storedTranslations = stored?.translations ?? [];
-  const mergedTranslations = defaultAdminConfig.translations.map((defaultItem) => ({
-    ...defaultItem,
-    ...storedTranslations.find((item) => item.key === defaultItem.key),
-  }));
+  const mergedTranslations = defaultAdminConfig.translations.map((defaultItem) => {
+    const storedItem = storedTranslations.find((item) => item.key === defaultItem.key);
+    const merged = { ...defaultItem, ...storedItem };
+    return { ...merged, values: { ru: merged.ru, en: merged.en, hy: merged.hy, ...defaultItem.values, ...storedItem?.values } };
+  });
   const customTranslations = storedTranslations.filter((item) => !mergedTranslations.some((existing) => existing.key === item.key));
   const storedTelegram = stored?.telegram as Partial<TelegramSettings> | undefined;
   const storedChannels = storedTelegram?.channels ?? [];
@@ -435,6 +458,7 @@ function mergeState(stored: Partial<AdminConfigState> | null): AdminConfigState 
   return {
     ...defaultAdminConfig,
     ...stored,
+    languages: stored?.languages?.length ? stored.languages : defaultLanguages,
     translations: [...mergedTranslations, ...customTranslations],
     financeSettings: { ...defaultAdminConfig.financeSettings, ...stored?.financeSettings },
     registrationFields: {

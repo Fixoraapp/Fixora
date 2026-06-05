@@ -1,6 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
+import { useTranslation } from '../i18n/I18nProvider';
 
 type WelcomeScreenProps = {
   onLogin: () => void;
@@ -11,6 +13,7 @@ type WelcomeScreenProps = {
 const navItems = ['Главная', 'О нас', 'О компании', 'Возможности', 'Связаться с нами'];
 
 export default function WelcomeScreen({ onLogin, onRegister, onOpenAdmin }: WelcomeScreenProps) {
+  const { t } = useTranslation();
   if (Platform.OS === 'web') {
     return (
       <View style={styles.webScreen}>
@@ -18,21 +21,21 @@ export default function WelcomeScreen({ onLogin, onRegister, onOpenAdmin }: Welc
         <ScrollView contentContainerStyle={styles.webContent} showsVerticalScrollIndicator={false}>
           <View style={styles.webHero}>
             <View style={styles.webHeroCopy}>
-              <Text style={styles.webBadge}>♛ ПРЕМИУМ ДОСТУП FIXORA</Text>
+              <Text style={styles.webBadge}>{t('welcome.badge', '♛ Premium access Fixora')}</Text>
               <Text style={styles.webTitle}>
-                Найдите надежных{'\n'}
-                <Text style={styles.webTitleAccent}>профессионалов</Text>{'\n'}
-                мгновенно
+                {t('welcome.web.title.line1', 'Find trusted')}{'\n'}
+                <Text style={styles.webTitleAccent}>{t('welcome.web.title.accent', 'professionals')}</Text>{'\n'}
+                {t('welcome.web.title.line3', 'instantly')}
               </Text>
               <Text style={styles.webSubtitle}>
-                Fixora соединяет клиентов и профессионалов. Быстрый поиск, проверенные специалисты, надежные услуги.
+                {t('welcome.web.subtitle', 'Fixora connects clients and professionals. Fast search, verified specialists, reliable services.')}
               </Text>
               <View style={styles.webHeroActions}>
                 <Pressable accessibilityRole="button" onPress={onRegister} style={styles.webPrimaryButton}>
-                  <Text style={styles.webPrimaryText}>☻  Создать аккаунт</Text>
+                  <Text style={styles.webPrimaryText}>{t('auth.createAccount.cta', '☻  Create account')}</Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" onPress={onLogin} style={styles.webOutlineButton}>
-                  <Text style={styles.webOutlineText}>Узнать больше  →</Text>
+                  <Text style={styles.webOutlineText}>{t('buttons.learnMoreArrow', 'Learn more  →')}</Text>
                 </Pressable>
               </View>
               <View style={styles.storeRow}>
@@ -41,12 +44,7 @@ export default function WelcomeScreen({ onLogin, onRegister, onOpenAdmin }: Welc
               </View>
             </View>
 
-            <View style={styles.phoneStage}>
-              <PhoneMockup front />
-              <PhoneMockup />
-              <View style={[styles.floatOrb, styles.floatOrbTop]} />
-              <View style={[styles.floatOrb, styles.floatOrbBottom]} />
-            </View>
+            <AnimatedPhoneShowcase style={styles.phoneStage} />
           </View>
 
           <View style={styles.statsPanel}>
@@ -76,31 +74,32 @@ export default function WelcomeScreen({ onLogin, onRegister, onOpenAdmin }: Welc
     <LinearGradient colors={['#FFFFFF', '#F7FAFF', '#F4F0FF']} style={styles.screen}>
       <View style={styles.top}>
         <FixoraLogo size={76} wordmark />
-        <Text style={styles.slogan}>Find trusted professionals instantly.</Text>
+        <Text style={styles.slogan}>{t('welcome.slogan', 'Find trusted professionals instantly.')}</Text>
       </View>
 
       <View style={styles.hero}>
-        <Text style={styles.title}>Discover your perfect service</Text>
-        <Text style={styles.subtitle}>A premium marketplace for trusted local professionals, companies, and services.</Text>
+        <Text style={styles.title}>{t('welcome.mobile.title', 'Discover your perfect service')}</Text>
+        <Text style={styles.subtitle}>{t('welcome.mobile.subtitle', 'A premium marketplace for trusted local professionals, companies, and services.')}</Text>
       </View>
 
       <View style={styles.actions}>
         <Pressable accessibilityRole="button" onPress={onLogin} style={styles.primaryButton}>
-          <Text style={styles.primaryText}>Login</Text>
+          <Text style={styles.primaryText}>{t('auth.login.button', 'Login')}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onRegister} style={styles.secondaryButton}>
-          <Text style={styles.secondaryText}>Register</Text>
+          <Text style={styles.secondaryText}>{t('auth.register.button', 'Register')}</Text>
         </Pressable>
       </View>
 
       <Pressable accessibilityRole="button" onPress={onOpenAdmin} style={styles.adminButton}>
-        <Text style={styles.adminText}>Admin Panel</Text>
+        <Text style={styles.adminText}>{t('admin.panel', 'Admin Panel')}</Text>
       </Pressable>
     </LinearGradient>
   );
 }
 
 function WebHeader({ onLogin, onRegister }: { onLogin: () => void; onRegister: () => void }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
@@ -113,10 +112,10 @@ function WebHeader({ onLogin, onRegister }: { onLogin: () => void; onRegister: (
       </View>
       <View style={styles.webHeaderActions}>
         <Pressable accessibilityRole="button" onPress={onLogin} style={styles.webLoginButton}>
-          <Text style={styles.webLoginText}>Войти</Text>
+          <Text style={styles.webLoginText}>{t('auth.login.button', 'Login')}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onRegister} style={styles.webRegisterButton}>
-          <Text style={styles.webRegisterText}>☻  Регистрация</Text>
+          <Text style={styles.webRegisterText}>{t('auth.register.headerButton', '☻  Registration')}</Text>
         </Pressable>
       </View>
     </View>

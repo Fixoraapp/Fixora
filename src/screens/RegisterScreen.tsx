@@ -2,7 +2,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
 import { RegistrationFieldConfig, useAdminConfig } from '../context/AdminConfigContext';
+import { useTranslation } from '../i18n/I18nProvider';
 import { authStorage, RegisteredUser } from '../services/authStorage';
 import { UserRole } from '../types/navigation';
 
@@ -23,6 +25,7 @@ const makeCode = () => Math.random().toString(36).slice(2, 8).toUpperCase();
 
 export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreenProps) {
   const { state } = useAdminConfig();
+  const { t } = useTranslation();
   const [role, setRole] = useState<UserRole>('client');
   const [form, setForm] = useState<Record<string, string>>({
     firstName: '',
@@ -125,17 +128,14 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
         <ScrollView contentContainerStyle={styles.webContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <View style={styles.webLeft}>
             <Text style={styles.webMarketingTitle}>
-              Создайте аккаунт{'\n'}
-              <Text style={styles.webMarketingAccent}>и получите доступ</Text>{'\n'}
-              к лучшим возможностям
+              {t('auth.register.marketing.line1', 'Create an account')}{'\n'}
+              <Text style={styles.webMarketingAccent}>{t('auth.register.marketing.accent', 'and get access')}</Text>{'\n'}
+              {t('auth.register.marketing.line3', 'to the best opportunities')}
             </Text>
             <Text style={styles.webMarketingText}>
-              Присоединяйтесь к Fixora и находите лучших профессионалов для любых задач мгновенно и безопасно.
+              {t('auth.register.marketing.subtitle', 'Join Fixora and find the best professionals for any task instantly and safely.')}
             </Text>
-            <View style={styles.webPhoneStage}>
-              <PhoneMockup front />
-              <PhoneMockup />
-            </View>
+            <AnimatedPhoneShowcase compact style={styles.webPhoneStage} />
             <View style={styles.webBenefits}>
               {[
                 ['⚡', 'Быстрая регистрация'],
@@ -151,10 +151,10 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
           </View>
 
           <View style={styles.webCard}>
-            <Text style={styles.webCardTitle}>Регистрация</Text>
-            <Text style={styles.webCardSubtitle}>Выберите тип аккаунта и заполните информацию</Text>
+            <Text style={styles.webCardTitle}>{t('auth.register.title', 'Registration')}</Text>
+            <Text style={styles.webCardSubtitle}>{t('auth.register.subtitle', 'Choose account type and fill in your information')}</Text>
 
-            <Text style={styles.webLabel}>Тип аккаунта</Text>
+            <Text style={styles.webLabel}>{t('auth.register.accountType', 'Account type')}</Text>
             <View style={styles.webRoleGrid}>
               {roleOptions.map((item) => (
                 <Pressable key={item.value} accessibilityRole="button" onPress={() => setRole(item.value)} style={[styles.webRoleCard, role === item.value && styles.webRoleActive]}>
@@ -166,27 +166,27 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
             </View>
 
             <View style={styles.webGrid}>
-              <Input label="Имя" value={form.firstName} onChangeText={(value) => update('firstName', value)} placeholder="Введите ваше имя" web />
-              <Input label="Фамилия" value={form.lastName} onChangeText={(value) => update('lastName', value)} placeholder="Введите вашу фамилию" web />
-              <Input label="Email" value={form.email} onChangeText={(value) => update('email', value)} placeholder="example@mail.com" keyboardType="email-address" web />
-              <Input label="Телефон" value={form.phone} onChangeText={(value) => update('phone', value)} placeholder="+7 (___) ___-__-__" keyboardType="phone-pad" web />
-              <Input label="Пароль" value={form.password} onChangeText={(value) => update('password', value)} placeholder="Создайте пароль" secureTextEntry web />
-              <Input label="Подтвердите пароль" value={form.confirmPassword} onChangeText={(value) => update('confirmPassword', value)} placeholder="Повторите пароль" secureTextEntry web />
-              <Input label="Страна" value={form.country} onChangeText={(value) => update('country', value)} placeholder="Выберите страну" web />
-              <Input label="Город" value={form.city} onChangeText={(value) => update('city', value)} placeholder="Выберите город" web />
+              <Input label={t('labels.firstName', 'First name')} value={form.firstName} onChangeText={(value) => update('firstName', value)} placeholder={t('auth.register.firstNamePlaceholder', 'Enter your first name')} web />
+              <Input label={t('labels.lastName', 'Last name')} value={form.lastName} onChangeText={(value) => update('lastName', value)} placeholder={t('auth.register.lastNamePlaceholder', 'Enter your last name')} web />
+              <Input label={t('labels.email', 'Email')} value={form.email} onChangeText={(value) => update('email', value)} placeholder="example@mail.com" keyboardType="email-address" web />
+              <Input label={t('labels.phone', 'Phone')} value={form.phone} onChangeText={(value) => update('phone', value)} placeholder="+7 (___) ___-__-__" keyboardType="phone-pad" web />
+              <Input label={t('labels.password', 'Password')} value={form.password} onChangeText={(value) => update('password', value)} placeholder={t('auth.register.passwordPlaceholder', 'Create password')} secureTextEntry web />
+              <Input label={t('labels.confirmPassword', 'Confirm password')} value={form.confirmPassword} onChangeText={(value) => update('confirmPassword', value)} placeholder={t('auth.register.confirmPasswordPlaceholder', 'Repeat password')} secureTextEntry web />
+              <Input label={t('labels.country', 'Country')} value={form.country} onChangeText={(value) => update('country', value)} placeholder={t('auth.register.countryPlaceholder', 'Select country')} web />
+              <Input label={t('labels.city', 'City')} value={form.city} onChangeText={(value) => update('city', value)} placeholder={t('auth.register.cityPlaceholder', 'Select city')} web />
             </View>
 
             <Pressable accessibilityRole="checkbox" onPress={() => setAcceptedTerms((current) => !current)} style={styles.webTermsRow}>
               <View style={[styles.webCheckbox, acceptedTerms && styles.webCheckboxOn]}>{acceptedTerms ? <Text style={styles.webCheckboxMark}>✓</Text> : null}</View>
-              <Text style={styles.webTermsText}>Я согласен с <Text style={styles.webTermsLink}>Условиями использования</Text> и <Text style={styles.webTermsLink}>Политикой конфиденциальности</Text></Text>
+              <Text style={styles.webTermsText}>{t('auth.register.termsPrefix', 'I agree with')} <Text style={styles.webTermsLink}>{t('auth.register.terms', 'Terms of use')}</Text> {t('auth.register.termsAnd', 'and')} <Text style={styles.webTermsLink}>{t('auth.register.privacy', 'Privacy policy')}</Text></Text>
             </Pressable>
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <Pressable accessibilityRole="button" onPress={submitWeb} style={styles.webSubmitButton}>
-              <Text style={styles.webSubmitText}>☻  Создать аккаунт</Text>
+              <Text style={styles.webSubmitText}>{t('auth.createAccount.cta', '☻  Create account')}</Text>
             </Pressable>
 
-            <Text style={styles.webSocialLabel}>или зарегистрируйтесь через</Text>
+            <Text style={styles.webSocialLabel}>{t('auth.register.socialDivider', 'or register with')}</Text>
             <View style={styles.webSocialRow}>
               {['Google', 'Facebook', 'Яндекс'].map((item) => (
                 <Pressable key={item} accessibilityRole="button" onPress={socialNotice} style={styles.webSocialButton}>
@@ -196,7 +196,7 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
               ))}
             </View>
             <Pressable accessibilityRole="button" onPress={onLogin} style={styles.webSwitchButton}>
-              <Text style={styles.webSwitchText}>Уже есть аккаунт?  <Text style={styles.webSwitchLink}>Войти</Text></Text>
+              <Text style={styles.webSwitchText}>{t('auth.register.haveAccount', 'Already have an account?')}  <Text style={styles.webSwitchLink}>{t('auth.login.button', 'Login')}</Text></Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -209,23 +209,23 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logo}>
           <FixoraLogo size={70} wordmark />
-          <Text style={styles.slogan}>Find trusted professionals instantly.</Text>
+          <Text style={styles.slogan}>{t('welcome.slogan', 'Find trusted professionals instantly.')}</Text>
         </View>
 
-        <Text style={styles.title}>Create your account</Text>
-        <Text style={styles.subtitle}>Sign up once, then enter Fixora with real local mock authentication.</Text>
+        <Text style={styles.title}>{t('auth.register.mobileTitle', 'Create your account')}</Text>
+        <Text style={styles.subtitle}>{t('auth.register.mobileSubtitle', 'Sign up once, then enter Fixora with real local authentication.')}</Text>
 
         <View style={styles.card}>
           <View style={styles.grid}>
-            <Input label="First Name" value={form.firstName} onChangeText={(value) => update('firstName', value)} placeholder="First Name" />
-            <Input label="Last Name" value={form.lastName} onChangeText={(value) => update('lastName', value)} placeholder="Last Name" />
-            <Input label="Email" value={form.email} onChangeText={(value) => update('email', value)} placeholder="you@fixora.com" keyboardType="email-address" />
-            <Input label="Phone Number" value={form.phone} onChangeText={(value) => update('phone', value)} placeholder="+374 00 000000" keyboardType="phone-pad" />
-            <Input label="Password" value={form.password} onChangeText={(value) => update('password', value)} placeholder="Password" secureTextEntry />
-            <Input label="Confirm Password" value={form.confirmPassword} onChangeText={(value) => update('confirmPassword', value)} placeholder="Confirm Password" secureTextEntry />
+            <Input label={t('labels.firstName', 'First Name')} value={form.firstName} onChangeText={(value) => update('firstName', value)} placeholder={t('labels.firstName', 'First Name')} />
+            <Input label={t('labels.lastName', 'Last Name')} value={form.lastName} onChangeText={(value) => update('lastName', value)} placeholder={t('labels.lastName', 'Last Name')} />
+            <Input label={t('labels.email', 'Email')} value={form.email} onChangeText={(value) => update('email', value)} placeholder="you@fixora.com" keyboardType="email-address" />
+            <Input label={t('labels.phone', 'Phone Number')} value={form.phone} onChangeText={(value) => update('phone', value)} placeholder="+374 00 000000" keyboardType="phone-pad" />
+            <Input label={t('labels.password', 'Password')} value={form.password} onChangeText={(value) => update('password', value)} placeholder={t('labels.password', 'Password')} secureTextEntry />
+            <Input label={t('labels.confirmPassword', 'Confirm Password')} value={form.confirmPassword} onChangeText={(value) => update('confirmPassword', value)} placeholder={t('labels.confirmPassword', 'Confirm Password')} secureTextEntry />
           </View>
 
-          <Text style={styles.label}>Select your role</Text>
+          <Text style={styles.label}>{t('auth.register.selectRole', 'Select your role')}</Text>
           <View style={styles.segment}>
             {roleOptions.map((item) => (
               <Pressable key={item.value} accessibilityRole="button" onPress={() => setRole(item.value)} style={[styles.segmentItem, role === item.value && styles.segmentActive]}>
@@ -251,14 +251,14 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
               <Text style={styles.code}>{securityCode}</Text>
             </View>
             <Pressable accessibilityRole="button" onPress={() => { setSecurityCode(makeCode()); setSecurityInput(''); }} style={styles.refreshButton}>
-              <Text style={styles.refreshText}>Refresh</Text>
+              <Text style={styles.refreshText}>{t('buttons.refresh', 'Refresh')}</Text>
             </Pressable>
           </View>
-          <Input label="Enter security code" value={securityInput} onChangeText={setSecurityInput} placeholder="ABC123" autoCapitalize="characters" />
+          <Input label={t('auth.register.securityInput', 'Enter security code')} value={securityInput} onChangeText={setSecurityInput} placeholder="ABC123" autoCapitalize="characters" />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Pressable accessibilityRole="button" onPress={submit} style={styles.submitButton}>
-            <Text style={styles.submitText}>Create Account</Text>
+            <Text style={styles.submitText}>{t('auth.createAccount.button', 'Create Account')}</Text>
           </Pressable>
 
           <View style={styles.socialRow}>
@@ -269,7 +269,7 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
             ))}
           </View>
           <Pressable accessibilityRole="button" onPress={onLogin} style={styles.switchButton}>
-            <Text style={styles.switchText}>Already have an account? Login</Text>
+            <Text style={styles.switchText}>{t('auth.register.switchToLogin', 'Already have an account? Login')}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -278,6 +278,7 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
 }
 
 function WebHeader({ onLogin }: { onLogin: () => void }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
@@ -290,10 +291,10 @@ function WebHeader({ onLogin }: { onLogin: () => void }) {
       </View>
       <View style={styles.webHeaderActions}>
         <Pressable accessibilityRole="button" onPress={onLogin} style={styles.webLoginButton}>
-          <Text style={styles.webLoginText}>Войти</Text>
+          <Text style={styles.webLoginText}>{t('auth.login.button', 'Login')}</Text>
         </Pressable>
         <View style={styles.webRegisterButton}>
-          <Text style={styles.webRegisterText}>☻  Регистрация</Text>
+          <Text style={styles.webRegisterText}>{t('auth.register.headerButton', '☻  Registration')}</Text>
         </View>
       </View>
     </View>

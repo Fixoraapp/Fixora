@@ -1,25 +1,25 @@
-﻿import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from '../i18n/I18nProvider';
-import { AppLanguage } from '../i18n/defaultTranslations';
-
-const languages: Array<{ id: AppLanguage; label: string }> = [
-  { id: 'ru', label: 'Р СѓСЃСЃРєРёР№' },
-  { id: 'hy', label: 'ХЂХЎХµХҐЦЂХҐХ¶' },
-  { id: 'en', label: 'English' },
-];
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
-  const { language, setLanguage, t } = useTranslation();
+  const { language, languages, setLanguage, t } = useTranslation();
 
   return (
     <View style={[styles.wrap, compact && styles.wrapCompact]}>
       {!compact ? <Text style={styles.label}>{t('labels.language', 'Language')}</Text> : null}
       <View style={styles.options}>
         {languages.map((item) => {
-          const selected = language === item.id;
+          const selected = language === item.code;
           return (
-            <Pressable key={item.id} accessibilityRole="button" onPress={() => { setLanguage(item.id).catch(() => undefined); }} style={[styles.option, selected && styles.optionActive]}>
-              <Text style={[styles.optionText, selected && styles.optionTextActive]}>{compact ? item.id.toUpperCase() : item.label}</Text>
+            <Pressable
+              key={item.id}
+              accessibilityRole="button"
+              onPress={() => { setLanguage(item.code).catch(() => undefined); }}
+              style={[styles.option, selected && styles.optionActive]}
+            >
+              <Text style={[styles.optionText, selected && styles.optionTextActive]}>
+                {compact ? item.code.toUpperCase() : `${item.flag} ${item.nativeName}`}
+              </Text>
             </Pressable>
           );
         })}
@@ -68,4 +68,3 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
 });
-

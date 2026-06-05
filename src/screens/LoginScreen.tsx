@@ -2,6 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
+import { useTranslation } from '../i18n/I18nProvider';
 import { authStorage, RegisteredUser } from '../services/authStorage';
 
 type LoginScreenProps = {
@@ -12,6 +14,7 @@ type LoginScreenProps = {
 const navItems = ['Главная', 'О нас', 'О компании', 'Возможности', 'Связаться с нами'];
 
 export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
@@ -36,14 +39,14 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
         <ScrollView contentContainerStyle={styles.webContent} showsVerticalScrollIndicator={false}>
           <View style={styles.webMarketing}>
             <View style={styles.webLeft}>
-              <Text style={styles.webBadge}>♛ ПРЕМИУМ ДОСТУП FIXORA</Text>
+              <Text style={styles.webBadge}>{t('welcome.badge', '♛ Premium access Fixora')}</Text>
               <Text style={styles.webTitle}>
-                Найдите надежных{'\n'}
-                <Text style={styles.webAccent}>профессионалов</Text>{'\n'}
-                мгновенно
+                {t('welcome.web.title.line1', 'Find trusted')}{'\n'}
+                <Text style={styles.webAccent}>{t('welcome.web.title.accent', 'professionals')}</Text>{'\n'}
+                {t('welcome.web.title.line3', 'instantly')}
               </Text>
               <Text style={styles.webSubtitle}>
-                Fixora соединяет клиентов и профессионалов. Быстрый поиск, проверенные специалисты, надежные услуги.
+                {t('welcome.web.subtitle', 'Fixora connects clients and professionals. Fast search, verified specialists, reliable services.')}
               </Text>
 
               <View style={styles.featureList}>
@@ -70,34 +73,31 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
               </View>
             </View>
 
-            <View style={styles.webPhoneArea}>
-              <PhoneMockup front />
-              <PhoneMockup />
-            </View>
+            <AnimatedPhoneShowcase compact style={styles.webPhoneArea} />
 
             <View style={styles.loginCard}>
-              <Text style={styles.webCardTitle}>Добро пожаловать обратно!</Text>
-              <Text style={styles.webCardSubtitle}>Войдите в свой аккаунт и продолжите работу</Text>
+              <Text style={styles.webCardTitle}>{t('auth.login.title', 'Welcome back!')}</Text>
+              <Text style={styles.webCardSubtitle}>{t('auth.login.subtitle', 'Sign in to your account and continue working')}</Text>
 
-              <Input label="Email" value={email} onChangeText={setEmail} placeholder="Введите ваш email" keyboardType="email-address" web />
-              <Input label="Пароль" value={password} onChangeText={setPassword} placeholder="Введите ваш пароль" secureTextEntry web />
+              <Input label={t('labels.email', 'Email')} value={email} onChangeText={setEmail} placeholder={t('auth.login.emailPlaceholder', 'Enter your email')} keyboardType="email-address" web />
+              <Input label={t('labels.password', 'Password')} value={password} onChangeText={setPassword} placeholder={t('auth.login.passwordPlaceholder', 'Enter your password')} secureTextEntry web />
 
               <View style={styles.webOptionsRow}>
                 <Pressable accessibilityRole="checkbox" onPress={() => setRememberMe((current) => !current)} style={styles.webRemember}>
                   <View style={[styles.webCheckbox, rememberMe && styles.webCheckboxOn]}>{rememberMe ? <Text style={styles.webCheckboxMark}>✓</Text> : null}</View>
-                  <Text style={styles.webRememberText}>Запомнить меня</Text>
+                  <Text style={styles.webRememberText}>{t('auth.login.rememberMe', 'Remember me')}</Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" onPress={() => Alert.alert('Forgot password', 'Password recovery will be connected later.')}>
-                  <Text style={styles.webForgot}>Забыли пароль?</Text>
+                  <Text style={styles.webForgot}>{t('auth.login.forgotPassword', 'Forgot password?')}</Text>
                 </Pressable>
               </View>
 
               {error ? <Text style={styles.error}>{error}</Text> : null}
               <Pressable accessibilityRole="button" onPress={submit} style={styles.webSignInButton}>
-                <Text style={styles.webSignInText}>↳  Войти</Text>
+                <Text style={styles.webSignInText}>{t('auth.login.signInCta', '↳  Sign in')}</Text>
               </Pressable>
 
-              <Divider label="или войдите через" />
+              <Divider label={t('auth.login.socialDivider', 'or sign in with')} />
               <View style={styles.webSocialRow}>
                 {['Google', 'Facebook', 'Яндекс', 'Apple'].map((item) => (
                   <Pressable key={item} accessibilityRole="button" onPress={socialNotice} style={styles.webSocialButton}>
@@ -108,7 +108,7 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
               </View>
 
               <Pressable accessibilityRole="button" onPress={onRegister} style={styles.webSwitchButton}>
-                <Text style={styles.webSwitchText}>Нет аккаунта?  <Text style={styles.webSwitchLink}>Зарегистрироваться</Text></Text>
+              <Text style={styles.webSwitchText}>{t('auth.login.noAccount', 'No account?')}  <Text style={styles.webSwitchLink}>{t('auth.register.button', 'Register')}</Text></Text>
               </Pressable>
             </View>
           </View>
@@ -139,34 +139,34 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
       <View style={styles.content}>
         <View style={styles.logo}>
           <FixoraLogo size={76} wordmark />
-          <Text style={styles.slogan}>Find trusted professionals instantly.</Text>
+          <Text style={styles.slogan}>{t('welcome.slogan', 'Find trusted professionals instantly.')}</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>Login with the account you registered on this device.</Text>
+          <Text style={styles.title}>{t('auth.login.title', 'Welcome back')}</Text>
+          <Text style={styles.subtitle}>{t('auth.login.mobileSubtitle', 'Login with the account you registered on this device.')}</Text>
 
-          <Input label="Email" value={email} onChangeText={setEmail} placeholder="Enter Email" keyboardType="email-address" />
-          <Input label="Password" value={password} onChangeText={setPassword} placeholder="Enter Password" secureTextEntry />
+          <Input label={t('labels.email', 'Email')} value={email} onChangeText={setEmail} placeholder={t('auth.login.emailPlaceholder', 'Enter Email')} keyboardType="email-address" />
+          <Input label={t('labels.password', 'Password')} value={password} onChangeText={setPassword} placeholder={t('auth.login.passwordPlaceholder', 'Enter Password')} secureTextEntry />
 
           <View style={styles.optionsRow}>
             <Pressable accessibilityRole="checkbox" onPress={() => setRememberMe((current) => !current)} style={styles.remember}>
               <View style={[styles.checkbox, rememberMe && styles.checkboxOn]}>{rememberMe ? <Text style={styles.checkboxMark}>✓</Text> : null}</View>
-              <Text style={styles.rememberText}>Remember me</Text>
+              <Text style={styles.rememberText}>{t('auth.login.rememberMe', 'Remember me')}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" onPress={() => Alert.alert('Forgot password', 'Password recovery will be connected later.')}>
-              <Text style={styles.forgot}>Forgot password?</Text>
+              <Text style={styles.forgot}>{t('auth.login.forgotPassword', 'Forgot password?')}</Text>
             </Pressable>
           </View>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Pressable accessibilityRole="button" onPress={submit} style={styles.signInButton}>
-            <Text style={styles.signInText}>Sign in</Text>
+            <Text style={styles.signInText}>{t('auth.login.button', 'Sign in')}</Text>
           </Pressable>
 
           <View style={styles.dividerRow}>
             <View style={styles.divider} />
-            <Text style={styles.dividerText}>Sign in with</Text>
+            <Text style={styles.dividerText}>{t('auth.login.signInWith', 'Sign in with')}</Text>
             <View style={styles.divider} />
           </View>
 
@@ -179,7 +179,7 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
           </View>
 
           <Pressable accessibilityRole="button" onPress={onRegister} style={styles.switchButton}>
-            <Text style={styles.switchText}>Don't have an account? Sign up</Text>
+            <Text style={styles.switchText}>{t('auth.login.switchToRegister', "Don't have an account? Sign up")}</Text>
           </Pressable>
         </View>
       </View>
@@ -188,6 +188,7 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
 }
 
 function WebHeader({ onRegister }: { onRegister: () => void }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
@@ -200,10 +201,10 @@ function WebHeader({ onRegister }: { onRegister: () => void }) {
       </View>
       <View style={styles.webHeaderActions}>
         <View style={styles.webLoginButton}>
-          <Text style={styles.webLoginText}>Войти</Text>
+          <Text style={styles.webLoginText}>{t('auth.login.button', 'Login')}</Text>
         </View>
         <Pressable accessibilityRole="button" onPress={onRegister} style={styles.webRegisterButton}>
-          <Text style={styles.webRegisterText}>☻  Регистрация</Text>
+          <Text style={styles.webRegisterText}>{t('auth.register.headerButton', '☻  Registration')}</Text>
         </Pressable>
       </View>
     </View>
