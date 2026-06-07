@@ -27,21 +27,26 @@ const normalizeEmail = (email: string) => email.trim().toLowerCase();
 const defaultUsers: RegisteredUser[] = [
   {
     id: 'usr-default-admin',
-    firstName: 'Admin',
-    lastName: 'Fixora',
+    firstName: 'Super',
+    lastName: 'Admin',
     email: 'admin@gmail.com',
     phone: '+37400000000',
     password: '638650',
-    role: 'company',
+    role: 'super_admin',
     fields: { seeded: true },
     createdAt: '2026-06-03T00:00:00.000Z',
   },
 ];
 
 const withDefaultUsers = (users: RegisteredUser[]) => {
-  const existingEmails = new Set(users.map((user) => normalizeEmail(user.email)));
+  const normalizedUsers = users.map((user) =>
+    normalizeEmail(user.email) === 'admin@gmail.com'
+      ? { ...user, firstName: 'Super', lastName: 'Admin', role: 'super_admin' as UserRole }
+      : user,
+  );
+  const existingEmails = new Set(normalizedUsers.map((user) => normalizeEmail(user.email)));
   const missingDefaults = defaultUsers.filter((user) => !existingEmails.has(normalizeEmail(user.email)));
-  return [...missingDefaults, ...users];
+  return [...missingDefaults, ...normalizedUsers];
 };
 
 export const authStorage = {

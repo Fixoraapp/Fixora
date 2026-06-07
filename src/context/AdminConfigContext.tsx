@@ -287,6 +287,8 @@ export const defaultRegistrationFields: RegistrationFieldsState = {
     { id: 'company-tax', role: 'company', label: 'Registration number', placeholder: 'Company registration ID', type: 'text', required: true, sortOrder: 2 },
     { id: 'company-size', role: 'company', label: 'Team size', placeholder: '12', type: 'number', required: false, sortOrder: 3 },
   ],
+  admin: [],
+  super_admin: [],
 };
 
 export const defaultTelegramChannels: TelegramChannelConfig[] = [
@@ -443,8 +445,17 @@ function mergeState(stored: Partial<AdminConfigState> | null): AdminConfigState 
   const storedTranslations = stored?.translations ?? [];
   const mergedTranslations = defaultAdminConfig.translations.map((defaultItem) => {
     const storedItem = storedTranslations.find((item) => item.key === defaultItem.key);
+    const storedWasAutoMissing =
+      storedItem?.status === 'missing' ||
+      storedItem?.id?.startsWith('tr-missing-') ||
+      storedItem?.description === 'Auto-created by TranslationProvider missing-key tracking.';
+
+    if (!storedItem || storedWasAutoMissing) {
+      return defaultItem;
+    }
+
     const merged = { ...defaultItem, ...storedItem };
-    return { ...merged, values: { ru: merged.ru, en: merged.en, hy: merged.hy, ...defaultItem.values, ...storedItem?.values } };
+    return { ...merged, values: { ...defaultItem.values, ru: merged.ru, en: merged.en, hy: merged.hy, ...storedItem.values } };
   });
   const customTranslations = storedTranslations.filter((item) => !mergedTranslations.some((existing) => existing.key === item.key));
   const storedTelegram = stored?.telegram as Partial<TelegramSettings> | undefined;
@@ -465,6 +476,8 @@ function mergeState(stored: Partial<AdminConfigState> | null): AdminConfigState 
       client: stored?.registrationFields?.client ?? defaultRegistrationFields.client,
       master: stored?.registrationFields?.master ?? defaultRegistrationFields.master,
       company: stored?.registrationFields?.company ?? defaultRegistrationFields.company,
+      admin: stored?.registrationFields?.admin ?? defaultRegistrationFields.admin,
+      super_admin: stored?.registrationFields?.super_admin ?? defaultRegistrationFields.super_admin,
     },
     telegram: { ...defaultAdminConfig.telegram, ...storedTelegram, channels: [...mergedTelegramChannels, ...customTelegramChannels] },
     appSettings: { ...defaultAdminConfig.appSettings, ...stored?.appSettings },

@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, useWindowDimensions, View, ViewStyle } from 'react-native';
+import { useCurrency } from '../../context/CurrencyContext';
 import { useTranslation } from '../../i18n/I18nProvider';
 
 type AnimatedPhoneShowcaseProps = {
@@ -10,6 +11,7 @@ type AnimatedPhoneShowcaseProps = {
 
 export function AnimatedPhoneShowcase({ compact = false, style }: AnimatedPhoneShowcaseProps) {
   const { t } = useTranslation();
+  const { formatMoney } = useCurrency();
   const { width } = useWindowDimensions();
   const motion = useRef(new Animated.Value(0)).current;
   const isNarrow = width < 760;
@@ -96,7 +98,7 @@ export function AnimatedPhoneShowcase({ compact = false, style }: AnimatedPhoneS
       >
         <Text style={styles.orderBubbleKicker}>{t('phoneShowcase.order.kicker', 'New order')}</Text>
         <Text style={styles.orderBubbleTitle}>{t('phoneShowcase.order.title', 'Socket repair')}</Text>
-        <Text style={styles.orderBubbleMeta}>{t('phoneShowcase.order.meta', 'Yerevan · 8,000 AMD')}</Text>
+        <Text style={styles.orderBubbleMeta}>{t('phoneShowcase.order.meta', 'Yerevan · {{price}}').replace('{{price}}', formatMoney(8000))}</Text>
       </Animated.View>
     </View>
   );

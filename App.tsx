@@ -14,6 +14,7 @@ import { AdminConfigProvider } from './src/context/AdminConfigContext';
 import { AppStateProvider, useAppStateContext } from './src/context/AppStateContext';
 import { LocationProvider, defaultLocation, useLocationContext } from './src/context/LocationContext';
 import { MarketplaceProvider } from './src/context/MarketplaceContext';
+import { CurrencyProvider } from './src/context/CurrencyContext';
 import { ThemeProvider } from './src/theme/ThemeProvider';
 import { I18nProvider } from './src/i18n/I18nProvider';
 import { AppRoute, LocationSelection, UserRole } from './src/types/navigation';
@@ -34,7 +35,9 @@ export default function App() {
             <MarketplaceProvider>
               <AdminConfigProvider>
                 <I18nProvider>
-                  <AppContent />
+                  <CurrencyProvider>
+                    <AppContent />
+                  </CurrencyProvider>
                 </I18nProvider>
               </AdminConfigProvider>
             </MarketplaceProvider>
@@ -53,6 +56,7 @@ function AppContent() {
   const [role, setRoleState] = useState<UserRole>(appState.selectedRole ?? appState.userRole ?? 'client');
   const [user, setUser] = useState<RegisteredUser | null>(null);
   const [startTarget, setStartTarget] = useState<'welcome' | 'login'>('welcome');
+  const canOpenAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   useEffect(() => {
     NativeSplashScreen.hideAsync();
@@ -63,6 +67,12 @@ function AppContent() {
     setSelectedLocation(appState.selectedLocation);
     setRoleState(appState.selectedRole ?? appState.userRole ?? 'client');
   }, [appState.selectedLocation, appState.selectedRole, appState.userRole, setSelectedLocation]);
+
+  useEffect(() => {
+    if (route === 'admin' && !canOpenAdmin) {
+      setRoute(user ? 'home' : 'welcome');
+    }
+  }, [canOpenAdmin, route, user]);
 
   const finishStartAnimation = async () => {
     const session = await authStorage.session();
@@ -86,6 +96,7 @@ function AppContent() {
 
   const logout = async () => {
     await authStorage.logout();
+    await appState.signOut();
     setUser(null);
     setStartTarget('login');
     setRoute('start');
@@ -109,7 +120,7 @@ function AppContent() {
         <StartAnimationScreen onFinish={finishStartAnimation} />
       ) : null}
       {route === 'welcome' ? (
-        <WelcomeScreen onLogin={() => setRoute('login')} onRegister={() => setRoute('register')} onOpenAdmin={() => setRoute('admin')} />
+        <WelcomeScreen onLogin={() => setRoute('login')} onRegister={() => setRoute('register')} onOpenAdmin={() => canOpenAdmin && setRoute('admin')} />
       ) : null}
       {route === 'login' ? (
         <LoginScreen onLoggedIn={completeAuth} onRegister={() => setRoute('register')} />
@@ -123,11 +134,11 @@ function AppContent() {
           role={role}
           currentUser={user}
           onOpenCategories={() => setRoute('categories')}
-          onOpenAdmin={() => setRoute('admin')}
+          onOpenAdmin={() => canOpenAdmin && setRoute('admin')}
           onLogout={logout}
         />
       ) : null}
-      {route === 'admin' ? <AdminScreen onExit={() => setRoute(user ? 'home' : 'welcome')} /> : null}
+      {route === 'admin' && canOpenAdmin ? <AdminScreen onExit={() => setRoute(user ? 'home' : 'welcome')} /> : null}
       {route === 'categories' ? <CategoriesScreen onBack={() => setRoute('home')} /> : null}
       {__DEV__ && route !== 'start' ? (
         <Pressable accessibilityRole="button" onPress={resetAppForDev} style={styles.devResetButton}>

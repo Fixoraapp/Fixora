@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FixoraLogo } from '../components/FixoraLogo';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import {
   AdminConfigState,
   CategoryRecord,
@@ -14,6 +15,7 @@ import {
   useAdminConfig,
 } from '../context/AdminConfigContext';
 import { useTranslation } from '../i18n/I18nProvider';
+import { useCurrency } from '../context/CurrencyContext';
 import { UserRole } from '../types/navigation';
 
 type AdminModule =
@@ -337,6 +339,7 @@ function AdminTopbar({ meta, query, setQuery, onQuickAction, onReset }: {
         </View>
         <Badge label="● Live" tone="green" />
         <LanguageSwitcher compact />
+        <CurrencySwitcher compact />
         <IconButton label="♢" badge="8" />
         <IconButton label="◐" />
         <AdminButton title={meta.action} onPress={onQuickAction} />
@@ -353,10 +356,11 @@ function AdminTopbar({ meta, query, setQuery, onQuickAction, onReset }: {
 
 function DashboardSection({ state }: { state: AdminConfigState }) {
   const revenue = state.orders.reduce((sum, item) => sum + item.amount, 0);
+  const { formatMoney } = useCurrency();
   return (
     <View style={styles.stack}>
       <View style={styles.kpiRow}>
-        <StatCard title="Общий доход" value={`${revenue.toLocaleString()} AMD`} icon="$" tone="purple" change="+12.5%" />
+        <StatCard title="Общий доход" value={formatMoney(revenue)} icon="$" tone="purple" change="+12.5%" />
         <StatCard title="Всего заказов" value="3 128" icon="▣" tone="blue" change="+8.3%" />
         <StatCard title="Пользователи" value="2 894" icon="☷" tone="green" change="+15.2%" />
         <StatCard title="Активные мастера" value="1 256" icon="♙" tone="orange" change="+7.1%" />
@@ -850,11 +854,12 @@ function VerificationSection({ state }: { state: AdminConfigState }) {
 }
 
 function OrdersSection({ state }: { state: AdminConfigState }) {
+  const { formatMoney } = useCurrency();
   const rows = [
-    ['#FR-1081', 'Mariam K.', 'Home Service', 'Ереван', 'Arman Master', 'Ожидает', 'Не оплачено', '8 000 AMD'],
-    ['#FR-1082', 'Artur S.', 'Repair', 'Гюмри', 'Hakob Master', 'Принят', 'Оплачено', '23 000 AMD'],
-    ['#FR-1083', 'George M.', 'Cleaning', 'Ванадзор', 'Mariam K.', 'В работе', 'Частично', '14 000 AMD'],
-    ...state.orders.map((order) => [order.id, order.client, 'Service', order.city, order.master, order.status, order.secureDeal, `${order.amount.toLocaleString()} AMD`]),
+    ['#FR-1081', 'Mariam K.', 'Home Service', 'Ереван', 'Arman Master', 'Ожидает', 'Не оплачено', formatMoney(8000)],
+    ['#FR-1082', 'Artur S.', 'Repair', 'Гюмри', 'Hakob Master', 'Принят', 'Оплачено', formatMoney(23000)],
+    ['#FR-1083', 'George M.', 'Cleaning', 'Ванадзор', 'Mariam K.', 'В работе', 'Частично', formatMoney(14000)],
+    ...state.orders.map((order) => [order.id, order.client, 'Service', order.city, order.master, order.status, order.secureDeal, formatMoney(order.amount)]),
   ].slice(0, 7);
   return (
     <View style={styles.stack}>
@@ -867,7 +872,7 @@ function OrdersSection({ state }: { state: AdminConfigState }) {
         <StatCard title="В работе" value="34" icon="◎" tone="orange" compact />
         <StatCard title="Завершенные" value="16" icon="✓" tone="green" compact />
         <StatCard title="Отмененные" value="8" icon="×" tone="red" compact />
-        <StatCard title="Забронировано" value="22 000" icon="$" tone="purple" compact />
+        <StatCard title="Забронировано" value={formatMoney(22000)} icon="$" tone="purple" compact />
       </View>
       <Panel title="Таблица заказов" actionNode={<AdminButton title="+ Добавить заказ" />}>
         <AdminTable headers={['ID заказа', 'Клиент', 'Услуга', 'Город', 'Мастер', 'Статус', 'Платеж', 'Сумма', 'Действия']}>
@@ -891,19 +896,20 @@ function FinanceSection({ state, setSection }: {
   state: AdminConfigState;
   setSection: <K extends keyof AdminConfigState>(section: K, value: AdminConfigState[K]) => void;
 }) {
+  const { formatMoney } = useCurrency();
   return (
     <View style={styles.stack}>
       <View style={styles.kpiRow}>
-        <StatCard title="Общий доход" value="47 000 AMD" icon="▤" tone="purple" />
+        <StatCard title="Общий доход" value={formatMoney(47000)} icon="▤" tone="purple" />
         <StatCard title="Комиссия платформы" value={`${state.financeSettings.commissionPercent} %`} icon="▣" tone="blue" />
-        <StatCard title="Ожидающие выплаты" value="19 360 AMD" icon="♙" tone="orange" />
-        <StatCard title="Завершённые выплаты" value="22 000 AMD" icon="▤" tone="green" />
-        <StatCard title="Возвраты" value={`${state.financeSettings.refundReserve} AMD`} icon="⊘" tone="red" />
+        <StatCard title="Ожидающие выплаты" value={formatMoney(19360)} icon="♙" tone="orange" />
+        <StatCard title="Завершённые выплаты" value={formatMoney(22000)} icon="▤" tone="green" />
+        <StatCard title="Возвраты" value={formatMoney(Number(state.financeSettings.refundReserve) || 0)} icon="⊘" tone="red" />
       </View>
       <View style={styles.dashboardGrid}>
         <Panel title="Динамика доходов" style={styles.chartWide}><LineChart color="#6D5DFB" height={230} /></Panel>
         <Panel title="Запросы на выплаты" style={styles.chartMid}><BarChart color="#F59E0B" /></Panel>
-        <Panel title="Активность финансов" style={styles.chartSide}><ActivityRows rows={['Выплата мастеру - 8 000 AMD', 'Комиссия платформы - 5 640 AMD', 'Возврат средств - 2 000 AMD', 'Новый заказ - 12 000 AMD']} /></Panel>
+        <Panel title="Активность финансов" style={styles.chartSide}><ActivityRows rows={[`Выплата мастеру - ${formatMoney(8000)}`, `Комиссия платформы - ${formatMoney(5640)}`, `Возврат средств - ${formatMoney(2000)}`, `Новый заказ - ${formatMoney(12000)}`]} /></Panel>
       </View>
       <Panel title="Настройки комиссий и выплат" actionNode={<AdminButton title="Редактировать настройки" />}>
         <View style={styles.formGrid}>

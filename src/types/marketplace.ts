@@ -14,7 +14,8 @@ export type Professional = {
   role: string;
   rating: number;
   city: string;
-  price: string;
+  amount: number;
+  unit?: string;
   premium?: boolean;
   verified?: boolean;
 };
@@ -23,5 +24,5 @@ export type Service = {
   id: string;
   title: string;
   category: string;
-  price: string;
+  amount: number;
 };

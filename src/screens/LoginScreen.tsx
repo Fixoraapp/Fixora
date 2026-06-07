@@ -1,7 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
 import { useTranslation } from '../i18n/I18nProvider';
 import { authStorage, RegisteredUser } from '../services/authStorage';
@@ -11,7 +13,13 @@ type LoginScreenProps = {
   onRegister: () => void;
 };
 
-const navItems = ['Главная', 'О нас', 'О компании', 'Возможности', 'Связаться с нами'];
+const navItems = [
+  ['welcome.nav.home', 'Home'],
+  ['welcome.nav.about', 'About us'],
+  ['welcome.nav.company', 'Company'],
+  ['welcome.nav.features', 'Features'],
+  ['welcome.nav.contact', 'Contact us'],
+];
 
 export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps) {
   const { t } = useTranslation();
@@ -193,13 +201,15 @@ function WebHeader({ onRegister }: { onRegister: () => void }) {
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
       <View style={styles.webNav}>
-        {navItems.map((item) => (
-          <Pressable key={item} accessibilityRole="button" style={styles.webNavItem}>
-            <Text style={styles.webNavText}>{item}</Text>
+        {navItems.map(([key, fallback]) => (
+          <Pressable key={key} accessibilityRole="button" style={styles.webNavItem}>
+            <Text style={styles.webNavText}>{t(key, fallback)}</Text>
           </Pressable>
         ))}
       </View>
       <View style={styles.webHeaderActions}>
+        <LanguageSwitcher compact />
+        <CurrencySwitcher compact />
         <View style={styles.webLoginButton}>
           <Text style={styles.webLoginText}>{t('auth.login.button', 'Login')}</Text>
         </View>

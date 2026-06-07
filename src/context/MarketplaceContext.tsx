@@ -52,7 +52,6 @@ export type MarketplaceOrder = {
   serviceTitle: string;
   city: string;
   district: string;
-  price: string;
   amount: number;
   commission: number;
   masterEarnings: number;
@@ -128,7 +127,6 @@ const initialOrders: MarketplaceOrder[] = [
     serviceTitle: 'Socket installation',
     city: 'Yerevan',
     district: 'Kentron',
-    price: '8,000 AMD',
     amount: 8000,
     commission: 960,
     masterEarnings: 7040,
@@ -148,7 +146,6 @@ const initialOrders: MarketplaceOrder[] = [
     serviceTitle: 'Wiring repair',
     city: 'Yerevan',
     district: 'Arabkir',
-    price: '18,000 AMD',
     amount: 18000,
     commission: 2160,
     masterEarnings: 15840,
@@ -168,7 +165,6 @@ const initialOrders: MarketplaceOrder[] = [
     serviceTitle: 'Apartment wiring replacement',
     city: 'Yerevan',
     district: 'Ajapnyak',
-    price: '25,000 AMD',
     amount: 25000,
     commission: 3000,
     masterEarnings: 22000,
@@ -288,7 +284,6 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
       serviceTitle: input.serviceTitle,
       city: input.city,
       district: input.district,
-      price: input.price,
       amount,
       commission,
       masterEarnings: amount - commission,

@@ -1,8 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccountDropdown } from '../components/AccountDropdown';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { useCurrency } from '../context/CurrencyContext';
 import { useTranslation } from '../i18n/I18nProvider';
 import { RegisteredUser } from '../services/authStorage';
 import { LocationSelection, UserRole } from '../types/navigation';
@@ -16,49 +19,53 @@ type HomeScreenProps = {
   onLogout: () => void;
 };
 
-
 const webCategoryCards = [
-  ['🏗', 'Строительство', '#FFF3E5'],
-  ['♟', 'Уборка', '#EEF6FF'],
-  ['⚡', 'Электрика', '#FFF8D9'],
-  ['♒', 'Сантехника', '#EAF7FF'],
-  ['▣', 'Грузоперевозки', '#EAFBF1'],
-  ['⚙', 'Ремонт техники', '#F0F3FF'],
-  ['▵', 'Автоуслуги', '#FFF0F0'],
-  ['✂', 'Красота', '#F7EDFF'],
-  ['▦', 'Все категории', '#F5F7FF'],
+  ['B', 'home.categories.construction', 'Construction', '#FFF3E5'],
+  ['C', 'home.categories.cleaning', 'Cleaning', '#EEF6FF'],
+  ['E', 'home.categories.electric', 'Electricity', '#FFF8D9'],
+  ['P', 'home.categories.plumbing', 'Plumbing', '#EAF7FF'],
+  ['M', 'home.categories.moving', 'Moving', '#EAFBF1'],
+  ['T', 'home.categories.techRepair', 'Tech repair', '#F0F3FF'],
+  ['A', 'home.categories.auto', 'Auto services', '#FFF0F0'],
+  ['S', 'home.categories.beauty', 'Beauty', '#F7EDFF'],
+  ['G', 'categories.title', 'Categories', '#F5F7FF'],
 ];
 
 const webListings = [
-  ['#F0F7FF', '$50 - $100', 'Установка сантехники', 'Ереван, Армения', '4.9', '(128)', 'plumbing'],
-  ['#FFF7EA', '$30 - $70', 'Монтаж освещения', 'Гюмри, Армения', '4.8', '(96)', 'lighting'],
-  ['#EFFAF3', '$40 - $80', 'Генеральная уборка', 'Ереван, Армения', '4.9', '(166)', 'cleaning'],
-  ['#F8F0EA', '$25 - $60', 'Сборка мебели', 'Ванадзор, Армения', '4.7', '(84)', 'furniture'],
-  ['#EEF2F7', '$60 - $120', 'Диагностика автомобиля', 'Ереван, Армения', '4.9', '(203)', 'auto'],
+  { color: '#F0F7FF', min: 19500, max: 39000, titleKey: 'home.listings.plumbing', fallback: 'Plumbing installation', placeKey: 'home.places.yerevan', placeFallback: 'Yerevan, Armenia', rating: '4.9', reviews: '(128)', kind: 'plumbing' },
+  { color: '#FFF7EA', min: 11700, max: 27300, titleKey: 'home.listings.lighting', fallback: 'Lighting installation', placeKey: 'home.places.gyumri', placeFallback: 'Gyumri, Armenia', rating: '4.8', reviews: '(96)', kind: 'lighting' },
+  { color: '#EFFAF3', min: 15600, max: 31200, titleKey: 'home.listings.cleaning', fallback: 'Deep cleaning', placeKey: 'home.places.yerevan', placeFallback: 'Yerevan, Armenia', rating: '4.9', reviews: '(166)', kind: 'cleaning' },
+  { color: '#F8F0EA', min: 9750, max: 23400, titleKey: 'home.listings.furniture', fallback: 'Furniture assembly', placeKey: 'home.places.vanadzor', placeFallback: 'Vanadzor, Armenia', rating: '4.7', reviews: '(84)', kind: 'furniture' },
+  { color: '#EEF2F7', min: 23400, max: 46800, titleKey: 'home.listings.auto', fallback: 'Car diagnostics', placeKey: 'home.places.yerevan', placeFallback: 'Yerevan, Armenia', rating: '4.9', reviews: '(203)', kind: 'auto' },
 ];
 
-const categories = [
-  { title: 'Auto', icon: 'A', color: '#EEF2FF' },
-  { title: 'Home', icon: 'H', color: '#F0FDF4' },
-  { title: 'Services', icon: 'S', color: '#FFF7ED' },
-  { title: 'Beauty', icon: 'B', color: '#FDF2F8' },
-  { title: 'Tech', icon: 'T', color: '#ECFEFF' },
-  { title: 'Business', icon: 'B', color: '#F5F3FF' },
+const mobileCategories = [
+  { titleKey: 'home.categories.auto', fallback: 'Auto', icon: 'A', color: '#EEF2FF' },
+  { titleKey: 'home.categories.home', fallback: 'Home', icon: 'H', color: '#F0FDF4' },
+  { titleKey: 'home.categories.services', fallback: 'Services', icon: 'S', color: '#FFF7ED' },
+  { titleKey: 'home.categories.beauty', fallback: 'Beauty', icon: 'B', color: '#FDF2F8' },
+  { titleKey: 'home.categories.tech', fallback: 'Tech', icon: 'T', color: '#ECFEFF' },
+  { titleKey: 'home.categories.business', fallback: 'Business', icon: 'B', color: '#F5F3FF' },
 ];
 
 const offers = [
-  { title: 'Apartment refresh', price: 'from 18,000 AMD', tag: 'Home' },
-  { title: 'Car diagnostics', price: 'from 9,000 AMD', tag: 'Auto' },
-  { title: 'Cleaning team', price: 'today available', tag: 'Services' },
+  { titleKey: 'home.offers.apartment', fallback: 'Apartment refresh', amount: 18000, tagKey: 'home.categories.home', tagFallback: 'Home' },
+  { titleKey: 'home.offers.carDiagnostics', fallback: 'Car diagnostics', amount: 9000, tagKey: 'home.categories.auto', tagFallback: 'Auto' },
+  { titleKey: 'home.offers.cleaningTeam', fallback: 'Cleaning team', amount: 14000, tagKey: 'home.categories.services', tagFallback: 'Services' },
 ];
 
 const companies = ['Derakshan', 'Aram Shin', 'USAcars Armenia', 'Fixora Care', 'Urban Home'];
 
+function cleanRoleLabel(role: UserRole) {
+  if (role === 'super_admin') return 'Super Admin';
+  return role[0].toUpperCase() + role.slice(1);
+}
+
 export default function HomeScreen({ location, role, currentUser, onOpenCategories, onOpenAdmin, onLogout }: HomeScreenProps) {
   const { t } = useTranslation();
+  const { formatMoney } = useCurrency();
   const [tab, setTab] = useState('home');
-  const roleLabel = role[0].toUpperCase() + role.slice(1);
-  const isAdminUser = currentUser?.email.toLowerCase() === 'admin@gmail.com';
+  const isAdminUser = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
 
   if (Platform.OS === 'web') {
     return (
@@ -74,14 +81,8 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
           </View>
           <View style={styles.webToolbar}>
             <LanguageSwitcher compact />
-            <Pressable accessibilityRole="button" style={styles.webSelect}><Text style={styles.webSelectText}>USD⌄</Text></Pressable>
-            <Pressable accessibilityRole="button" onPress={onLogout} style={styles.webProfile}>
-              <View style={styles.webAvatar}><Text style={styles.webAvatarText}>ИИ</Text></View>
-              <View>
-                <Text style={styles.webProfileName}>{isAdminUser ? 'Super Admin' : 'Иван Иванов'}</Text>
-                <Text style={styles.webProfileSub}>{t('home.profile.account', 'Account')}⌄</Text>
-              </View>
-            </Pressable>
+            <CurrencySwitcher compact />
+            <AccountDropdown user={currentUser} onLogout={onLogout} onOpenAdmin={onOpenAdmin} />
             {isAdminUser ? (
               <Pressable accessibilityRole="button" onPress={onOpenAdmin} style={styles.webAdminButton}>
                 <Text style={styles.webAdminButtonText}>{t('admin.panel', 'Admin Panel')}</Text>
@@ -91,7 +92,6 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
         </View>
 
         <View style={styles.webMain}>
-
           <ScrollView contentContainerStyle={styles.webContent} showsVerticalScrollIndicator={false}>
             <LinearGradient colors={['#7A3FF3', '#4F8BFF', '#C8D7FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.webHero}>
               <View style={styles.webHeroText}>
@@ -109,9 +109,9 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
               </View>
               <View style={styles.webHeroStats}>
                 {[
-                  ['☻', '5000+', 'специалистов'],
-                  ['▤', '100K+', 'Выполненных заказов'],
-                  ['★', '98%', 'Довольных клиентов'],
+                  ['P', '5000+', t('home.stats.specialists', 'specialists')],
+                  ['O', '100K+', t('home.stats.orders', 'completed orders')],
+                  ['R', '98%', t('home.stats.happyClients', 'happy clients')],
                 ].map(([icon, value, label]) => (
                   <View key={value} style={styles.webHeroStat}>
                     <Text style={styles.webHeroStatIcon}>{icon}</Text>
@@ -127,10 +127,10 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
             <View style={styles.dots}><View style={styles.dot} /><View style={[styles.dot, styles.dotActive]} /><View style={styles.dot} /><View style={styles.dot} /></View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.webCategoryRow}>
-              {webCategoryCards.map(([icon, label, color]) => (
-                <Pressable key={label} accessibilityRole="button" onPress={onOpenCategories} style={styles.webCategoryCard}>
+              {webCategoryCards.map(([icon, key, fallback, color]) => (
+                <Pressable key={key} accessibilityRole="button" onPress={onOpenCategories} style={styles.webCategoryCard}>
                   <View style={[styles.webCategoryIcon, { backgroundColor: color }]}><Text style={styles.webCategoryIconText}>{icon}</Text></View>
-                  <Text style={styles.webCategoryTitle}>{label}</Text>
+                  <Text style={styles.webCategoryTitle}>{t(key, fallback)}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -141,7 +141,7 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
                 <Text style={styles.webNewBadge}>{t('home.popular.newBadge', '248 new')}</Text>
               </View>
               <View style={styles.webFilters}>
-                {['Все объявления', 'Рядом со мной⌄', 'Сначала новые⌄', 'Все объявления'].map((filter, index) => (
+                {[t('home.filters.all', 'All listings'), t('home.filters.nearMe', 'Near me'), t('home.filters.newFirst', 'Newest first'), t('home.filters.verified', 'Verified')].map((filter, index) => (
                   <Pressable key={`${filter}-${index}`} accessibilityRole="button" style={[styles.webFilter, index === 0 && styles.webFilterActive]}>
                     <Text style={[styles.webFilterText, index === 0 && styles.webFilterTextActive]}>{filter}</Text>
                   </Pressable>
@@ -150,17 +150,17 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
             </View>
 
             <View style={styles.webListingGrid}>
-              {webListings.map(([color, price, title, place, rating, reviews, kind]) => (
-                <View key={title} style={styles.webListingCard}>
-                  <LinearGradient colors={[color, '#FFFFFF']} style={styles.webListingImage}>
-                    <Text style={styles.webListingKind}>{kind}</Text>
+              {webListings.map((listing) => (
+                <View key={listing.titleKey} style={styles.webListingCard}>
+                  <LinearGradient colors={[listing.color, '#FFFFFF']} style={styles.webListingImage}>
+                    <Text style={styles.webListingKind}>{listing.kind}</Text>
                     <Text style={styles.webHeart}>♡</Text>
                   </LinearGradient>
                   <View style={styles.webListingBody}>
-                    <Text style={styles.webListingPrice}>{price}</Text>
-                    <Text style={styles.webListingTitle}>{title}</Text>
-                    <Text style={styles.webListingPlace}>{place}</Text>
-                    <Text style={styles.webRating}>★ {rating} <Text style={styles.webReviews}>{reviews}</Text></Text>
+                    <Text style={styles.webListingPrice}>{formatMoney(listing.min)} - {formatMoney(listing.max)}</Text>
+                    <Text style={styles.webListingTitle}>{t(listing.titleKey, listing.fallback)}</Text>
+                    <Text style={styles.webListingPlace}>{t(listing.placeKey, listing.placeFallback)}</Text>
+                    <Text style={styles.webRating}>★ {listing.rating} <Text style={styles.webReviews}>{listing.reviews}</Text></Text>
                   </View>
                 </View>
               ))}
@@ -168,10 +168,10 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
 
             <View style={styles.webInfoGrid}>
               {[
-                ['☻', 'Проверенные специалисты', 'Все специалисты проходят проверку и верификацию', '#F1ECFF'],
-                ['✓', 'Безопасные сделки', 'Ваши платежи защищены нашей системой', '#EAFBF1'],
-                ['☏', 'Быстрая поддержка', 'Наша команда поддержки всегда на связи', '#EEF6FF'],
-                ['★', 'Гарантия качества', 'Гарантия на все работы и услуги', '#FFF5E6'],
+                ['V', t('home.info.verified.title', 'Verified specialists'), t('home.info.verified.text', 'Every specialist passes Fixora verification.'), '#F1ECFF'],
+                ['S', t('home.info.secure.title', 'Secure deals'), t('home.info.secure.text', 'Your payments are protected by secure deal flow.'), '#EAFBF1'],
+                ['H', t('home.info.support.title', 'Fast support'), t('home.info.support.text', 'Support is ready when an order needs attention.'), '#EEF6FF'],
+                ['Q', t('home.info.quality.title', 'Quality guarantee'), t('home.info.quality.text', 'Fixora quality standards cover services and orders.'), '#FFF5E6'],
               ].map(([icon, title, text, color]) => (
                 <View key={title} style={styles.webInfoCard}>
                   <View style={[styles.webInfoIcon, { backgroundColor: color }]}><Text style={styles.webInfoIconText}>{icon}</Text></View>
@@ -193,20 +193,25 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <FixoraLogo size={48} wordmark />
-          <Pressable accessibilityRole="button" onPress={onLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>{t('auth.logout', 'Logout')}</Text>
-          </Pressable>
+          <View style={styles.mobileHeaderActions}>
+            <LanguageSwitcher compact />
+            <CurrencySwitcher compact />
+          </View>
+        </View>
+
+        <View style={styles.profileStrip}>
+          <AccountDropdown user={currentUser} onLogout={onLogout} onOpenAdmin={onOpenAdmin} />
         </View>
 
         <View style={styles.searchWrap}>
           <Text style={styles.searchIcon}>⌕</Text>
           <TextInput placeholder={t('home.search.placeholder', 'Search services, companies, specialists')} placeholderTextColor="#94A3B8" style={styles.searchInput} />
-          <Text style={styles.cameraIcon}>▣</Text>
+          <Text style={styles.cameraIcon}>□</Text>
         </View>
 
         <LinearGradient colors={['#7C3AED', '#2D7CFF']} style={styles.hero}>
           <View style={styles.heroText}>
-            <Text style={styles.heroKicker}>{location.city || 'Local marketplace'} / {roleLabel}</Text>
+            <Text style={styles.heroKicker}>{location.city || t('labels.localMarketplace', 'Local marketplace')} / {cleanRoleLabel(role)}</Text>
             <Text style={styles.heroTitle}>{t('home.mobile.hero.title', 'Trusted help, beautifully organized.')}</Text>
             <Text style={styles.heroSubtitle}>{t('home.mobile.hero.subtitle', 'Explore premium offers, verified companies, and local services in one clean workspace.')}</Text>
           </View>
@@ -216,27 +221,27 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
         <SectionTitle title={t('home.sections.topOffers', 'Top offers')} action={t('buttons.viewAll', 'View all')} onAction={onOpenCategories} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.offerRow}>
           {offers.map((offer) => (
-            <View key={offer.title} style={styles.offerCard}>
+            <View key={offer.titleKey} style={styles.offerCard}>
               <LinearGradient colors={['#EEF2FF', '#FFFFFF']} style={styles.offerImage}>
-                <Text style={styles.offerTag}>{offer.tag}</Text>
+                <Text style={styles.offerTag}>{t(offer.tagKey, offer.tagFallback)}</Text>
               </LinearGradient>
-              <Text style={styles.offerTitle}>{offer.title}</Text>
-              <Text style={styles.offerPrice}>{offer.price}</Text>
+              <Text style={styles.offerTitle}>{t(offer.titleKey, offer.fallback)}</Text>
+              <Text style={styles.offerPrice}>{t('labels.fromPrice', 'from {{price}}').replace('{{price}}', formatMoney(offer.amount))}</Text>
             </View>
           ))}
         </ScrollView>
 
         <SectionTitle title={t('categories.title', 'Categories')} action={t('buttons.open', 'Open')} onAction={onOpenCategories} />
         <View style={styles.categoryGrid}>
-          {categories.map((category) => (
-            <Pressable key={category.title} accessibilityRole="button" onPress={onOpenCategories} style={[styles.categoryCard, { backgroundColor: category.color }]}>
+          {mobileCategories.map((category) => (
+            <Pressable key={category.titleKey} accessibilityRole="button" onPress={onOpenCategories} style={[styles.categoryCard, { backgroundColor: category.color }]}>
               <View style={styles.categoryIcon}><Text style={styles.categoryIconText}>{category.icon}</Text></View>
-              <Text style={styles.categoryTitle}>{category.title}</Text>
+              <Text style={styles.categoryTitle}>{t(category.titleKey, category.fallback)}</Text>
             </Pressable>
           ))}
         </View>
 
-        {['Company', 'Auto', 'Home', 'Services'].map((section) => (
+        {[t('home.sections.company', 'Company'), t('home.categories.auto', 'Auto'), t('home.categories.home', 'Home'), t('home.categories.services', 'Services')].map((section) => (
           <View key={section} style={styles.companySection}>
             <SectionTitle title={section} />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.companyRow}>
@@ -256,9 +261,9 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
       <View style={styles.bottomNav}>
         {[
           ['home', '⌂'],
-          ['grid', '▦'],
+          ['grid', '□'],
           ['add', '+'],
-          ['chat', '◌'],
+          ['chat', '○'],
           ['profile', '♙'],
         ].map(([id, icon]) => (
           <Pressable key={id} accessibilityRole="button" onPress={() => setTab(id)} style={[styles.navItem, tab === id && styles.navItemActive]}>
@@ -285,23 +290,16 @@ function SectionTitle({ title, action, onAction }: { title: string; action?: str
 
 const styles = StyleSheet.create({
   webScreen: { flex: 1, backgroundColor: '#F8FAFF' },
-  webHeader: { minHeight: 74, paddingHorizontal: 56, flexDirection: 'row', alignItems: 'center', gap: 28, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E7EDF7' },
+  webHeader: { minHeight: 74, paddingHorizontal: 56, flexDirection: 'row', alignItems: 'center', gap: 28, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E7EDF7', zIndex: 50 },
   webSearch: { flex: 1, maxWidth: 560, minHeight: 42, borderRadius: 7, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E2F0', overflow: 'hidden' },
   webSearchIcon: { paddingLeft: 14, color: '#73809A', fontSize: 20, fontWeight: '900' },
   webSearchInput: { flex: 1, minHeight: 42, paddingHorizontal: 10, color: '#07153C', fontSize: 14, fontWeight: '700' },
   webSearchButton: { alignSelf: 'stretch', minWidth: 78, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6F45E8' },
   webSearchButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  webToolbar: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  webSelect: { minHeight: 40, paddingHorizontal: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E2F0' },
-  webSelectText: { color: '#07153C', fontSize: 14, fontWeight: '900' },
-  webProfile: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  webAvatar: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E9EEF8' },
-  webAvatarText: { color: '#07153C', fontSize: 12, fontWeight: '900' },
-  webProfileName: { color: '#07153C', fontSize: 15, fontWeight: '900' },
-  webProfileSub: { color: '#68748D', fontSize: 12, fontWeight: '700' },
+  webToolbar: { flexDirection: 'row', alignItems: 'center', gap: 14, zIndex: 60 },
   webAdminButton: { minHeight: 42, paddingHorizontal: 22, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6F45E8', shadowColor: '#6F45E8', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   webAdminButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  webMain: { flex: 1, padding: 20 },
+  webMain: { flex: 1, padding: 20, zIndex: 1 },
   webContent: { flexGrow: 1, paddingBottom: 40 },
   webHero: { minHeight: 338, borderRadius: 9, padding: 48, flexDirection: 'row', overflow: 'hidden' },
   webHeroText: { flex: 1 },
@@ -327,8 +325,8 @@ const styles = StyleSheet.create({
   webCategoryRow: { paddingVertical: 12, gap: 28 },
   webCategoryCard: { width: 112, height: 96, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F2', shadowColor: '#6D7BA8', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
   webCategoryIcon: { width: 54, height: 54, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  webCategoryIconText: { fontSize: 24, fontWeight: '900' },
-  webCategoryTitle: { marginTop: 8, color: '#07153C', fontSize: 13, fontWeight: '900' },
+  webCategoryIconText: { fontSize: 20, fontWeight: '900' },
+  webCategoryTitle: { marginTop: 8, color: '#07153C', fontSize: 13, fontWeight: '900', textAlign: 'center' },
   webListingsHeader: { marginTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   webTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   webSectionTitle: { color: '#07153C', fontSize: 25, fontWeight: '900' },
@@ -357,9 +355,9 @@ const styles = StyleSheet.create({
   webInfoText: { marginTop: 5, maxWidth: 220, color: '#63708A', fontSize: 13, lineHeight: 18, fontWeight: '700' },
   screen: { flex: 1, backgroundColor: '#FFFFFF' },
   content: { paddingTop: 48, paddingHorizontal: 18, paddingBottom: 104 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  logoutButton: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' },
-  logoutText: { color: '#475569', fontSize: 12, fontWeight: '900' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 40 },
+  mobileHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  profileStrip: { marginTop: 14, zIndex: 35 },
   searchWrap: { marginTop: 20, minHeight: 50, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, borderRadius: 18, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' },
   searchIcon: { color: '#64748B', fontSize: 20, fontWeight: '900' },
   searchInput: { flex: 1, color: '#09183F', fontSize: 14, fontWeight: '700' },

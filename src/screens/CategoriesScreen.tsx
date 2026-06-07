@@ -2,8 +2,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useAdminConfig } from '../context/AdminConfigContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { categories as fallbackCategories } from '../data/categories';
 import { popularServices } from '../data/marketplace';
 import { useTranslation } from '../i18n/I18nProvider';
@@ -47,7 +50,13 @@ function iconFor(category: Pick<Category, 'title' | 'icon'> & { slug?: string })
   return matched?.icon ?? (category.icon && category.icon.length > 2 ? category.icon : '🏷️');
 }
 
-function normalizeAdminCategories(stateCategories: ReturnType<typeof useAdminConfig>['state']['categories']): PremiumCategory[] {
+function localizedCategoryTitle(category: ReturnType<typeof useAdminConfig>['state']['categories'][number], language: string) {
+  if (language === 'ru') return category.name_ru || category.name_en || category.slug;
+  if (language === 'hy') return category.name_hy || category.name_en || category.slug;
+  return category.name_en || category.name_ru || category.slug;
+}
+
+function normalizeAdminCategories(stateCategories: ReturnType<typeof useAdminConfig>['state']['categories'], language: string): PremiumCategory[] {
   return stateCategories
     .filter((category) => category.isActive)
     .sort((left, right) => left.sortOrder - right.sortOrder)
@@ -56,7 +65,7 @@ function normalizeAdminCategories(stateCategories: ReturnType<typeof useAdminCon
         const slug = item.title.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         return slug === category.slug || item.title.toLowerCase() === category.name_en.toLowerCase();
       });
-      const title = category.name_en || category.name_ru || category.slug || 'Fixora category';
+      const title = localizedCategoryTitle(category, language) || 'Fixora category';
       const accent = category.color || accents[index % accents.length];
 
       return {
@@ -86,7 +95,8 @@ function normalizeFallbackCategories(): PremiumCategory[] {
 
 export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
   const adminConfig = useAdminConfig();
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
+  const { currentCurrency, formatMoney } = useCurrency();
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const isWide = isWeb && width >= 980;
@@ -95,9 +105,9 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
   const [hoveredCategoryId, setHoveredCategoryId] = useState<string | null>(null);
 
   const allCategories = useMemo(() => {
-    const adminCategories = normalizeAdminCategories(adminConfig.state.categories);
+    const adminCategories = normalizeAdminCategories(adminConfig.state.categories, language);
     return adminCategories.length > 0 ? adminCategories : normalizeFallbackCategories();
-  }, [adminConfig.state.categories]);
+  }, [adminConfig.state.categories, language]);
 
   const filteredCategories = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -125,15 +135,12 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
 
     const marketplaceMatches = popularServices
       .filter((service) => service.category.toLowerCase().includes(selectedCategory.title.split(' ')[0].toLowerCase()))
-      .map((service) => service.title);
+      .map((service) => `${service.title} · ${formatMoney(service.amount)}`);
 
     return [...(selectedCategory.popularServices ?? []), ...marketplaceMatches, ...defaultPopularServices]
       .filter((service, index, services) => services.indexOf(service) === index)
       .slice(0, isWide ? 6 : 4);
-  }, [isWide, selectedCategory]);
-
-  const appLanguage = adminConfig.state.appSettings.defaultLanguage.toUpperCase();
-  const appCurrency = adminConfig.state.appSettings.defaultCurrency.toUpperCase();
+  }, [formatMoney, isWide, selectedCategory]);
 
   if (isWeb) {
     return (
@@ -155,8 +162,8 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
             />
           </View>
           <View style={styles.webSettings}>
-            <View style={styles.webPill}><Text style={styles.webPillText}>{appLanguage}</Text></View>
-            <View style={styles.webPill}><Text style={styles.webPillText}>{appCurrency}</Text></View>
+            <LanguageSwitcher compact />
+            <CurrencySwitcher compact />
           </View>
         </View>
 
@@ -259,7 +266,9 @@ export default function CategoriesScreen({ onBack }: CategoriesScreenProps) {
             <Text style={styles.backArrow}>‹</Text>
           </Pressable>
           <FixoraLogo size={44} wordmark />
-          <View style={styles.appCurrency}><Text style={styles.appCurrencyText}>{appCurrency}</Text></View>
+          <View style={styles.appHeaderActions}>
+            <Text style={styles.appCurrencyText}>{currentCurrency}</Text>
+          </View>
         </View>
 
         <View style={styles.appSearch}>
@@ -557,7 +566,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E4EAF4',
   },
-  appCurrency: {
+  appHeaderActions: {
     minHeight: 38,
     paddingHorizontal: 12,
     borderRadius: 14,

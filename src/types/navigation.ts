@@ -10,7 +10,7 @@ export type AppRoute =
   | 'categories'
   | 'admin';
 
-export type UserRole = 'client' | 'master' | 'company';
+export type UserRole = 'client' | 'master' | 'company' | 'admin' | 'super_admin';
 
 export type AuthMethod = 'phone' | 'email' | 'google' | 'apple' | 'guest';
 

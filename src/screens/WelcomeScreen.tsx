@@ -1,6 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
 import { useTranslation } from '../i18n/I18nProvider';
 
@@ -10,9 +12,15 @@ type WelcomeScreenProps = {
   onOpenAdmin: () => void;
 };
 
-const navItems = ['Главная', 'О нас', 'О компании', 'Возможности', 'Связаться с нами'];
+const navItems = [
+  ['welcome.nav.home', 'Home'],
+  ['welcome.nav.about', 'About us'],
+  ['welcome.nav.company', 'Company'],
+  ['welcome.nav.features', 'Features'],
+  ['welcome.nav.contact', 'Contact us'],
+];
 
-export default function WelcomeScreen({ onLogin, onRegister, onOpenAdmin }: WelcomeScreenProps) {
+export default function WelcomeScreen({ onLogin, onRegister }: WelcomeScreenProps) {
   const { t } = useTranslation();
   if (Platform.OS === 'web') {
     return (
@@ -91,9 +99,6 @@ export default function WelcomeScreen({ onLogin, onRegister, onOpenAdmin }: Welc
         </Pressable>
       </View>
 
-      <Pressable accessibilityRole="button" onPress={onOpenAdmin} style={styles.adminButton}>
-        <Text style={styles.adminText}>{t('admin.panel', 'Admin Panel')}</Text>
-      </Pressable>
     </LinearGradient>
   );
 }
@@ -104,13 +109,15 @@ function WebHeader({ onLogin, onRegister }: { onLogin: () => void; onRegister: (
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
       <View style={styles.webNav}>
-        {navItems.map((item) => (
-          <Pressable key={item} accessibilityRole="button" style={styles.webNavItem}>
-            <Text style={styles.webNavText}>{item}</Text>
+        {navItems.map(([key, fallback]) => (
+          <Pressable key={key} accessibilityRole="button" style={styles.webNavItem}>
+            <Text style={styles.webNavText}>{t(key, fallback)}</Text>
           </Pressable>
         ))}
       </View>
       <View style={styles.webHeaderActions}>
+        <LanguageSwitcher compact />
+        <CurrencySwitcher compact />
         <Pressable accessibilityRole="button" onPress={onLogin} style={styles.webLoginButton}>
           <Text style={styles.webLoginText}>{t('auth.login.button', 'Login')}</Text>
         </Pressable>

@@ -1,7 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
 import { RegistrationFieldConfig, useAdminConfig } from '../context/AdminConfigContext';
 import { useTranslation } from '../i18n/I18nProvider';
@@ -13,7 +15,13 @@ type RegisterScreenProps = {
   onLogin: () => void;
 };
 
-const navItems = ['Главная', 'О нас', 'О компании', 'Возможности', 'Связаться с нами'];
+const navItems = [
+  ['welcome.nav.home', 'Home'],
+  ['welcome.nav.about', 'About us'],
+  ['welcome.nav.company', 'Company'],
+  ['welcome.nav.features', 'Features'],
+  ['welcome.nav.contact', 'Contact us'],
+];
 
 const roleOptions: Array<{ value: UserRole; label: string; note: string; icon: string }> = [
   { value: 'client', label: 'Клиент', note: 'Ищу специалиста для решения задач', icon: '☻' },
@@ -283,13 +291,15 @@ function WebHeader({ onLogin }: { onLogin: () => void }) {
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
       <View style={styles.webNav}>
-        {navItems.map((item) => (
-          <Pressable key={item} accessibilityRole="button" style={styles.webNavItem}>
-            <Text style={styles.webNavText}>{item}</Text>
+        {navItems.map(([key, fallback]) => (
+          <Pressable key={key} accessibilityRole="button" style={styles.webNavItem}>
+            <Text style={styles.webNavText}>{t(key, fallback)}</Text>
           </Pressable>
         ))}
       </View>
       <View style={styles.webHeaderActions}>
+        <LanguageSwitcher compact />
+        <CurrencySwitcher compact />
         <Pressable accessibilityRole="button" onPress={onLogin} style={styles.webLoginButton}>
           <Text style={styles.webLoginText}>{t('auth.login.button', 'Login')}</Text>
         </Pressable>
