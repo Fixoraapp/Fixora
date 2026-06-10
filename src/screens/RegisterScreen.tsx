@@ -9,19 +9,12 @@ import { RegistrationFieldConfig, useAdminConfig } from '../context/AdminConfigC
 import { useTranslation } from '../i18n/I18nProvider';
 import { authStorage, RegisteredUser } from '../services/authStorage';
 import { UserRole } from '../types/navigation';
+import { activeGlavBlogPages, localized } from '../utils/glavBlog';
 
 type RegisterScreenProps = {
   onRegistered: (user: RegisteredUser) => void;
   onLogin: () => void;
 };
-
-const navItems = [
-  ['welcome.nav.home', 'Home'],
-  ['welcome.nav.about', 'About us'],
-  ['welcome.nav.company', 'Company'],
-  ['welcome.nav.features', 'Features'],
-  ['welcome.nav.contact', 'Contact us'],
-];
 
 const roleOptions: Array<{ value: UserRole; label: string; note: string; icon: string }> = [
   { value: 'client', label: 'Клиент', note: 'Ищу специалиста для решения задач', icon: '☻' },
@@ -286,14 +279,16 @@ export default function RegisterScreen({ onRegistered, onLogin }: RegisterScreen
 }
 
 function WebHeader({ onLogin }: { onLogin: () => void }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const { state } = useAdminConfig();
+  const pages = activeGlavBlogPages(state.glavBlog);
   return (
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
       <View style={styles.webNav}>
-        {navItems.map(([key, fallback]) => (
-          <Pressable key={key} accessibilityRole="button" style={styles.webNavItem}>
-            <Text style={styles.webNavText}>{t(key, fallback)}</Text>
+        {pages.map((page) => (
+          <Pressable key={page.id} accessibilityRole="button" style={styles.webNavItem}>
+            <Text style={styles.webNavText}>{localized(page.menuTitle, language)}</Text>
           </Pressable>
         ))}
       </View>

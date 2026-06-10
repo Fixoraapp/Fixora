@@ -199,6 +199,77 @@ export type FinanceSettings = {
   isActive: boolean;
 };
 
+export type LocaleText = {
+  ru: string;
+  en: string;
+  hy: string;
+};
+
+export type GlavBlogBlockType =
+  | 'hero'
+  | 'text'
+  | 'richText'
+  | 'image'
+  | 'gallery'
+  | 'video'
+  | 'statistics'
+  | 'features'
+  | 'benefits'
+  | 'team'
+  | 'timeline'
+  | 'faq'
+  | 'cta'
+  | 'testimonials'
+  | 'contact'
+  | 'map'
+  | 'offices'
+  | 'countries'
+  | 'download'
+  | 'html'
+  | 'stats';
+
+export type GlavBlogBlock = {
+  id: string;
+  type: GlavBlogBlockType;
+  title: LocaleText;
+  body: LocaleText;
+  imageUrl: string;
+  videoUrl: string;
+  gallery: string[];
+  items: string[];
+  sortOrder: number;
+  isActive: boolean;
+  status: 'draft' | 'published';
+  settings?: Record<string, string>;
+};
+
+export type GlavBlogPage = {
+  id: 'home' | 'about' | 'company' | 'features' | 'contact';
+  menuTitle: LocaleText;
+  pageTitle: LocaleText;
+  subtitle: LocaleText;
+  description: LocaleText;
+  buttonText: LocaleText;
+  slug: string;
+  isActive: boolean;
+  sortOrder: number;
+  seoTitle: string;
+  seoDescription: string;
+  status: 'draft' | 'published';
+  blocks: GlavBlogBlock[];
+};
+
+export type GlavBlogMediaItem = {
+  id: string;
+  name: string;
+  type: 'image' | 'video';
+  extension: 'jpg' | 'png' | 'webp' | 'svg' | 'mp4';
+  url: string;
+  previewUrl: string;
+  sizeLabel: string;
+  createdAt: string;
+};
+
 export type RegistrationFieldType = 'text' | 'email' | 'phone' | 'password' | 'select' | 'checkbox' | 'number' | 'upload';
 
 export type RegistrationFieldConfig = {
@@ -225,6 +296,8 @@ export type AdminConfigState = {
   orders: OrderRecord[];
   financeSettings: FinanceSettings;
   marketingBanners: MarketingBanner[];
+  glavBlog: GlavBlogPage[];
+  glavBlogMedia: GlavBlogMediaItem[];
   supportTickets: SupportTicket[];
   registrationFields: RegistrationFieldsState;
   telegram: TelegramSettings;
@@ -354,6 +427,140 @@ export const defaultTelegramChannels: TelegramChannelConfig[] = [
   },
 ];
 
+const localeText = (ru: string, en: string, hy: string): LocaleText => ({ ru, en, hy });
+
+const defaultBlock = (
+  id: string,
+  type: GlavBlogBlockType,
+  title: LocaleText,
+  body: LocaleText,
+  sortOrder: number,
+  items: string[] = [],
+  media: Partial<Pick<GlavBlogBlock, 'imageUrl' | 'videoUrl' | 'gallery' | 'settings'>> = {},
+): GlavBlogBlock => ({
+  id,
+  type,
+  title,
+  body,
+  imageUrl: media.imageUrl ?? '',
+  videoUrl: media.videoUrl ?? '',
+  gallery: media.gallery ?? [],
+  items,
+  sortOrder,
+  isActive: true,
+  status: 'published',
+  settings: media.settings,
+});
+
+export const defaultGlavBlogPages: GlavBlogPage[] = [
+  {
+    id: 'home',
+    menuTitle: localeText('Главная', 'Home', 'Գլխավոր'),
+    pageTitle: localeText('Найдите проверенных специалистов мгновенно', 'Find trusted professionals instantly', 'Գտեք վստահելի մասնագետների արագ'),
+    subtitle: localeText('Fixora соединяет клиентов и профессионалов', 'Fixora connects clients and professionals', 'Fixora-ն միացնում է հաճախորդներին և մասնագետներին'),
+    description: localeText('Быстрый поиск, проверенные специалисты, надежные сервисы и удобный заказ в несколько кликов.', 'Fast search, verified specialists, reliable services, and simple ordering in a few clicks.', 'Արագ որոնում, ստուգված մասնագետներ, վստահելի ծառայություններ և հեշտ պատվեր։'),
+    buttonText: localeText('Создать аккаунт', 'Create account', 'Ստեղծել հաշիվ'),
+    slug: 'home',
+    isActive: true,
+    sortOrder: 1,
+    seoTitle: 'Fixora - Главная',
+    seoDescription: 'Find verified professionals and local service companies with Fixora.',
+    status: 'published',
+    blocks: [
+      defaultBlock('home-hero', 'hero', localeText('Найдите проверенных специалистов мгновенно', 'Find trusted professionals instantly', 'Գտեք վստահելի մասնագետների արագ'), localeText('Fixora соединяет клиентов и профессионалов. Быстрый поиск, проверенные специалисты, надежные сервисы.', 'Fixora connects clients and professionals. Fast search, verified specialists, reliable services.', 'Fixora-ն միացնում է հաճախորդներին և մասնագետներին։'), 1, ['5000+|Профессионалов|users', '50K+|Довольных клиентов|smile', '100K+|Выполненных заказов|check', '100%|Проверенные специалисты|shield']),
+      defaultBlock('home-download', 'download', localeText('Приложение Fixora всегда рядом', 'Fixora app is always with you', 'Fixora հավելվածը միշտ ձեզ հետ է'), localeText('Скачайте приложение и управляйте заказами, уведомлениями и избранным быстрее.', 'Download the app and manage orders, notifications, and favorites faster.', 'Ներբեռնեք հավելվածը և կառավարեք պատվերները ավելի արագ։'), 2, ['Google Play', 'App Store']),
+    ],
+  },
+  {
+    id: 'about',
+    menuTitle: localeText('О нас', 'About us', 'Մեր մասին'),
+    pageTitle: localeText('Мы соединяем людей и возможности', 'We connect people and opportunities', 'Մենք միացնում ենք մարդկանց և հնարավորությունները'),
+    subtitle: localeText('О нас', 'About us', 'Մեր մասին'),
+    description: localeText('Fixora — это современная платформа, которая помогает клиентам находить проверенных специалистов для любых задач.', 'Fixora is a modern platform that helps clients find verified specialists for every task.', 'Fixora-ն ժամանակակից հարթակ է, որը օգնում է գտնել ստուգված մասնագետներ։'),
+    buttonText: localeText('Узнать больше о нас', 'Learn more about us', 'Իմանալ ավելին'),
+    slug: 'about',
+    isActive: true,
+    sortOrder: 2,
+    seoTitle: 'О нас - Fixora',
+    seoDescription: 'About Fixora marketplace, mission, benefits, and trust.',
+    status: 'published',
+    blocks: [
+      defaultBlock('about-hero', 'hero', localeText('Мы соединяем людей и возможности', 'We connect people and opportunities', 'Մենք միացնում ենք մարդկանց և հնարավորությունները'), localeText('Fixora — это современная платформа, которая помогает клиентам находить проверенных специалистов для любых задач.', 'Fixora helps clients find verified professionals for any task.', 'Fixora-ն օգնում է գտնել ստուգված մասնագետներ ցանկացած խնդրի համար։'), 1, ['5000+|Профессионалов|users', '50K+|Довольных клиентов|smile', '100K+|Выполненных заказов|check', '4.9|Средний рейтинг|star'], { imageUrl: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1400&auto=format&fit=crop' }),
+      defaultBlock('about-benefits-top', 'benefits', localeText('Преимущества', 'Benefits', 'Առավելություններ'), localeText('Надежность, скорость, качество и поддержка 24/7 — основа опыта Fixora.', 'Reliability, speed, quality, and 24/7 support are the foundation of Fixora.', 'Վստահելիություն, արագություն, որակ և 24/7 աջակցություն։'), 2, ['Надёжность|Все специалисты проходят проверку и верификацию|shield', 'Быстрота|Быстрое нахождение нужного специалиста за считанные минуты|bolt', 'Качество|Только лучшие профессионалы с высоким рейтингом|star', 'Поддержка 24/7|Мы всегда готовы помочь вам в любое время|headphones']),
+      defaultBlock('about-mission', 'text', localeText('Делаем мир услуг лучше каждый день', 'Making services better every day', 'Ծառայությունների աշխարհը դարձնում ենք ավելի լավ'), localeText('Наша миссия — создать доверительную среду, где каждый клиент может найти идеального специалиста, а каждый профессионал — интересные заказы и достойный доход.', 'Our mission is to create a trusted environment where every client finds the right specialist and every professional finds valuable orders.', 'Մեր առաքելությունն է ստեղծել վստահելի միջավայր հաճախորդների և մասնագետների համար։'), 3),
+      defaultBlock('about-why', 'benefits', localeText('Почему выбирают Fixora?', 'Why choose Fixora?', 'Ինչու ընտրել Fixora'), localeText('Простой поиск, безопасные платежи, честные отзывы и гарантия качества.', 'Simple search, secure payments, honest reviews, and quality guarantee.', 'Պարզ որոնում, անվտանգ վճարումներ, ազնիվ կարծիքներ և որակի երաշխիք։'), 4, ['Простой и удобный поиск|Найдите нужного специалиста за несколько кликов|check', 'Безопасные платежи|Защищённые транзакции и безопасные сделки|check', 'Система отзывов|Честные отзывы от реальных клиентов|check', 'Гарантия качества|Мы гарантируем качество предоставляемых услуг|check']),
+      defaultBlock('about-cta', 'cta', localeText('Готовы найти специалиста?', 'Ready to find a specialist?', 'Պատրա՞ստ եք գտնել մասնագետ'), localeText('Создайте заявку и получите предложения от проверенных профессионалов.', 'Create a request and receive offers from verified professionals.', 'Ստեղծեք հայտ և ստացեք առաջարկներ ստուգված մասնագետներից։'), 5),
+    ],
+  },
+  {
+    id: 'company',
+    menuTitle: localeText('О компании', 'Company', 'Ընկերություն'),
+    pageTitle: localeText('Мы создаём технологии для людей и бизнеса', 'We build technology for people and business', 'Մենք ստեղծում ենք տեխնոլոգիաներ մարդկանց և բիզնեսի համար'),
+    subtitle: localeText('О компании', 'Company', 'Ընկերություն'),
+    description: localeText('Fixora была основана с простой, но важной миссией — соединять людей, которым нужны услуги, с профессионалами, которые могут их предоставить.', 'Fixora was founded with a simple mission: connect people who need services with professionals who can provide them.', 'Fixora-ն հիմնվել է մարդկանց և մասնագետներին միացնելու առաքելությամբ։'),
+    buttonText: localeText('Связаться', 'Contact us', 'Կապվել'),
+    slug: 'company',
+    isActive: true,
+    sortOrder: 3,
+    seoTitle: 'О компании Fixora',
+    seoDescription: 'Company history, mission, values, and team behind Fixora.',
+    status: 'published',
+    blocks: [
+      defaultBlock('company-hero', 'hero', localeText('Мы создаём технологии для людей и бизнеса', 'We build technology for people and business', 'Մենք ստեղծում ենք տեխնոլոգիաներ մարդկանց և բիզնեսի համար'), localeText('Fixora была основана с простой, но важной миссией — соединять людей с профессионалами.', 'Fixora connects people with trusted professionals.', 'Fixora-ն միացնում է մարդկանց վստահելի մասնագետների հետ։'), 1, ['2022|Год основания|users', '50K+|Довольных клиентов|smile', '100K+|Выполненных заказов|briefcase', '15+|Стран присутствия|trophy'], { imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1400&auto=format&fit=crop' }),
+      defaultBlock('company-history', 'timeline', localeText('Наша история', 'Our history', 'Մեր պատմությունը'), localeText('От идеи до международной платформы.', 'From idea to international platform.', 'Գաղափարից դեպի միջազգային հարթակ։'), 2, ['2022|Основание компании|Fixora была основана с целью упростить поиск и оказание услуг.', '2023|Запуск платформы|Мы запустили нашу платформу и привлекли первых клиентов.', '2024|Рост и развитие|Достигли 50K+ клиентов и расширили возможности платформы.', '2025|Международное расширение|Выходим на новые рынки и становимся глобальной платформой.']),
+      defaultBlock('company-values', 'benefits', localeText('Наши ценности', 'Our values', 'Մեր արժեքները'), localeText('Надежность, инновации, клиентоориентированность и прозрачность.', 'Reliability, innovation, client focus, and transparency.', 'Վստահելիություն, նորարարություն, հաճախորդակենտրոնություն և թափանցիկություն։'), 3, ['Надёжность|Проверенные специалисты и безопасные сделки|shield', 'Инновации|Постоянно развиваем технологии и сервисы|bolt', 'Клиентоориентированность|Ваши цели — наш главный приоритет|chat', 'Прозрачность|Честность во всех наших действиях|info']),
+      defaultBlock('company-mission', 'text', localeText('Делаем мир услуг лучше каждый день', 'Making services better every day', 'Ծառայությունների աշխարհը դարձնում ենք ավելի լավ'), localeText('Мы стремимся создать доверительную среду, где каждый клиент может найти идеального специалиста, а каждый профессионал — интересные заказы и достойный доход.', 'We create a trusted environment for clients and professionals.', 'Մենք ստեղծում ենք վստահելի միջավայր հաճախորդների և մասնագետների համար։'), 4),
+      defaultBlock('company-team', 'team', localeText('Наша команда', 'Our team', 'Մեր թիմը'), localeText('Профессионалы, которые создают будущее Fixora.', 'Professionals building the future of Fixora.', 'Մասնագետներ, որոնք ստեղծում են Fixora-ի ապագան։'), 5, ['Армен Петросян|CEO & Founder|https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop', 'Мария Иванова|CTO|https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop', 'Давид Мелконян|Head of Product|https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=400&auto=format&fit=crop', 'Ани Саркисян|Head of Marketing|https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop']),
+    ],
+  },
+  {
+    id: 'features',
+    menuTitle: localeText('Возможности', 'Features', 'Հնարավորություններ'),
+    pageTitle: localeText('Всё для удобства клиентов и профессионалов', 'Everything for clients and professionals', 'Ամեն ինչ հաճախորդների և մասնագետների համար'),
+    subtitle: localeText('Возможности', 'Features', 'Հնարավորություններ'),
+    description: localeText('Fixora предлагает мощные инструменты и функции для поиска, работы и развития вашего бизнеса.', 'Fixora offers powerful tools for search, work, and business growth.', 'Fixora-ն առաջարկում է հզոր գործիքներ որոնման և աշխատանքի համար։'),
+    buttonText: localeText('Посмотреть возможности', 'Explore features', 'Դիտել հնարավորությունները'),
+    slug: 'features',
+    isActive: true,
+    sortOrder: 4,
+    seoTitle: 'Возможности Fixora',
+    seoDescription: 'Search, notifications, favorites, secure payments, chat, and service tools.',
+    status: 'published',
+    blocks: [
+      defaultBlock('features-hero', 'hero', localeText('Всё для удобства клиентов и профессионалов', 'Everything for clients and professionals', 'Ամեն ինչ հաճախորդների և մասնագետների համար'), localeText('Fixora предлагает мощные инструменты и функции для поиска, работы и развития вашего бизнеса.', 'Fixora provides powerful tools for search, work, and business growth.', 'Fixora-ն տրամադրում է հզոր գործիքներ որոնման և աճի համար։'), 1, ['Быстрый поиск|Найдите специалиста за секунды|rocket', 'Проверенные|Все специалисты проходят проверку|shield', 'Онлайн заказ|Создайте заказ в пару кликов|chat', 'Поддержка 24/7|Мы всегда на связи и готовы помочь|headphones']),
+      defaultBlock('features-grid', 'features', localeText('Функции платформы', 'Platform features', 'Հարթակի գործառույթներ'), localeText('Умный поиск, безопасные платежи, чат, избранное, уведомления и рейтинги.', 'Smart search, secure payments, chat, favorites, notifications, and ratings.', 'Խելացի որոնում, անվտանգ վճարումներ, չաթ, ընտրվածներ և ծանուցումներ։'), 2, ['Умный поиск|Быстрый и точный поиск специалистов по категориям, отзывам и рейтингу|search', 'Проверенные специалисты|Все специалисты проходят проверку и верификацию документов|shield', 'Безопасные платежи|Защищённые транзакции и безопасные сделки внутри платформы|card', 'Онлайн чат|Общайтесь со специалистами в реальном времени|chat', 'Отзывы и рейтинги|Реальные отзывы клиентов и честные рейтинги специалистов|star', 'Уведомления|Получайте уведомления о новых заказах и сообщениях мгновенно|bell', 'Избранное|Сохраняйте понравившихся специалистов и возвращайтесь позже|heart', 'Поддержка 24/7|Наша команда поддержки всегда готова помочь вам|headphones']),
+      defaultBlock('features-stats', 'statistics', localeText('Показатели', 'Statistics', 'Ցուցանիշներ'), localeText('5000+ профессионалов, 50K+ клиентов, 100K+ заказов и 100% проверенные специалисты.', '5000+ professionals, 50K+ clients, 100K+ orders, and 100% verified specialists.', '5000+ մասնագետ, 50K+ հաճախորդ, 100K+ պատվեր և 100% ստուգված մասնագետներ։'), 3, ['5000+|Профессионалов|users', '50K+|Довольных клиентов|smile', '100K+|Выполненных заказов|briefcase', '100%|Проверенные специалисты|shield']),
+    ],
+  },
+  {
+    id: 'contact',
+    menuTitle: localeText('Связаться с нами', 'Contact us', 'Կապ մեզ հետ'),
+    pageTitle: localeText('Мы всегда на связи и готовы помочь вам', 'We are always in touch and ready to help', 'Մենք միշտ կապի մեջ ենք և պատրաստ ենք օգնել'),
+    subtitle: localeText('Связаться с нами', 'Contact us', 'Կապ մեզ հետ'),
+    description: localeText('Есть вопросы или нужна помощь? Напишите нам удобным способом, и наша команда ответит вам в ближайшее время.', 'Have questions or need help? Contact us and our team will respond soon.', 'Հարցե՞ր ունեք։ Գրեք մեզ, և մեր թիմը կպատասխանի։'),
+    buttonText: localeText('Отправить сообщение', 'Send message', 'Ուղարկել հաղորդագրություն'),
+    slug: 'contact',
+    isActive: true,
+    sortOrder: 5,
+    seoTitle: 'Связаться с Fixora',
+    seoDescription: 'Contact cards, form, office address, phone, email, work hours, and Armenia coverage.',
+    status: 'published',
+    blocks: [
+      defaultBlock('contact-hero', 'hero', localeText('Мы всегда на связи и готовы помочь вам', 'We are always in touch and ready to help', 'Մենք միշտ կապի մեջ ենք և պատրաստ ենք օգնել'), localeText('Есть вопросы или нужна помощь? Напишите нам удобным способом, и наша команда ответит вам в ближайшее время.', 'Have questions or need help? Contact us and our team will respond soon.', 'Հարցեր ունե՞ք։ Կապվեք մեզ հետ։'), 1),
+      defaultBlock('contact-cards', 'offices', localeText('Контакты', 'Contacts', 'Կոնտակտներ'), localeText('Адрес офиса, телефоны, email и часы работы.', 'Office address, phones, emails, and work hours.', 'Գրասենյակի հասցե, հեռախոսներ, email և աշխատանքային ժամեր։'), 2, ['Адрес офиса|Ереван, ул. Абовяна 12/1|Армения, 0010|pin', 'Телефон|+374 11 123456|+374 77 123456|phone', 'Email|info@fixora.am|support@fixora.am|mail', 'Часы работы|Пн - Пт: 09:00 - 18:00|Сб - Вс: выходной|clock']),
+      defaultBlock('contact-form', 'contact', localeText('Отправьте нам сообщение', 'Send us a message', 'Ուղարկեք հաղորդագրություն'), localeText('Заполните форму ниже, и мы свяжемся с вами как можно скорее.', 'Fill out the form and we will contact you as soon as possible.', 'Լրացրեք ձևը, և մենք շուտով կկապվենք ձեզ հետ։'), 3, ['Ваше имя', 'Ваш email', 'Ваш телефон', 'Выберите тему', 'Ваше сообщение', 'Отправить сообщение']),
+      defaultBlock('contact-map', 'map', localeText('Мы работаем по всей Армении', 'We work across Armenia', 'Մենք աշխատում ենք ամբողջ Հայաստանում'), localeText('Fixora предоставляет услуги по всей территории Армении. Найдите проверенных специалистов в вашем городе.', 'Fixora provides services across Armenia. Find verified specialists in your city.', 'Fixora-ն ծառայություններ է տրամադրում ամբողջ Հայաստանում։'), 4, ['Ереван', 'Гюмри', 'Ванадзор', 'Раздан', 'Арарат', 'Севан', 'Капан', 'Все города']),
+      defaultBlock('contact-emergency', 'cta', localeText('Нужна срочная помощь?', 'Need urgent help?', 'Շտապ օգնությո՞ւն է պետք'), localeText('Позвоните нам прямо сейчас, и мы поможем вам в кратчайшие сроки!', 'Call us now and we will help as quickly as possible.', 'Զանգահարեք հիմա, և մենք արագ կօգնենք։'), 5, ['Позвонить сейчас']),
+    ],
+  },
+];
+
+export const defaultGlavBlogMedia: GlavBlogMediaItem[] = [
+  { id: 'media-about-hero', name: 'about-team-meeting.jpg', type: 'image', extension: 'jpg', url: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1400&auto=format&fit=crop', previewUrl: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=400&auto=format&fit=crop', sizeLabel: '420 KB', createdAt: new Date().toISOString() },
+  { id: 'media-company-building', name: 'company-building.jpg', type: 'image', extension: 'jpg', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1400&auto=format&fit=crop', previewUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=400&auto=format&fit=crop', sizeLabel: '510 KB', createdAt: new Date().toISOString() },
+  { id: 'media-platform-demo', name: 'platform-demo.mp4', type: 'video', extension: 'mp4', url: 'https://video-placeholder.fixora.local/platform-demo.mp4', previewUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400&auto=format&fit=crop', sizeLabel: '2.8 MB', createdAt: new Date().toISOString() },
+];
+
 export const defaultAdminConfig: AdminConfigState = {
   languages: defaultLanguages,
   categories: categorySeeds.map((name, index) => ({
@@ -400,6 +607,8 @@ export const defaultAdminConfig: AdminConfigState = {
     { id: 'ban-1', title_ru: 'Homepage VIP banner', title_en: 'Homepage VIP banner', title_hy: 'Homepage VIP banner', image: '', link: '', target: 'AM / Yerevan / Kentron', startDate: 'Jun 01', endDate: 'Jun 30', isActive: true },
     { id: 'ban-2', title_ru: 'Featured masters push', title_en: 'Featured masters push', title_hy: 'Featured masters push', image: '', link: '', target: 'All countries', startDate: 'Always', endDate: 'on', isActive: false },
   ],
+  glavBlog: defaultGlavBlogPages,
+  glavBlogMedia: defaultGlavBlogMedia,
   supportTickets: [
     { id: 'SUP-1001', type: 'Complaint', assigned: 'Operator A', status: 'open', orderId: 'ord-1003', message: 'Customer reported a dispute.' },
     { id: 'SUP-1002', type: 'User message', assigned: 'Operator B', status: 'in progress', orderId: '-', message: 'General support request.' },
@@ -481,6 +690,28 @@ function mergeState(stored: Partial<AdminConfigState> | null): AdminConfigState 
     },
     telegram: { ...defaultAdminConfig.telegram, ...storedTelegram, channels: [...mergedTelegramChannels, ...customTelegramChannels] },
     appSettings: { ...defaultAdminConfig.appSettings, ...stored?.appSettings },
+    glavBlog: stored?.glavBlog?.length
+      ? defaultGlavBlogPages.map((page) => {
+        const storedPage = stored.glavBlog?.find((item) => item.id === page.id);
+        if (!storedPage) {
+          return page;
+        }
+        const mergedBlocks = storedPage.blocks?.length
+          ? storedPage.blocks.map((block, index) => ({
+            ...block,
+            imageUrl: block.imageUrl ?? '',
+            videoUrl: block.videoUrl ?? '',
+            gallery: block.gallery ?? [],
+            items: block.items ?? [],
+            isActive: block.isActive ?? true,
+            status: block.status ?? 'published',
+            sortOrder: block.sortOrder ?? index + 1,
+          }))
+          : page.blocks;
+        return { ...page, ...storedPage, blocks: mergedBlocks };
+      })
+      : defaultGlavBlogPages,
+    glavBlogMedia: stored?.glavBlogMedia?.length ? stored.glavBlogMedia : defaultGlavBlogMedia,
   };
 }
 

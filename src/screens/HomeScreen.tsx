@@ -5,10 +5,12 @@ import { AccountDropdown } from '../components/AccountDropdown';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { useAdminConfig } from '../context/AdminConfigContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useTranslation } from '../i18n/I18nProvider';
 import { RegisteredUser } from '../services/authStorage';
 import { LocationSelection, UserRole } from '../types/navigation';
+import { activeGlavBlogPages, localized } from '../utils/glavBlog';
 
 type HomeScreenProps = {
   location: LocationSelection;
@@ -62,16 +64,27 @@ function cleanRoleLabel(role: UserRole) {
 }
 
 export default function HomeScreen({ location, role, currentUser, onOpenCategories, onOpenAdmin, onLogout }: HomeScreenProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { formatMoney } = useCurrency();
+  const { state } = useAdminConfig();
+  const pages = activeGlavBlogPages(state.glavBlog);
+  const [activePageId, setActivePageId] = useState(pages[0]?.id ?? 'home');
   const [tab, setTab] = useState('home');
   const isAdminUser = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const activeCmsPage = pages.find((page) => page.id === activePageId) ?? pages[0];
 
   if (Platform.OS === 'web') {
     return (
       <View style={styles.webScreen}>
         <View style={styles.webHeader}>
           <FixoraLogo size={50} wordmark />
+          <View style={styles.webNav}>
+            {pages.map((page) => (
+              <Pressable key={page.id} accessibilityRole="button" onPress={() => setActivePageId(page.id)} style={[styles.webNavItem, activePageId === page.id && styles.webNavItemActive]}>
+                <Text style={[styles.webNavText, activePageId === page.id && styles.webNavTextActive]}>{localized(page.menuTitle, language)}</Text>
+              </Pressable>
+            ))}
+          </View>
           <View style={styles.webSearch}>
             <Text style={styles.webSearchIcon}>⌕</Text>
             <TextInput placeholder={t('home.search.placeholder', 'Search services, specialists, companies...')} placeholderTextColor="#7E8AA3" style={styles.webSearchInput} />
@@ -182,6 +195,30 @@ export default function HomeScreen({ location, role, currentUser, onOpenCategori
                 </View>
               ))}
             </View>
+
+            {activeCmsPage ? (
+              <View style={styles.webCmsPanel}>
+                <View style={styles.webCmsIntro}>
+                  <Text style={styles.webCmsSlug}>/{activeCmsPage.slug}</Text>
+                  <Text style={styles.webCmsTitle}>{localized(activeCmsPage.pageTitle, language)}</Text>
+                  <Text style={styles.webCmsSubtitle}>{localized(activeCmsPage.subtitle, language)}</Text>
+                  <Text style={styles.webCmsDescription}>{localized(activeCmsPage.description, language)}</Text>
+                  <Pressable accessibilityRole="button" style={styles.webCmsButton}>
+                    <Text style={styles.webCmsButtonText}>{localized(activeCmsPage.buttonText, language)}</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.webCmsBlocks}>
+                  {[...activeCmsPage.blocks].filter((block) => block.isActive).sort((a, b) => a.sortOrder - b.sortOrder).map((block) => (
+                    <View key={block.id} style={styles.webCmsBlock}>
+                      <Text style={styles.webCmsBlockType}>{block.type}</Text>
+                      <Text style={styles.webCmsBlockTitle}>{localized(block.title, language)}</Text>
+                      <Text style={styles.webCmsBlockText}>{localized(block.body, language)}</Text>
+                      {block.imageUrl || block.videoUrl ? <Text style={styles.webCmsMedia}>{block.videoUrl || block.imageUrl}</Text> : null}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : null}
           </ScrollView>
         </View>
       </View>
@@ -290,8 +327,13 @@ function SectionTitle({ title, action, onAction }: { title: string; action?: str
 
 const styles = StyleSheet.create({
   webScreen: { flex: 1, backgroundColor: '#F8FAFF' },
-  webHeader: { minHeight: 74, paddingHorizontal: 56, flexDirection: 'row', alignItems: 'center', gap: 28, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E7EDF7', zIndex: 50 },
-  webSearch: { flex: 1, maxWidth: 560, minHeight: 42, borderRadius: 7, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E2F0', overflow: 'hidden' },
+  webHeader: { minHeight: 74, paddingHorizontal: 56, flexDirection: 'row', alignItems: 'center', gap: 22, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E7EDF7', zIndex: 50 },
+  webNav: { flexDirection: 'row', alignItems: 'center', gap: 18, flexWrap: 'wrap', flexShrink: 1 },
+  webNavItem: { minHeight: 38, justifyContent: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  webNavItemActive: { borderBottomColor: '#6F45E8' },
+  webNavText: { color: '#07153C', fontSize: 13, fontWeight: '900' },
+  webNavTextActive: { color: '#6F45E8' },
+  webSearch: { flex: 1, maxWidth: 360, minHeight: 42, borderRadius: 7, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D9E2F0', overflow: 'hidden' },
   webSearchIcon: { paddingLeft: 14, color: '#73809A', fontSize: 20, fontWeight: '900' },
   webSearchInput: { flex: 1, minHeight: 42, paddingHorizontal: 10, color: '#07153C', fontSize: 14, fontWeight: '700' },
   webSearchButton: { alignSelf: 'stretch', minWidth: 78, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6F45E8' },
@@ -353,6 +395,20 @@ const styles = StyleSheet.create({
   webInfoIconText: { color: '#6F45E8', fontSize: 21, fontWeight: '900' },
   webInfoTitle: { color: '#07153C', fontSize: 15, fontWeight: '900' },
   webInfoText: { marginTop: 5, maxWidth: 220, color: '#63708A', fontSize: 13, lineHeight: 18, fontWeight: '700' },
+  webCmsPanel: { marginTop: 28, padding: 24, borderRadius: 12, flexDirection: 'row', gap: 24, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F2' },
+  webCmsIntro: { flex: 1, minWidth: 280 },
+  webCmsSlug: { color: '#6F45E8', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  webCmsTitle: { marginTop: 8, color: '#07153C', fontSize: 30, lineHeight: 38, fontWeight: '900' },
+  webCmsSubtitle: { marginTop: 8, color: '#2F80ED', fontSize: 16, lineHeight: 23, fontWeight: '900' },
+  webCmsDescription: { marginTop: 10, color: '#63708A', fontSize: 14, lineHeight: 22, fontWeight: '700' },
+  webCmsButton: { marginTop: 16, alignSelf: 'flex-start', minHeight: 44, paddingHorizontal: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6F45E8' },
+  webCmsButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
+  webCmsBlocks: { flex: 1.4, flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  webCmsBlock: { flexGrow: 1, flexBasis: 210, minHeight: 130, padding: 16, borderRadius: 11, backgroundColor: '#F8FAFF', borderWidth: 1, borderColor: '#E2E8F2' },
+  webCmsBlockType: { color: '#6F45E8', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  webCmsBlockTitle: { marginTop: 7, color: '#07153C', fontSize: 15, fontWeight: '900' },
+  webCmsBlockText: { marginTop: 7, color: '#63708A', fontSize: 12, lineHeight: 18, fontWeight: '700' },
+  webCmsMedia: { marginTop: 8, color: '#2F80ED', fontSize: 11, lineHeight: 16, fontWeight: '800' },
   screen: { flex: 1, backgroundColor: '#FFFFFF' },
   content: { paddingTop: 48, paddingHorizontal: 18, paddingBottom: 104 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 40 },

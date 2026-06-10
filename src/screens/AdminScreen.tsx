@@ -9,6 +9,11 @@ import {
   AdminConfigState,
   CategoryRecord,
   defaultRegistrationFields,
+  GlavBlogBlock,
+  GlavBlogBlockType,
+  GlavBlogMediaItem,
+  GlavBlogPage,
+  LocaleText,
   RegistrationFieldConfig,
   RegistrationFieldType,
   RegistrationFieldsState,
@@ -28,6 +33,7 @@ type AdminModule =
   | 'orders'
   | 'finance'
   | 'marketing'
+  | 'glavBlog'
   | 'support'
   | 'registration'
   | 'telegram'
@@ -64,6 +70,7 @@ const moduleGroups: Array<{ group: string; items: Array<{ id: AdminModule; label
     group: 'GROWTH',
     items: [
       { id: 'marketing', label: 'Маркетинг', icon: '⌁' },
+      { id: 'glavBlog', label: 'GLAV BLOG', icon: 'DOC' },
       { id: 'support', label: 'Поддержка', icon: '◎' },
     ],
   },
@@ -88,6 +95,7 @@ const moduleMeta: Record<AdminModule, { title: string; subtitle: string; search:
   orders: { title: 'Заказы', subtitle: 'Управляйте всеми заказами платформы: отслеживание, статус, диспетчеризация и финансы', search: 'Поиск по заказам, клиентам, ID...', action: '+ Быстрое действие' },
   finance: { title: 'Финансы', subtitle: 'Обзор финансовых показателей, комиссий и выплат платформы', search: 'Поиск по заказам, пользователям, транзакциям...', action: '+ Быстрое действие' },
   marketing: { title: 'Маркетинг', subtitle: 'Управляйте маркетинговыми кампаниями, рекламными материалами и гео-таргетингом', search: 'Поиск по кампаниям, кодам, мастерам...', action: '+ Quick Action' },
+  glavBlog: { title: 'GLAV BLOG', subtitle: 'Professional CMS editor for website navigation, pages, media, SEO and live preview.', search: 'Search pages, slugs, SEO, blocks...', action: '+ Add Block' },
   support: { title: 'Поддержка', subtitle: 'Управляйте обращениями, жалобами, спорами и приоритетными запросами пользователей', search: 'Поиск по тикетам, пользователям, заказам...', action: '+ Быстрое действие' },
   registration: { title: 'Registration Management', subtitle: 'Design and manage client & master registration forms, fields, and settings.', search: 'Поиск по админ-данным...', action: '+ Add Field' },
   telegram: { title: 'Telegram Notification Center', subtitle: 'Configure Telegram bot, channels, templates and notifications for all platform events.', search: 'Поиск по событиям, шаблонам...', action: '+ Быстрое действие' },
@@ -104,6 +112,7 @@ const sectionKeyByModule: Partial<Record<AdminModule, keyof AdminConfigState>> =
   orders: 'orders',
   finance: 'financeSettings',
   marketing: 'marketingBanners',
+  glavBlog: 'glavBlog',
   support: 'supportTickets',
   registration: 'registrationFields',
   telegram: 'telegram',
@@ -140,7 +149,7 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
   const saveActive = async () => {
     const section = sectionKeyByModule[active];
     if (section) {
-      await admin.saveSection(section, meta.title, 'saved admin section');
+      await admin.saveSection(section, active === 'glavBlog' ? 'GLAV BLOG' : meta.title, active === 'glavBlog' ? 'updated website content' : 'saved admin section');
       notify('Saved successfully');
     }
   };
@@ -215,6 +224,8 @@ export default function AdminScreen({ onExit }: { onExit: () => void }) {
         return <FinanceSection state={state} setSection={setSection} />;
       case 'marketing':
         return <MarketingSection state={state} setSection={setSection} />;
+      case 'glavBlog':
+        return <GlavBlogSection state={state} setSection={setSection} save={saveActive} notify={notify} />;
       case 'support':
         return <SupportSection state={state} />;
       case 'registration':
@@ -954,6 +965,331 @@ function MarketingSection({ state, setSection }: {
       <SimpleDataTable title="Список кампаний" rows={state.marketingBanners.map((item) => [item.title_en, item.target, `${item.startDate} - ${item.endDate}`, item.isActive ? 'Активная' : 'Неактивная', '8.72%'])} />
     </View>
   );
+}
+
+const glavBlockTypes: Array<{ type: GlavBlogBlockType; label: string }> = [
+  { type: 'hero', label: 'Hero Section' },
+  { type: 'text', label: 'Text Section' },
+  { type: 'richText', label: 'Rich Text Editor' },
+  { type: 'image', label: 'Image' },
+  { type: 'gallery', label: 'Gallery' },
+  { type: 'video', label: 'Video' },
+  { type: 'statistics', label: 'Statistics' },
+  { type: 'features', label: 'Features' },
+  { type: 'benefits', label: 'Benefits' },
+  { type: 'team', label: 'Team Members' },
+  { type: 'timeline', label: 'Timeline' },
+  { type: 'faq', label: 'FAQ' },
+  { type: 'testimonials', label: 'Testimonials' },
+  { type: 'cta', label: 'CTA Section' },
+  { type: 'contact', label: 'Contact Form' },
+  { type: 'map', label: 'Google Map' },
+  { type: 'offices', label: 'Office Locations' },
+  { type: 'countries', label: 'Countries' },
+  { type: 'download', label: 'Download App Block' },
+  { type: 'html', label: 'Custom HTML' },
+];
+
+function GlavBlogSection({ state, setSection, save, notify }: {
+  state: AdminConfigState;
+  setSection: <K extends keyof AdminConfigState>(section: K, value: AdminConfigState[K]) => void;
+  save: () => void;
+  notify: (message: string) => void;
+}) {
+  const [activePageId, setActivePageId] = useState<GlavBlogPage['id']>('home');
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(state.glavBlog[0]?.blocks[0]?.id ?? null);
+  const page = state.glavBlog.find((item) => item.id === activePageId) ?? state.glavBlog[0];
+  const selectedBlock = page.blocks.find((block) => block.id === selectedBlockId) ?? page.blocks[0];
+  const orderedPages = [...state.glavBlog].sort((a, b) => a.sortOrder - b.sortOrder);
+  const orderedBlocks = [...page.blocks].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const writePages = (pages: GlavBlogPage[]) => setSection('glavBlog', pages);
+  const updatePage = (patch: Partial<GlavBlogPage>) => writePages(state.glavBlog.map((item) => item.id === page.id ? { ...item, ...patch } : item));
+  const updateLocale = (field: keyof Pick<GlavBlogPage, 'menuTitle' | 'pageTitle' | 'subtitle' | 'description' | 'buttonText'>, lang: keyof LocaleText, value: string) => {
+    updatePage({ [field]: { ...page[field], [lang]: value } } as Partial<GlavBlogPage>);
+  };
+  const writeBlocks = (blocks: GlavBlogBlock[]) => updatePage({ blocks: blocks.map((block, index) => ({ ...block, sortOrder: index + 1 })) });
+  const updateBlock = (id: string, patch: Partial<GlavBlogBlock>) => writeBlocks(orderedBlocks.map((block) => block.id === id ? { ...block, ...patch } : block));
+  const updateBlockLocale = (id: string, field: 'title' | 'body', lang: keyof LocaleText, value: string) => {
+    const block = orderedBlocks.find((item) => item.id === id);
+    if (block) updateBlock(id, { [field]: { ...block[field], [lang]: value } } as Partial<GlavBlogBlock>);
+  };
+  const addBlock = (type: GlavBlogBlockType = 'text') => {
+    const block: GlavBlogBlock = {
+      id: `glav-block-${Date.now()}`,
+      type,
+      title: { ru: 'Новый блок', en: 'New block', hy: 'Նոր բլոկ' },
+      body: { ru: 'Описание блока', en: 'Block description', hy: 'Բլոկի նկարագրություն' },
+      imageUrl: '',
+      videoUrl: '',
+      gallery: [],
+      items: ['First item', 'Second item', 'Third item'],
+      sortOrder: orderedBlocks.length + 1,
+      isActive: true,
+      status: 'published',
+    };
+    writeBlocks([...orderedBlocks, block]);
+    setSelectedBlockId(block.id);
+    notify('Block added');
+  };
+  const removeBlock = (id: string) => {
+    writeBlocks(orderedBlocks.filter((block) => block.id !== id));
+    setSelectedBlockId(orderedBlocks.find((block) => block.id !== id)?.id ?? null);
+    notify('Block deleted');
+  };
+  const moveBlock = (id: string, direction: -1 | 1) => {
+    const index = orderedBlocks.findIndex((block) => block.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= orderedBlocks.length) return;
+    const next = [...orderedBlocks];
+    [next[index], next[target]] = [next[target], next[index]];
+    writeBlocks(next);
+  };
+  const duplicateBlock = (block: GlavBlogBlock) => {
+    const copy = { ...block, id: `${block.id}-copy-${Date.now()}`, title: { ...block.title, en: `${block.title.en} copy` }, sortOrder: orderedBlocks.length + 1 };
+    writeBlocks([...orderedBlocks, copy]);
+    setSelectedBlockId(copy.id);
+    notify('Block duplicated');
+  };
+  const publish = async () => {
+    writePages(state.glavBlog.map((item) => item.id === page.id ? { ...item, status: 'published', isActive: true } : item));
+    await save();
+    notify('Published');
+  };
+  const draft = async () => {
+    writePages(state.glavBlog.map((item) => item.id === page.id ? { ...item, status: 'draft' } : item));
+    await save();
+    notify('Draft saved');
+  };
+  const placeholderMedia = (kind: 'image' | 'video') => {
+    if (!selectedBlock) return;
+    const value = kind === 'image'
+      ? 'https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1200&auto=format&fit=crop'
+      : 'https://video-placeholder.fixora.local/demo.mp4';
+    updateBlock(selectedBlock.id, kind === 'image' ? { imageUrl: value } : { videoUrl: value });
+    notify(`${kind} placeholder uploaded`);
+  };
+  const addMedia = (type: GlavBlogMediaItem['type']) => {
+    const extension = type === 'image' ? 'webp' : 'mp4';
+    const item: GlavBlogMediaItem = {
+      id: `glav-media-${Date.now()}`,
+      name: type === 'image' ? `uploaded-image-${Date.now()}.${extension}` : `uploaded-video-${Date.now()}.${extension}`,
+      type,
+      extension,
+      url: type === 'image'
+        ? 'https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=1400&auto=format&fit=crop'
+        : 'https://video-placeholder.fixora.local/uploaded-video.mp4',
+      previewUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=400&auto=format&fit=crop',
+      sizeLabel: type === 'image' ? '360 KB' : '3.4 MB',
+      createdAt: new Date().toISOString(),
+    };
+    setSection('glavBlogMedia', [item, ...state.glavBlogMedia]);
+    notify(`${type} uploaded`);
+  };
+  const deleteMedia = (id: string) => {
+    setSection('glavBlogMedia', state.glavBlogMedia.filter((item) => item.id !== id));
+    notify('Media deleted');
+  };
+  const replaceMedia = (item: GlavBlogMediaItem) => {
+    setSection('glavBlogMedia', state.glavBlogMedia.map((media) => media.id === item.id ? { ...media, name: `replaced-${media.name}`, createdAt: new Date().toISOString() } : media));
+    notify('Media replaced');
+  };
+
+  return (
+    <View style={styles.stack}>
+      <LinearGradient colors={['#FFFFFF', '#F4F7FF']} style={styles.glavHero}>
+        <View style={styles.glavHeroCopy}>
+          <Text style={styles.glavKicker}>Website navigation CMS</Text>
+          <Text style={styles.glavTitle}>GLAV BLOG</Text>
+          <Text style={styles.glavSubtitle}>Manage top menu titles, landing content, SEO, media and reusable content blocks from local AdminStore.</Text>
+        </View>
+        <View style={styles.rowActions}>
+          <AdminButton title="Save" onPress={save} />
+          <AdminButton title="Publish" tone="green" onPress={publish} />
+          <AdminButton title="Draft" tone="light" onPress={draft} />
+          <AdminButton title="Reset" tone="red" onPress={() => notify('Use top RESET to restore defaults')} />
+        </View>
+      </LinearGradient>
+
+      <Tabs tabs={orderedPages.map((item) => item.menuTitle.ru)} active={page.menuTitle.ru} onSelect={(label) => {
+        const next = orderedPages.find((item) => item.menuTitle.ru === label);
+        if (next) {
+          setActivePageId(next.id);
+          setSelectedBlockId(next.blocks[0]?.id ?? null);
+        }
+      }} />
+
+      <View style={styles.glavGrid}>
+        <View style={styles.glavEditor}>
+          <Panel title="Page settings" description="Menu, page copy, status, sorting and SEO fields.">
+            <View style={styles.formGrid}>
+              {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                <AdminInput key={`menu-${lang}`} label={`Menu title ${lang.toUpperCase()}`} value={page.menuTitle[lang]} onChangeText={(value) => updateLocale('menuTitle', lang, value)} />
+              ))}
+              {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                <AdminInput key={`title-${lang}`} label={`Page title ${lang.toUpperCase()}`} value={page.pageTitle[lang]} onChangeText={(value) => updateLocale('pageTitle', lang, value)} />
+              ))}
+              {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                <AdminInput key={`subtitle-${lang}`} label={`Subtitle ${lang.toUpperCase()}`} value={page.subtitle[lang]} onChangeText={(value) => updateLocale('subtitle', lang, value)} />
+              ))}
+              {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                <AdminInput key={`button-${lang}`} label={`Button text ${lang.toUpperCase()}`} value={page.buttonText[lang]} onChangeText={(value) => updateLocale('buttonText', lang, value)} />
+              ))}
+              <AdminInput label="Slug" value={page.slug} onChangeText={(value) => updatePage({ slug: value })} />
+              <AdminInput label="Sort order" value={String(page.sortOrder)} onChangeText={(value) => updatePage({ sortOrder: Number(value) || page.sortOrder })} />
+              <AdminInput label="SEO title" value={page.seoTitle} onChangeText={(value) => updatePage({ seoTitle: value })} />
+              <AdminInput label="SEO description" value={page.seoDescription} onChangeText={(value) => updatePage({ seoDescription: value })} />
+            </View>
+            <View style={styles.formGrid}>
+              {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                <AdminTextarea key={`description-${lang}`} label={`Description ${lang.toUpperCase()}`} value={page.description[lang]} onChangeText={(value) => updateLocale('description', lang, value)} />
+              ))}
+            </View>
+            <ToggleRow label="Status active / inactive" value={page.isActive} onChange={() => updatePage({ isActive: !page.isActive })} />
+          </Panel>
+
+          <Panel title="Content block builder" description="Add, edit, delete, reorder and duplicate page blocks." actionNode={<AdminButton title="+ Add Block" onPress={() => addBlock('text')} />}>
+            <View style={styles.blockTypeGrid}>
+              {glavBlockTypes.map((item) => (
+                <Pressable key={item.type} accessibilityRole="button" onPress={() => addBlock(item.type)} style={styles.blockTypeButton}>
+                  <Text style={styles.blockTypeIcon}>{blockIcon(item.type)}</Text>
+                  <Text style={styles.blockTypeText}>{item.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {orderedBlocks.map((block, index) => (
+              <Pressable key={block.id} accessibilityRole="button" onPress={() => setSelectedBlockId(block.id)} style={[styles.glavBlockRow, selectedBlock?.id === block.id && styles.glavBlockRowActive]}>
+                <Text style={styles.dragHandle}>⋮⋮</Text>
+                <View style={styles.fieldIconBox}><Text style={styles.fieldTypeIcon}>{blockIcon(block.type)}</Text></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.builderFieldTitle}>{block.title.en || block.title.ru}</Text>
+                  <Text style={styles.builderFieldMeta}>{block.type} / order {index + 1}</Text>
+                </View>
+                <Toggle value={block.isActive} onChange={() => updateBlock(block.id, { isActive: !block.isActive })} />
+                <Badge label={block.status === 'draft' ? 'Draft' : 'Published'} tone={block.status === 'draft' ? 'orange' : 'green'} />
+                <AdminButton title="Edit Block" tone="light" onPress={() => setSelectedBlockId(block.id)} />
+                <AdminButton title="Move Up" tone="light" onPress={() => moveBlock(block.id, -1)} />
+                <AdminButton title="Move Down" tone="light" onPress={() => moveBlock(block.id, 1)} />
+                <AdminButton title="Publish" tone="green" onPress={() => updateBlock(block.id, { status: 'published', isActive: true })} />
+                <AdminButton title="Draft" tone="light" onPress={() => updateBlock(block.id, { status: 'draft' })} />
+                <AdminButton title="Duplicate Block" tone="light" onPress={() => duplicateBlock(block)} />
+                <AdminButton title="Delete Block" tone="red" onPress={() => removeBlock(block.id)} />
+              </Pressable>
+            ))}
+          </Panel>
+
+          <Panel title="Media Library" description="JPG, PNG, WEBP, SVG and MP4 assets saved in AdminStore/localStorage." actionNode={<View style={styles.rowActions}><AdminButton title="Upload Image" tone="light" onPress={() => addMedia('image')} /><AdminButton title="Upload Video" tone="light" onPress={() => addMedia('video')} /></View>}>
+            <View style={styles.mediaLibraryGrid}>
+              {state.glavBlogMedia.map((media) => (
+                <View key={media.id} style={styles.mediaLibraryCard}>
+                  <View style={styles.mediaThumb}><Text style={styles.mediaThumbText}>{media.extension.toUpperCase()}</Text></View>
+                  <Text style={styles.mediaName}>{media.name}</Text>
+                  <Text style={styles.mediaMeta}>{media.type} / {media.sizeLabel}</Text>
+                  <View style={styles.rowActions}>
+                    <AdminButton title="Replace Media" tone="light" onPress={() => replaceMedia(media)} />
+                    <AdminButton title="Delete Media" tone="red" onPress={() => deleteMedia(media.id)} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </Panel>
+
+          {selectedBlock ? (
+            <Panel title="Edit block" description="Block content, media URLs, upload placeholders and preview data.">
+              <View style={styles.formGrid}>
+                {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                  <AdminInput key={`block-title-${lang}`} label={`Block title ${lang.toUpperCase()}`} value={selectedBlock.title[lang]} onChangeText={(value) => updateBlockLocale(selectedBlock.id, 'title', lang, value)} />
+                ))}
+                <AdminInput label="Image URL" value={selectedBlock.imageUrl} onChangeText={(value) => updateBlock(selectedBlock.id, { imageUrl: value })} />
+                <AdminInput label="Video URL" value={selectedBlock.videoUrl} onChangeText={(value) => updateBlock(selectedBlock.id, { videoUrl: value })} />
+                <AdminInput label="Gallery URLs" value={selectedBlock.gallery.join(', ')} onChangeText={(value) => updateBlock(selectedBlock.id, { gallery: value.split(',').map((item) => item.trim()).filter(Boolean) })} />
+                <AdminInput label="Card / FAQ / Stats items" value={selectedBlock.items.join(', ')} onChangeText={(value) => updateBlock(selectedBlock.id, { items: value.split(',').map((item) => item.trim()).filter(Boolean) })} />
+              </View>
+              <View style={styles.formGrid}>
+                {(['ru', 'en', 'hy'] as Array<keyof LocaleText>).map((lang) => (
+                  <AdminTextarea key={`block-body-${lang}`} label={`Block body ${lang.toUpperCase()}`} value={selectedBlock.body[lang]} onChangeText={(value) => updateBlockLocale(selectedBlock.id, 'body', lang, value)} />
+                ))}
+              </View>
+              <View style={styles.rowActions}>
+                <AdminButton title="Upload image" tone="light" onPress={() => placeholderMedia('image')} />
+                <AdminButton title="Upload video placeholder" tone="light" onPress={() => placeholderMedia('video')} />
+              </View>
+              <MediaPreview block={selectedBlock} />
+            </Panel>
+          ) : null}
+        </View>
+
+        <View style={styles.glavPreviewColumn}>
+          <Panel title="Live preview" description="Menu item, desktop/mobile page preview." actionNode={<Tabs tabs={['desktop', 'mobile']} active={previewMode} onSelect={(value) => setPreviewMode(value as 'desktop' | 'mobile')} />}>
+            <View style={styles.previewMenuPill}><Text style={styles.previewMenuText}>{page.menuTitle.ru}</Text></View>
+            <View style={[styles.sitePreview, previewMode === 'mobile' && styles.sitePreviewMobile]}>
+              <Text style={styles.sitePreviewSlug}>/{page.slug}</Text>
+              <Text style={styles.sitePreviewTitle}>{page.pageTitle.ru}</Text>
+              <Text style={styles.sitePreviewSubtitle}>{page.subtitle.ru}</Text>
+              <Text style={styles.sitePreviewText}>{page.description.ru}</Text>
+              <View style={styles.sitePreviewButton}><Text style={styles.sitePreviewButtonText}>{page.buttonText.ru}</Text></View>
+              {orderedBlocks.filter((block) => block.isActive).slice(0, 5).map((block) => (
+                <View key={block.id} style={styles.previewBlock}>
+                  <Text style={styles.previewBlockType}>{block.type}</Text>
+                  <Text style={styles.previewBlockTitle}>{block.title.ru}</Text>
+                  <Text style={styles.previewBlockText}>{block.body.ru}</Text>
+                </View>
+              ))}
+            </View>
+          </Panel>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function AdminTextarea({ label, value, onChangeText }: { label: string; value: string; onChangeText: (value: string) => void }) {
+  return (
+    <View style={styles.textareaWrap}>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <TextInput value={value} onChangeText={onChangeText} multiline placeholderTextColor="#98A2B3" style={styles.textarea} />
+    </View>
+  );
+}
+
+function MediaPreview({ block }: { block: GlavBlogBlock }) {
+  const media = block.imageUrl || block.videoUrl;
+  return (
+    <View style={styles.mediaPreview}>
+      <Text style={styles.mediaPreviewLabel}>Preview image/video</Text>
+      <View style={styles.mediaPreviewBox}>
+        <Text style={styles.mediaPreviewIcon}>{block.videoUrl ? 'VIDEO' : 'IMAGE'}</Text>
+        <Text style={styles.mediaPreviewText}>{media || 'No media selected'}</Text>
+      </View>
+    </View>
+  );
+}
+
+function blockIcon(type: GlavBlogBlockType) {
+  return {
+    hero: 'HERO',
+    text: 'T',
+    richText: 'RICH',
+    image: 'IMG',
+    video: 'VID',
+    gallery: 'GAL',
+    statistics: 'STAT',
+    features: 'CARDS',
+    benefits: 'BEN',
+    team: 'TEAM',
+    timeline: 'TIME',
+    faq: 'FAQ',
+    testimonials: 'TEST',
+    contact: 'FORM',
+    cta: 'CTA',
+    map: 'MAP',
+    offices: 'OFF',
+    countries: 'CN',
+    download: 'APP',
+    html: 'HTML',
+    stats: 'STAT',
+  }[type];
 }
 
 function SupportSection({ state }: { state: AdminConfigState }) {
@@ -1865,6 +2201,47 @@ const styles = StyleSheet.create({
   channelCard: { flexGrow: 1, flexBasis: 210, minHeight: 120, padding: 16, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7EAF3' },
   channelIcon: { color: '#2F80ED', fontSize: 24, fontWeight: '900' },
   channelName: { marginTop: 8, color: '#0F172A', fontSize: 13, fontWeight: '900' },
+  glavHero: { minHeight: 152, padding: 24, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 18, borderWidth: 1, borderColor: '#E7EAF3' },
+  glavHeroCopy: { flex: 1 },
+  glavKicker: { color: '#6D5DFB', fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+  glavTitle: { marginTop: 6, color: '#0F172A', fontSize: 30, fontWeight: '900' },
+  glavSubtitle: { marginTop: 8, maxWidth: 650, color: '#667085', fontSize: 14, lineHeight: 21, fontWeight: '700' },
+  glavGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 18, alignItems: 'flex-start' },
+  glavEditor: { flex: 1, minWidth: 720, gap: 18 },
+  glavPreviewColumn: { width: 430, minWidth: 330 },
+  blockTypeGrid: { marginBottom: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  blockTypeButton: { minHeight: 46, paddingHorizontal: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#F8FAFF', borderWidth: 1, borderColor: '#DDE3EF' },
+  blockTypeIcon: { color: '#6D5DFB', fontSize: 11, fontWeight: '900' },
+  blockTypeText: { color: '#0F172A', fontSize: 12, fontWeight: '900' },
+  glavBlockRow: { minHeight: 82, marginTop: 10, padding: 12, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7EAF3' },
+  glavBlockRowActive: { borderColor: '#6D5DFB', backgroundColor: '#FBFAFF' },
+  textareaWrap: { flexGrow: 1, flexBasis: 280 },
+  textarea: { minHeight: 96, paddingHorizontal: 12, paddingTop: 12, borderRadius: 10, color: '#0F172A', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#DDE3EF', fontSize: 13, lineHeight: 19, fontWeight: '800' },
+  mediaPreview: { marginTop: 14, padding: 14, borderRadius: 14, backgroundColor: '#F8FAFF', borderWidth: 1, borderColor: '#E7EAF3' },
+  mediaPreviewLabel: { color: '#667085', fontSize: 12, fontWeight: '900' },
+  mediaPreviewBox: { marginTop: 10, minHeight: 92, padding: 14, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#DDE3EF' },
+  mediaPreviewIcon: { color: '#6D5DFB', fontSize: 13, fontWeight: '900' },
+  mediaPreviewText: { marginTop: 8, color: '#667085', fontSize: 12, lineHeight: 18, textAlign: 'center', fontWeight: '700' },
+  mediaLibraryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  mediaLibraryCard: { flexGrow: 1, flexBasis: 210, minHeight: 170, padding: 14, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7EAF3' },
+  mediaThumb: { height: 76, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F0ECFF', borderWidth: 1, borderColor: '#E2D8FF' },
+  mediaThumbText: { color: '#6D5DFB', fontSize: 18, fontWeight: '900' },
+  mediaName: { marginTop: 10, color: '#0F172A', fontSize: 12, fontWeight: '900' },
+  mediaMeta: { marginTop: 5, color: '#667085', fontSize: 11, fontWeight: '800' },
+  previewMenuPill: { alignSelf: 'flex-start', minHeight: 40, paddingHorizontal: 16, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EEE9FF' },
+  previewMenuText: { color: '#271B9D', fontSize: 13, fontWeight: '900' },
+  sitePreview: { marginTop: 16, minHeight: 520, padding: 20, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#DDE3EF' },
+  sitePreviewMobile: { width: 270, alignSelf: 'center', borderRadius: 28, borderWidth: 8, borderColor: '#0F172A' },
+  sitePreviewSlug: { color: '#6D5DFB', fontSize: 11, fontWeight: '900' },
+  sitePreviewTitle: { marginTop: 14, color: '#0F172A', fontSize: 26, lineHeight: 32, fontWeight: '900' },
+  sitePreviewSubtitle: { marginTop: 10, color: '#2F80ED', fontSize: 14, lineHeight: 20, fontWeight: '900' },
+  sitePreviewText: { marginTop: 10, color: '#667085', fontSize: 13, lineHeight: 20, fontWeight: '700' },
+  sitePreviewButton: { marginTop: 16, alignSelf: 'flex-start', minHeight: 42, paddingHorizontal: 16, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: '#6D5DFB' },
+  sitePreviewButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
+  previewBlock: { marginTop: 12, padding: 14, borderRadius: 14, backgroundColor: '#F8FAFF', borderWidth: 1, borderColor: '#E7EAF3' },
+  previewBlockType: { color: '#6D5DFB', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  previewBlockTitle: { marginTop: 5, color: '#0F172A', fontSize: 14, fontWeight: '900' },
+  previewBlockText: { marginTop: 5, color: '#667085', fontSize: 12, lineHeight: 18, fontWeight: '700' },
   footer: { marginTop: 24, color: '#667085', fontSize: 12, textAlign: 'center', fontWeight: '800' },
   toast: { position: 'absolute', right: 28, bottom: 28, minHeight: 48, paddingHorizontal: 18, borderRadius: 14, justifyContent: 'center', backgroundColor: '#6D5DFB', shadowColor: '#6D5DFB', shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
   toastText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },

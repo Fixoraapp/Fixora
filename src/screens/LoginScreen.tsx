@@ -5,21 +5,15 @@ import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { FixoraLogo } from '../components/FixoraLogo';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { AnimatedPhoneShowcase } from '../components/web/AnimatedPhoneShowcase';
+import { useAdminConfig } from '../context/AdminConfigContext';
 import { useTranslation } from '../i18n/I18nProvider';
 import { authStorage, RegisteredUser } from '../services/authStorage';
+import { activeGlavBlogPages, localized } from '../utils/glavBlog';
 
 type LoginScreenProps = {
   onLoggedIn: (user: RegisteredUser) => void;
   onRegister: () => void;
 };
-
-const navItems = [
-  ['welcome.nav.home', 'Home'],
-  ['welcome.nav.about', 'About us'],
-  ['welcome.nav.company', 'Company'],
-  ['welcome.nav.features', 'Features'],
-  ['welcome.nav.contact', 'Contact us'],
-];
 
 export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps) {
   const { t } = useTranslation();
@@ -196,14 +190,16 @@ export default function LoginScreen({ onLoggedIn, onRegister }: LoginScreenProps
 }
 
 function WebHeader({ onRegister }: { onRegister: () => void }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const { state } = useAdminConfig();
+  const pages = activeGlavBlogPages(state.glavBlog);
   return (
     <View style={styles.webHeader}>
       <FixoraLogo size={50} wordmark />
       <View style={styles.webNav}>
-        {navItems.map(([key, fallback]) => (
-          <Pressable key={key} accessibilityRole="button" style={styles.webNavItem}>
-            <Text style={styles.webNavText}>{t(key, fallback)}</Text>
+        {pages.map((page) => (
+          <Pressable key={page.id} accessibilityRole="button" style={styles.webNavItem}>
+            <Text style={styles.webNavText}>{localized(page.menuTitle, language)}</Text>
           </Pressable>
         ))}
       </View>
